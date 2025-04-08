@@ -1,0 +1,177 @@
+---
+title: "symebcovmf_tree"
+author: "Annie Xie"
+date: "2025-04-08"
+output: 
+  workflowr::wflow_html:
+    code_folding: hide
+editor_options:
+  chunk_output_type: console
+---
+
+# Introduction
+In this example, we test out symEBcovMF on tree-structured data.
+
+# Example
+
+```{r}
+library(ebnm)
+library(pheatmap)
+library(ggplot2)
+```
+
+```{r}
+source('code/symebcovmf_functions.R')
+source('code/visualization_functions.R')
+```
+
+## Data Generation
+
+```{r}
+sim_4pops <- function(args) {
+  set.seed(args$seed)
+  
+  n <- sum(args$pop_sizes)
+  p <- args$n_genes
+  
+  FF <- matrix(rnorm(7 * p, sd = rep(args$branch_sds, each = p)), ncol = 7)
+  # if (args$constrain_F) {
+  #   FF_svd <- svd(FF)
+  #   FF <- FF_svd$u
+  #   FF <- t(t(FF) * branch_sds * sqrt(p))
+  # }
+  
+  LL <- matrix(0, nrow = n, ncol = 7)
+  LL[, 1] <- 1
+  LL[, 2] <- rep(c(1, 1, 0, 0), times = args$pop_sizes)
+  LL[, 3] <- rep(c(0, 0, 1, 1), times = args$pop_sizes)
+  LL[, 4] <- rep(c(1, 0, 0, 0), times = args$pop_sizes)
+  LL[, 5] <- rep(c(0, 1, 0, 0), times = args$pop_sizes)
+  LL[, 6] <- rep(c(0, 0, 1, 0), times = args$pop_sizes)
+  LL[, 7] <- rep(c(0, 0, 0, 1), times = args$pop_sizes)
+  
+  E <- matrix(rnorm(n * p, sd = args$indiv_sd), nrow = n)
+  Y <- LL %*% t(FF) + E
+  YYt <- (1/p)*tcrossprod(Y)
+  return(list(Y = Y, YYt = YYt, LL = LL, FF = FF, K = ncol(LL)))
+}
+```
+
+```{r}
+sim_args = list(pop_sizes = rep(40, 4), n_genes = 1000, branch_sds = rep(2,7), indiv_sd = 1, seed = 1)
+sim_data <- sim_4pops(sim_args)
+```
+
+This is a heatmap of the scaled Gram matrix:
+```{r}
+plot_heatmap(sim_data$YYt, colors_range = c('blue','gray96','red'), brks = seq(-max(abs(sim_data$YYt)), max(abs(sim_data$YYt)), length.out = 50))
+```
+
+This is a scatter plot of the true loadings matrix:
+```{r}
+pop_vec <- c(rep('A', 40), rep('B', 40), rep('C', 40), rep('D', 40))
+plot_loadings(sim_data$LL, pop_vec)
+```
+
+# symEBcovMF
+```{r}
+symebcovmf_tree_fit <- sym_ebcovmf_fit(S = sim_data$YYt, ebnm_fn = ebnm_point_exponential, K = 7, maxiter = 100, rank_one_tol = 10^(-8), tol = 10^(-8))
+```
+
+## Progression of ELBO
+```{r}
+symebcovmf_tree_full_elbo_vec <- symebcovmf_tree_fit$vec_elbo_full[!(symebcovmf_tree_fit$vec_elbo_full %in% c(1:length(symebcovmf_tree_fit$vec_elbo_K)))]
+ggplot() + geom_line(data = NULL, aes(x = 1:length(symebcovmf_tree_full_elbo_vec), y = symebcovmf_tree_full_elbo_vec)) + xlab('Iter') + ylab('ELBO')
+```
+
+## Visualization of Estimate
+This is a scatter plot of $\hat{L}$, the estimate from symEBcovMF:
+```{r}
+bal_pops <- c(rep('A', 40), rep('B', 40), rep('C', 40), rep('D', 40))
+plot_loadings(symebcovmf_tree_fit$L_pm %*% diag(sqrt(symebcovmf_tree_fit$lambda)), bal_pops)
+```
+
+This is the objective function value attained:
+```{r}
+symebcovmf_tree_fit$elbo
+```
+
+## Visualization of Fit
+
+This is a heatmap of $\hat{L}\hat{\Lambda}\hat{L}'$:
+```{r}
+symebcovmf_tree_fitted_vals <- tcrossprod(symebcovmf_tree_fit$L_pm %*% diag(sqrt(symebcovmf_tree_fit$lambda)))
+plot_heatmap(symebcovmf_tree_fitted_vals, brks = seq(0, max(symebcovmf_tree_fitted_vals), length.out = 50))
+```
+
+This is a scatter plot of fitted values vs. observed values for the off-diagonal entries:
+```{r}
+diag_idx <- seq(1, prod(dim(sim_data$YYt)), length.out = ncol(sim_data$YYt))
+off_diag_idx <- setdiff(c(1:prod(dim(sim_data$YYt))), diag_idx) 
+
+ggplot(data = NULL, aes(x = c(sim_data$YYt)[off_diag_idx], y = c(symebcovmf_tree_fitted_vals)[off_diag_idx])) + geom_point() + ylim(-1, 15) + xlim(-1,15) + xlab('Observed Values') + ylab('Fitted Values') + geom_abline(slope = 1, intercept = 0, color = 'red')
+```
+
+## Visualization of Residual Matrix
+```{r}
+symebcovmf_tree_resid <- sim_data$YYt - symebcovmf_tree_fitted_vals
+plot_heatmap(symebcovmf_tree_resid, colors_range = c('blue','gray96','red'), brks = seq(-max(abs(symebcovmf_tree_resid)), max(abs(symebcovmf_tree_resid)), length.out = 50))
+```
+
+## Observations
+symEBcovMF struggles in the tree setting. Similar to EBMFcov, symEBcovMF only recovers three factors, one intercept factor and two subtype specific factors. I suspect symEBcovMF has similar issues to EBMFcov where the residual matrix has large chunks of negative entries that cause it to not add anymore factors.
+
+# symEBcovMF with refit step
+
+```{r}
+symebcovmf_tree_refit_fit <- sym_ebcovmf_fit(S = sim_data$YYt, ebnm_fn = ebnm_point_exponential, K = 7, maxiter = 100, rank_one_tol = 10^(-8), tol = 10^(-8), refit_lam = TRUE)
+```
+
+## Progression of ELBO
+```{r}
+symebcovmf_tree_refit_full_elbo_vec <- symebcovmf_tree_refit_fit$vec_elbo_full[!(symebcovmf_tree_refit_fit$vec_elbo_full %in% c(1:length(symebcovmf_tree_refit_fit$vec_elbo_K)))]
+ggplot() + geom_line(data = NULL, aes(x = 1:length(symebcovmf_tree_refit_full_elbo_vec), y = symebcovmf_tree_refit_full_elbo_vec)) + xlab('Iter') + ylab('ELBO')
+```
+A note: I don't think I save the ELBO value after the refitting step in vec_elbo_full. But the refitting does change this vector since it changes the residual matrix that is used when you add a new vector.
+
+## Visualization of Estimate
+This is a scatter plot of $\hat{L}_{refit}$, the estimate from symEBcovMF:
+```{r}
+bal_pops <- c(rep('A', 40), rep('B', 40), rep('C', 40), rep('D', 40))
+plot_loadings(symebcovmf_tree_refit_fit$L_pm %*% diag(sqrt(symebcovmf_tree_refit_fit$lambda)), bal_pops)
+```
+
+This is the objective function value attained:
+```{r}
+symebcovmf_tree_refit_fit$elbo
+```
+
+## Visualization of Fit
+
+This is a heatmap of $\hat{L}_{refit}\hat{\Lambda}_{refit}\hat{L}_{refit}'$:
+```{r}
+symebcovmf_tree_refit_fitted_vals <- tcrossprod(symebcovmf_tree_refit_fit$L_pm %*% diag(sqrt(symebcovmf_tree_refit_fit$lambda)))
+plot_heatmap(symebcovmf_tree_refit_fitted_vals, brks = seq(0, max(symebcovmf_tree_refit_fitted_vals), length.out = 50))
+```
+
+This is a scatter plot of fitted values vs. observed values for the off-diagonal entries:
+```{r}
+diag_idx <- seq(1, prod(dim(sim_data$YYt)), length.out = ncol(sim_data$YYt))
+off_diag_idx <- setdiff(c(1:prod(dim(sim_data$YYt))), diag_idx) 
+
+ggplot(data = NULL, aes(x = c(sim_data$YYt)[off_diag_idx], y = c(symebcovmf_tree_refit_fitted_vals)[off_diag_idx])) + geom_point() + ylim(-1, 15) + xlim(-1,15) + xlab('Observed Values') + ylab('Fitted Values') + geom_abline(slope = 1, intercept = 0, color = 'red')
+```
+
+## Visualization of Residual Matrix
+
+For comparison, I also plot a heatmap of $S - \sum_{k=1}^{3} \hat{\lambda}_k \hat{\ell}_k \hat{\ell}_k$ where $\hat{\lambda}_k$ and $\hat{\ell}_k$ are estimates from symEBcovMF with the refitting step:
+```{r}
+symebcovmf_tree_refit_resid <- sim_data$YYt - tcrossprod(symebcovmf_tree_refit_fit$L_pm[,c(1:3)] %*% diag(sqrt(symebcovmf_tree_refit_fit$lambda[1:3])))
+plot_heatmap(symebcovmf_tree_refit_resid, colors_range = c('blue','gray96','red'), brks = seq(-max(abs(symebcovmf_tree_refit_resid)), max(abs(symebcovmf_tree_resid)), length.out = 50))
+```
+
+## Observations
+We see that symEBcovMF with the refitting step does a better job at recovering the hierarchical structure of the data. The loadings estimate does not look entirely binary, but this is to be expected since we used the point-exponential prior. One could imagine a procedure where you start with a fit using point-exponential prior, and then refine the estimates using the generalized binary prior. 
+
+I did try symEBcovMF with refitting with the generalized binary factor, and it yields a different representation. The first factor is an intercept like factor and the next two factors are subtype-effect factors. Factor 5 is a population effect factor. However, factors 4, 6, and 7 are not population effects. I think the method found a different representation for the four population effects (which is something I've seen in other examples). I'm not sure why the point-exponential prior and the generalized binary prior led to different representations. Perhaps the point-exponential prior is better at yielding sparser solutions? This would also motivate a procedure that uses point-exponential as an initialization and then uses generalized binary to make the loadings more binary.
+

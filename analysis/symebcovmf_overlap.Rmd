@@ -1,0 +1,336 @@
+---
+title: "symebcovmf_overlap"
+author: "Annie Xie"
+date: "2025-04-08"
+output: 
+  workflowr::wflow_html:
+    code_folding: hide
+editor_options:
+  chunk_output_type: console
+---
+
+# Introduction
+In this example, we test out symEBcovMF on overlapping (but not necessarily hierarchical)-structured data.
+
+# Example
+
+```{r}
+library(ebnm)
+library(pheatmap)
+library(ggplot2)
+library(lpSolve)
+```
+
+```{r}
+source('code/symebcovmf_functions.R')
+source('code/visualization_functions.R')
+```
+
+```{r}
+compute_crossprod_similarity <- function(est, truth){
+  K_est <- ncol(est)
+  K_truth <- ncol(truth)
+  n <- nrow(est)
+  
+  #if estimates don't have same number of columns, try padding the estimate with zeros and make cosine similarity zero
+  if (K_est < K_truth){
+    est <- cbind(est, matrix(rep(0, n*(K_truth-K_est)), nrow = n))
+  }
+  
+  if (K_est > K_truth){
+    truth <- cbind(truth, matrix(rep(0, n*(K_est - K_truth)), nrow = n))
+  }
+  
+  #normalize est and truth
+  norms_est <- apply(est, 2, function(x){sqrt(sum(x^2))})
+  norms_est[norms_est == 0] <- Inf
+  
+  norms_truth <- apply(truth, 2, function(x){sqrt(sum(x^2))})
+  norms_truth[norms_truth == 0] <- Inf
+  
+  est_normalized <- t(t(est)/norms_est)
+  truth_normalized <- t(t(truth)/norms_truth)
+  
+  #compute matrix of cosine similarities
+  cosine_sim_matrix <- abs(crossprod(est_normalized, truth_normalized))
+  
+  assignment_problem <- lp.assign(t(cosine_sim_matrix), direction = "max")
+  return((1/K_truth)*assignment_problem$objval)
+}
+```
+
+```{r}
+permute_L <- function(est, truth){
+  K_est <- ncol(est)
+  K_truth <- ncol(truth)
+  n <- nrow(est)
+
+  #if estimates don't have same number of columns, try padding the estimate with zeros and make cosine similarity zero
+  if (K_est < K_truth){
+    est <- cbind(est, matrix(rep(0, n*(K_truth-K_est)), nrow = n))
+  }
+
+  if (K_est > K_truth){
+    truth <- cbind(truth, matrix(rep(0, n*(K_est - K_truth)), nrow = n))
+  }
+
+  #normalize est and truth
+  norms_est <- apply(est, 2, function(x){sqrt(sum(x^2))})
+  norms_est[norms_est == 0] <- Inf
+
+  norms_truth <- apply(truth, 2, function(x){sqrt(sum(x^2))})
+  norms_truth[norms_truth == 0] <- Inf
+
+  est_normalized <- t(t(est)/norms_est)
+  truth_normalized <- t(t(truth)/norms_truth)
+
+  #compute matrix of cosine similarities
+  cosine_sim_matrix <- abs(crossprod(est_normalized, truth_normalized))
+  assignment_problem <- lp.assign(t(cosine_sim_matrix), direction = "max")
+
+  perm <- apply(assignment_problem$solution, 1, which.max)
+  return(est[,perm])
+}
+```
+
+## Data Generation
+
+```{r}
+# args is a list containing n, p, k, indiv_sd, pi1, and seed
+sim_binary_loadings_data <- function(args) {
+  set.seed(args$seed)
+  
+  FF <- matrix(rnorm(args$k * args$p, sd = args$group_sd), ncol = args$k)
+  LL <- matrix(rbinom(args$n*args$k, 1, args$pi1), nrow = args$n, ncol = args$k)
+  E <- matrix(rnorm(args$n * args$p, sd = args$indiv_sd), nrow = args$n)
+  
+  Y <- LL %*% t(FF) + E
+  YYt <- (1/args$p)*tcrossprod(Y)
+  
+  return(list(Y = Y, YYt = YYt, LL = LL, FF = FF, K = ncol(LL)))
+}
+```
+
+```{r}
+n <- 100
+p <- 1000
+k <- 10
+pi1 <- 0.1
+indiv_sd <- 1
+group_sd <- 1
+seed <- 1
+sim_args = list(n = n, p = p, k = k, pi1 = pi1, indiv_sd = indiv_sd, group_sd = group_sd, seed = seed)
+sim_data <- sim_binary_loadings_data(sim_args)
+```
+
+This is a heatmap of the scaled Gram matrix:
+```{r}
+plot_heatmap(sim_data$YYt, colors_range = c('blue','gray96','red'), brks = seq(-max(abs(sim_data$YYt)), max(abs(sim_data$YYt)), length.out = 50))
+```
+
+This is a scatter plot of the true loadings matrix:
+```{r}
+pop_vec <- rep('A', n)
+plot_loadings(sim_data$LL, pop_vec, legendYN = FALSE)
+```
+
+This is a heatmap of the true loadings matrix:
+```{r}
+plot_heatmap(sim_data$LL)
+```
+
+# symEBcovMF
+```{r}
+symebcovmf_overlap_fit <- sym_ebcovmf_fit(S = sim_data$YYt, ebnm_fn = ebnm_point_exponential, K = 10, maxiter = 100, rank_one_tol = 10^(-8), tol = 10^(-8))
+```
+
+## Progression of ELBO
+```{r}
+symebcovmf_overlap_full_elbo_vec <- symebcovmf_overlap_fit$vec_elbo_full[!(symebcovmf_overlap_fit$vec_elbo_full %in% c(1:length(symebcovmf_overlap_fit$vec_elbo_K)))]
+ggplot() + geom_line(data = NULL, aes(x = 1:length(symebcovmf_overlap_full_elbo_vec), y = symebcovmf_overlap_full_elbo_vec)) + xlab('Iter') + ylab('ELBO')
+```
+
+
+## Visualization of Estimate
+This is a scatter plot of $\hat{L}$, the estimate from symEBcovMF:
+```{r}
+plot_loadings(symebcovmf_overlap_fit$L_pm, pop_vec, legendYN = FALSE)
+```
+
+This is a heatmap of the true loadings matrix:
+```{r}
+plot_heatmap(sim_data$LL)
+```
+
+This is a heatmap of $\hat{L}$. The columns have been permuted to match the true loadings matrix:
+```{r}
+symebcovmf_overlap_fit_L_permuted <- permute_L(symebcovmf_overlap_fit$L_pm, sim_data$LL)
+plot_heatmap(symebcovmf_overlap_fit_L_permuted, brks = seq(0, max(symebcovmf_overlap_fit_L_permuted), length.out = 50))
+```
+
+Note: some of the factors in this heatmap are just zero because the estimate had fewer factors than the true loadings matrix.
+
+```{r}
+ggplot() + geom_point(data = NULL, aes(x = rowSums(sim_data$LL), y = symebcovmf_overlap_fit$lambda[1]*symebcovmf_overlap_fit$L_pm[,1])) + geom_abline(slope = 1, intercept = 1, color = 'red') + ylab('First loadings vector') + xlab('Number of groups each sample is part of')
+```
+
+This is the objective function value attained:
+```{r}
+symebcovmf_overlap_fit$elbo
+```
+
+This is the crossproduct similarity of $\hat{L}$:
+```{r}
+compute_crossprod_similarity(symebcovmf_overlap_fit$L_pm, sim_data$LL)
+```
+
+## Visualization of Fit
+
+This is a heatmap of $\hat{L}\hat{\Lambda}\hat{L}'$:
+```{r}
+symebcovmf_overlap_fitted_vals <- tcrossprod(symebcovmf_overlap_fit$L_pm %*% diag(sqrt(symebcovmf_overlap_fit$lambda)))
+plot_heatmap(symebcovmf_overlap_fitted_vals, brks = seq(0, max(symebcovmf_overlap_fitted_vals), length.out = 50))
+```
+
+This is a scatter plot of fitted values vs. observed values for the off-diagonal entries:
+```{r}
+diag_idx <- seq(1, prod(dim(sim_data$YYt)), length.out = ncol(sim_data$YYt))
+off_diag_idx <- setdiff(c(1:prod(dim(sim_data$YYt))), diag_idx) 
+
+ggplot(data = NULL, aes(x = c(sim_data$YYt)[off_diag_idx], y = c(symebcovmf_overlap_fitted_vals)[off_diag_idx])) + geom_point() + ylim(-1, 3) + xlim(-1,3) + xlab('Observed Values') + ylab('Fitted Values') + geom_abline(slope = 1, intercept = 0, color = 'red')
+```
+
+## Observations
+The symEBcovMF does not do a particularly good job in this setting. First, the method only uses seven factors instead of ten factors. As a result, the estimate will be penalized in the crossproduct similarity metric for using too few factors. The crossproduct similarity for the estimate is 0.598, which is comparable to how PCA performs in this setting. I also tried the method with the generalized binary prior, and it had a similar crossproduct similarity value.
+
+# symEBcovMF with refit step
+
+```{r}
+symebcovmf_overlap_refit_fit <- sym_ebcovmf_fit(S = sim_data$YYt, ebnm_fn = ebnm_point_exponential, K = 10, maxiter = 100, rank_one_tol = 10^(-8), tol = 10^(-8), refit_lam = TRUE)
+```
+
+## Progression of ELBO
+```{r}
+symebcovmf_overlap_refit_full_elbo_vec <- symebcovmf_overlap_refit_fit$vec_elbo_full[!(symebcovmf_overlap_refit_fit$vec_elbo_full %in% c(1:length(symebcovmf_overlap_refit_fit$vec_elbo_K)))]
+ggplot() + geom_line(data = NULL, aes(x = 1:length(symebcovmf_overlap_refit_full_elbo_vec), y = symebcovmf_overlap_refit_full_elbo_vec)) + xlab('Iter') + ylab('ELBO')
+```
+A note: I don't think I save the ELBO value after the refitting step in vec_elbo_full. But the refitting does change this vector since it changes the residual matrix that is used when you add a new vector.
+
+## Visualization of Estimate
+This is a scatter plot of $\hat{L}_{refit}$, the estimate from symEBcovMF:
+```{r}
+plot_loadings(symebcovmf_overlap_refit_fit$L_pm %*% diag(sqrt(symebcovmf_overlap_refit_fit$lambda)), pop_vec, legendYN = FALSE)
+```
+
+This is a heatmap of the true loadings matrix:
+```{r}
+plot_heatmap(sim_data$LL)
+```
+
+This is a heatmap of $\hat{L}_{refit}$. The columns have been permuted to match the true loadings matrix:
+```{r}
+symebcovmf_overlap_refit_fit_L_permuted <- permute_L(symebcovmf_overlap_refit_fit$L_pm, sim_data$LL)
+plot_heatmap(symebcovmf_overlap_refit_fit_L_permuted, brks = seq(0, max(symebcovmf_overlap_refit_fit_L_permuted), length.out = 50))
+```
+
+This is the objective function value attained:
+```{r}
+symebcovmf_overlap_refit_fit$elbo
+```
+
+This is the crossproduct similarity of $\hat{L}_{refit}$:
+```{r}
+compute_crossprod_similarity(symebcovmf_overlap_refit_fit$L_pm, sim_data$LL)
+```
+
+## Visualization of Fit
+
+This is a heatmap of $\hat{L}_{refit}\hat{\Lambda}_{refit}\hat{L}_{refit}'$:
+```{r}
+symebcovmf_overlap_refit_fitted_vals <- tcrossprod(symebcovmf_overlap_refit_fit$L_pm %*% diag(sqrt(symebcovmf_overlap_refit_fit$lambda)))
+plot_heatmap(symebcovmf_overlap_refit_fitted_vals, brks = seq(0, max(symebcovmf_overlap_refit_fitted_vals), length.out = 50))
+```
+
+This is a scatter plot of fitted values vs. observed values for the off-diagonal entries:
+```{r}
+diag_idx <- seq(1, prod(dim(sim_data$YYt)), length.out = ncol(sim_data$YYt))
+off_diag_idx <- setdiff(c(1:prod(dim(sim_data$YYt))), diag_idx) 
+
+ggplot(data = NULL, aes(x = c(sim_data$YYt)[off_diag_idx], y = c(symebcovmf_overlap_refit_fitted_vals)[off_diag_idx])) + geom_point() + ylim(-1, 3) + xlim(-1,3) + xlab('Observed Values') + ylab('Fitted Values') + geom_abline(slope = 1, intercept = 0, color = 'red')
+```
+
+## Observations
+We see that symEBcovMF with the refitting step performs better. The method uses the allotted ten factors, and the estimate had a crossproduct similarity score of 0.846. I did also try the method with the generalized binary prior. The estimate was not as good as that from the point exponential prior, with a crossproduct similarity score of 0.789.
+
+# symEBcovMF with refit step with more factors
+Since we include a refitting step after each factor is added, I'm curious to see if the method can correct itself when allowed to. Therefore, I set Kmax to 20. My intuition is that the method could course correct by reducing the weight on an old factor and then adding a new factor (that is hopefully closer to the true factor) with higher weight.
+
+```{r}
+symebcovmf_overlap_refit_k20_fit <- sym_ebcovmf_fit(S = sim_data$YYt, ebnm_fn = ebnm_point_exponential, K = 20, maxiter = 100, rank_one_tol = 10^(-8), tol = 10^(-8), refit_lam = TRUE)
+```
+
+## Progression of ELBO
+```{r}
+symebcovmf_overlap_refit_k20_full_elbo_vec <- symebcovmf_overlap_refit_k20_fit$vec_elbo_full[!(symebcovmf_overlap_refit_k20_fit$vec_elbo_full %in% c(1:length(symebcovmf_overlap_refit_k20_fit$vec_elbo_K)))]
+ggplot() + geom_line(data = NULL, aes(x = 1:length(symebcovmf_overlap_refit_k20_full_elbo_vec), y = symebcovmf_overlap_refit_k20_full_elbo_vec)) + xlab('Iter') + ylab('ELBO')
+```
+A note: I don't think I save the ELBO value after the refitting step in vec_elbo_full. But the refitting does change this vector since it changes the residual matrix that is used when you add a new vector.
+
+## Visualization of Estimate
+This is a scatter plot of $\hat{L}_{refit-k20}$, the estimate from symEBcovMF:
+```{r}
+plot_loadings(symebcovmf_overlap_refit_k20_fit$L_pm %*% diag(sqrt(symebcovmf_overlap_refit_k20_fit$lambda)), pop_vec, legendYN = FALSE)
+```
+
+This is a heatmap of the true loadings matrix:
+```{r}
+plot_heatmap(sim_data$LL)
+```
+
+This is a heatmap of $\hat{L}_{refit-k20}$ where columns have been permuted to match the true loadings matrix:
+```{r}
+symebcovmf_overlap_refit_k20_fit_L_permuted <- permute_L(symebcovmf_overlap_refit_k20_fit$L_pm, sim_data$LL)
+plot_heatmap(symebcovmf_overlap_refit_k20_fit_L_permuted, brks = seq(0, max(symebcovmf_overlap_refit_k20_fit_L_permuted), length.out = 50))
+```
+Note: the first 10 factors are the ones that match the columns of the true loadings matrix.
+
+This is a heatmap of $\hat{L}_{refit-k20}$. The columns are in the order in which they were added:
+```{r}
+plot_heatmap(symebcovmf_overlap_refit_k20_fit$L_pm %*% diag(sqrt(symebcovmf_overlap_refit_k20_fit$lambda)), brks = seq(0, max(symebcovmf_overlap_refit_k20_fit$L_pm %*% diag(sqrt(symebcovmf_overlap_refit_k20_fit$lambda))), length.out = 50))
+```
+
+This is a heatmap of $\hat{L}_{refit}$ from the previous section:
+```{r}
+plot_heatmap(symebcovmf_overlap_refit_fit$L_pm %*% diag(sqrt(symebcovmf_overlap_refit_fit$lambda)), brks = seq(0, max(symebcovmf_overlap_refit_fit$L_pm %*% diag(sqrt(symebcovmf_overlap_refit_fit$lambda))), length.out = 50))
+```
+
+This is the objective function value attained:
+```{r}
+symebcovmf_overlap_refit_k20_fit$elbo
+```
+
+This is the crossproduct similarity of $\hat{L}_{refit-k20}:
+```{r}
+compute_crossprod_similarity(symebcovmf_overlap_refit_k20_fit$L_pm, sim_data$LL)
+```
+
+## Visualization of Fit
+
+This is a heatmap of $\hat{L}_{refit-k20}\hat{\Lambda}_{refit-k20}\hat{L}_{refit-k20}'$:
+```{r}
+symebcovmf_overlap_refit_k20_fitted_vals <- tcrossprod(symebcovmf_overlap_refit_k20_fit$L_pm %*% diag(sqrt(symebcovmf_overlap_refit_k20_fit$lambda)))
+plot_heatmap(symebcovmf_overlap_refit_k20_fitted_vals, brks = seq(0, max(symebcovmf_overlap_refit_k20_fitted_vals), length.out = 50))
+```
+
+This is a scatter plot of fitted values vs. observed values for the off-diagonal entries:
+```{r}
+diag_idx <- seq(1, prod(dim(sim_data$YYt)), length.out = ncol(sim_data$YYt))
+off_diag_idx <- setdiff(c(1:prod(dim(sim_data$YYt))), diag_idx) 
+
+ggplot(data = NULL, aes(x = c(sim_data$YYt)[off_diag_idx], y = c(symebcovmf_overlap_refit_k20_fitted_vals)[off_diag_idx])) + geom_point() + ylim(-1, 3) + xlim(-1,3) + xlab('Observed Values') + ylab('Fitted Values') + geom_abline(slope = 1, intercept = 0, color = 'red')
+```
+
+## Observations
+Letting `Kmax` be a larger value allowed the method to find an estimate with a better crossproduct similarity score. This makes sense as the estimate is allowed to add more factors and thus has more chances to recover the true structure. Furthermore, the crossproduct similarity score does not penalize a method for finding more factors. The resulting estimate contains 19 factors. There are a couple of explanations for the extra factors. The first is that the method is finding spurious patterns. The second is the method is down-weighting some of the old factors and adding new factors. In this example, it seems like the original first factor was down-weighted. The extra factor budget did allow the method to recover some additional factors that it had not recovered when only allowed 10 factors. The last factors it adds are very sparse, and look like subsets of existing factors. Perhaps those factors are trying to fill in some of the gaps where the fitted values don't exactly match the observed values. In the previous fit, there were a couple of values whose observed values corresponded to one but the fitted values were zero. However, in this fit, we don't have any points where that is the case.
+
+I also tried the generalized binary prior and saw similar behavior. The method with the generalized binary prior only added 13 factors. The crossproduct similarity score was a little higher at 0.961.
