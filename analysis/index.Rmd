@@ -11,7 +11,7 @@ editor_options:
 This site is for further exploring symmetric covariance decomposition methods.  
 
 Main takeways thus far:  
-* For symEBcovMF, refitting the lambda values after a new factor is added helps improve the fit. This is seen in the balanced, nonoverlapping analysis [here](symebcovmf_bal_nonoverlap.html). It can also help the method find a more complete representation. This is especially apparent in the tree setting analysis [here](symebcovmf_tree.html).
+* For symEBcovMF, refitting the lambda values after a new factor is added helps improve the fit. This is seen in the balanced, nonoverlapping analysis [here](symebcovmf_bal_nonoverlap.html). It can also help the method find a more complete representation. This is especially apparent in the tree setting analysis [here](symebcovmf_tree.html).  
 * For the sparse overlapping setting, the method performs better when the Kmax parameter is set to a larger number. This is seen in the analysis [here](symebcovmf_overlap.html).  
 
 symEBcovMF analyses:    
