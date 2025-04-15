@@ -1,0 +1,240 @@
+---
+title: "symebcovmf_tree_exploration"
+author: "Annie Xie"
+date: "2025-04-15"
+output: 
+  workflowr::wflow_html:
+    code_folding: hide
+editor_options:
+  chunk_output_type: console
+---
+
+# Introduction
+In this example, we further explore symEBcovMF on tree data.
+
+# Packages and Functions
+
+```{r}
+library(ebnm)
+library(pheatmap)
+library(ggplot2)
+```
+
+```{r}
+plot_heatmap <- function(L, title = "", colors_range = c("gray96", "red"), brks = NULL){
+  ### define the color map
+  cols <- colorRampPalette(colors_range)(49)
+  if (is.null(brks) == TRUE){
+    brks <- seq(min(L), max(L), length=50)
+  }
+  
+  plt <- pheatmap(L, show_rownames = FALSE, show_colnames = FALSE, cluster_rows = FALSE, cluster_cols = FALSE, color = cols, breaks = brks, main = title)
+  return(plt)
+}
+
+plot_loadings <- function(L_est, Pop, legendYN = TRUE, scales_option = "fixed"){
+  # options for scales_option are "fixed" and "free_y"
+  n <- nrow(L_est)
+  k <- ncol(L_est)
+  Idx <- rep(c(1:n), k)
+  Loading <- c(L_est)
+  Factor <- paste0('k=',c(sapply(c(1:k), function(x, n){rep(x, n)}, n = n)))
+  tib <- data.frame(Idx, Loading, Factor, Pop)
+  plt <- ggplot(tib, aes(x = Idx, y = Loading, col = Pop)) +
+    geom_point(show.legend = legendYN) +
+    geom_hline(yintercept = 0, linetype = "dashed") +
+    facet_grid(cols = vars(Factor), scales = scales_option) +
+    theme(axis.title.x = element_blank(),
+          axis.title.y = element_blank(),
+          axis.ticks.x = element_blank(),
+          axis.ticks.y = element_blank(),
+          axis.text.x = element_blank(),
+          axis.text.y = element_blank(),
+          panel.spacing = unit(1, "lines"))
+  plot(plt)
+}
+```
+
+```{r}
+source('code/symebcovmf_functions.R')
+```
+
+# Data Generation
+
+```{r}
+sim_4pops <- function(args) {
+  set.seed(args$seed)
+  
+  n <- sum(args$pop_sizes)
+  p <- args$n_genes
+  
+  FF <- matrix(rnorm(7 * p, sd = rep(args$branch_sds, each = p)), ncol = 7)
+  # if (args$constrain_F) {
+  #   FF_svd <- svd(FF)
+  #   FF <- FF_svd$u
+  #   FF <- t(t(FF) * branch_sds * sqrt(p))
+  # }
+  
+  LL <- matrix(0, nrow = n, ncol = 7)
+  LL[, 1] <- 1
+  LL[, 2] <- rep(c(1, 1, 0, 0), times = args$pop_sizes)
+  LL[, 3] <- rep(c(0, 0, 1, 1), times = args$pop_sizes)
+  LL[, 4] <- rep(c(1, 0, 0, 0), times = args$pop_sizes)
+  LL[, 5] <- rep(c(0, 1, 0, 0), times = args$pop_sizes)
+  LL[, 6] <- rep(c(0, 0, 1, 0), times = args$pop_sizes)
+  LL[, 7] <- rep(c(0, 0, 0, 1), times = args$pop_sizes)
+  
+  E <- matrix(rnorm(n * p, sd = args$indiv_sd), nrow = n)
+  Y <- LL %*% t(FF) + E
+  YYt <- (1/p)*tcrossprod(Y)
+  return(list(Y = Y, YYt = YYt, LL = LL, FF = FF, K = ncol(LL)))
+}
+```
+
+```{r}
+sim_args = list(pop_sizes = rep(40, 4), n_genes = 1000, branch_sds = rep(2,7), indiv_sd = 1, seed = 1)
+sim_data <- sim_4pops(sim_args)
+```
+
+This is a heatmap of the scaled Gram matrix:
+```{r}
+plot_heatmap(sim_data$YYt, colors_range = c('blue','gray96','red'), brks = seq(-max(abs(sim_data$YYt)), max(abs(sim_data$YYt)), length.out = 50))
+```
+
+This is a scatter plot of the true loadings matrix:
+```{r}
+pop_vec <- c(rep('A', 40), rep('B', 40), rep('C', 40), rep('D', 40))
+plot_loadings(sim_data$LL, pop_vec)
+```
+
+This is a plot of the eigenvalues of the Gram matrix:
+```{r}
+S_eigen <- eigen(sim_data$YYt)
+plot(S_eigen$values) + abline(a = 0, b = 0, col = 'red')
+```
+
+This is the minimum eigenvalue:
+```{r}
+min(S_eigen$values)
+```
+
+# symEBcovMF Set Up
+
+I am particularly interested in when the fourth factor is fit. So I will start by fitting three factors.
+
+```{r}
+symebcovmf_exp_init_fit <- sym_ebcovmf_fit(S = sim_data$YYt, ebnm_fn = ebnm::ebnm_point_exponential, K = 3, maxiter = 500, rank_one_tol = 10^(-8), tol = 10^(-8), refit_lam = TRUE)
+```
+
+```{r}
+symebcovmf_gb_init_fit <- sym_ebcovmf_fit(S = sim_data$YYt, ebnm_fn = ebnm::ebnm_generalized_binary, K = 3, maxiter = 500, rank_one_tol = 10^(-8), tol = 10^(-8), refit_lam = TRUE)
+```
+
+This is a scatter plot of $\hat{L}_{exp}$, the estimate from symEBcovMF with point-exp prior:
+```{r}
+bal_pops <- c(rep('A', 40), rep('B', 40), rep('C', 40), rep('D', 40))
+plot_loadings(symebcovmf_exp_init_fit$L_pm %*% diag(sqrt(symebcovmf_exp_init_fit$lambda)), bal_pops)
+```
+
+This is a scatter plot of $\hat{L}_{gb}$, the estimate from symEBcovMF with gb prior:
+```{r}
+plot_loadings(symebcovmf_gb_init_fit$L_pm %*% diag(sqrt(symebcovmf_gb_init_fit$lambda)), bal_pops)
+```
+
+This is a plot of the eigenvalues of the residual matrix for point-exp prior:
+```{r}
+resid_exp_eigen <- eigen(sim_data$YYt - tcrossprod(symebcovmf_exp_init_fit$L_pm %*% diag(sqrt(symebcovmf_exp_init_fit$lambda), ncol = 1)))
+plot(resid_exp_eigen$values) + abline(h=0, col = 'red')
+```
+
+```{r}
+min(resid_exp_eigen$values)
+```
+
+This is a plot of the eigenvalues of the residual matrix for gb prior:
+```{r}
+resid_gb_eigen <- eigen(sim_data$YYt - tcrossprod(symebcovmf_gb_init_fit$L_pm %*% diag(sqrt(symebcovmf_gb_init_fit$lambda), ncol = 1)))
+plot(resid_gb_eigen$values) + abline(h=0, col = 'red')
+```
+
+```{r}
+min(resid_gb_eigen$values)
+```
+
+# Fitting the fourth factor
+
+## Point-exponential prior
+```{r}
+symebcovmf_exp_fit <- sym_ebcovmf_r1_fit(sim_data$YYt, symebcovmf_exp_init_fit, ebnm_fn = ebnm::ebnm_point_exponential, maxiter = 500, tol = 10^(-8))
+symebcovmf_exp_fit <- refit_lambda(sim_data$YYt, symebcovmf_exp_fit)
+```
+
+### Visualization of Estimate
+```{r}
+plot(symebcovmf_exp_fit$L_pm[,4])
+```
+
+### Visualization of ELBO
+
+This is a plot of the progression of the ELBO:
+```{r}
+idx <- which(symebcovmf_exp_fit$vec_elbo_full == 4)
+plot(symebcovmf_exp_fit$vec_elbo_full[-c(1:idx)], type = 'b', xlab = 'Iter', ylab = 'ELBO') 
+```
+
+### Progression of Estimate
+```{r}
+R <- sim_data$YYt - tcrossprod(symebcovmf_exp_init_fit$L_pm %*% diag(sqrt(symebcovmf_exp_init_fit$lambda), ncol = 3))
+estimates_exp_list <- list(sym_ebcovmf_r1_init(R)$v)
+for (i in 1:13){
+  estimates_exp_list[[(i+1)]] <- sym_ebcovmf_r1_fit(sim_data$YYt, symebcovmf_exp_init_fit, ebnm_fn = ebnm::ebnm_point_exponential, maxiter = i, tol = 10^(-8))$L_pm[,4]
+}
+```
+
+```{r}
+par(mfrow = c(7,2), mar = c(2, 2, 1, 1) + 0.1)
+for (i in 1:14){
+  plot(estimates_exp_list[[i]], main = paste('Iter', (i-1)), ylab = 'L')
+}
+par(mfrow = c(1,1))
+```
+
+## Generalized binary prior
+```{r}
+symebcovmf_gb_fit <- sym_ebcovmf_r1_fit(sim_data$YYt, symebcovmf_gb_init_fit, ebnm_fn = ebnm::ebnm_generalized_binary, maxiter = 500, tol = 10^(-8))
+symebcovmf_gb_fit <- refit_lambda(sim_data$YYt, symebcovmf_gb_fit)
+```
+
+### Visualization of Estimate
+```{r}
+plot(symebcovmf_gb_fit$L_pm[,4])
+```
+
+### Visualization of ELBO
+
+This is a plot of the progression of the ELBO:
+```{r}
+idx <- which(symebcovmf_gb_fit$vec_elbo_full == 4)
+plot(symebcovmf_gb_fit$vec_elbo_full[-c(1:idx)], type = 'b', xlab = 'Iter', ylab = 'ELBO') 
+```
+
+### Progression of Estimate
+```{r}
+R <- sim_data$YYt - tcrossprod(symebcovmf_gb_init_fit$L_pm %*% diag(sqrt(symebcovmf_gb_init_fit$lambda), ncol = 3))
+estimates_gb_list <- list(sym_ebcovmf_r1_init(R)$v)
+for (i in 1:11){
+  estimates_gb_list[[(i+1)]] <- sym_ebcovmf_r1_fit(sim_data$YYt, symebcovmf_gb_init_fit, ebnm_fn = ebnm::ebnm_generalized_binary, maxiter = i, tol = 10^(-8))$L_pm[,4]
+}
+```
+
+```{r}
+par(mfrow = c(6,2), mar = c(2, 2, 1, 1) + 0.1)
+max_y <- max(sapply(estimates_gb_list, max))
+for (i in 1:12){
+  plot(estimates_gb_list[[i]], main = paste('Iter', (i-1)), ylab = 'L', ylim = c(0, max_y))
+}
+par(mfrow = c(1,1))
+```
+
+## Observations
+We can see that point-exponential prior is able to find a sparser solution in this setting. On the other hand, the generalized binary prior found a less sparse, binary solution. Something to try in the future: if I initialize the generalized-binary prior fit with the correct factor, will it recover something close to the correct factor? General question: how sensitive is the generalized binary prior to initialization? My guess is it would be pretty sensitive.
