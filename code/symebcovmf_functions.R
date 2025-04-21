@@ -161,7 +161,8 @@ sym_ebcovmf_init <- function(S){
   return(sym_ebcovmf_obj)
 }
 
-sym_ebcovmf_r1_fit <- function(S, sym_ebcovmf_obj, ebnm_fn, maxiter, tol){
+
+sym_ebcovmf_r1_fit <- function(S, sym_ebcovmf_obj, ebnm_fn, maxiter, tol, v_init = NULL){
   if (is.null(sym_ebcovmf_obj$L_pm) == FALSE){
     K <- length(sym_ebcovmf_obj$lambda) + 1
     R <- S - tcrossprod(sym_ebcovmf_obj$L_pm %*% diag(sqrt(sym_ebcovmf_obj$lambda), ncol = (K-1)))
@@ -174,9 +175,15 @@ sym_ebcovmf_r1_fit <- function(S, sym_ebcovmf_obj, ebnm_fn, maxiter, tol){
   sym_ebcovmf_obj.old <- sym_ebcovmf_obj
   
   # initialize estimate for l
-  sym_ebcovmf_v_init <- sym_ebcovmf_r1_init(R)
-  v <- sym_ebcovmf_v_init$v
-  lambda_k <- sym_ebcovmf_v_init$lambda_k
+  if (is.null(v_init) == TRUE){
+    sym_ebcovmf_v_init <- sym_ebcovmf_r1_init(R)
+    v <- sym_ebcovmf_v_init$v
+    lambda_k <- sym_ebcovmf_v_init$lambda_k
+  } else {
+    v <- v_init
+    v <- v/sqrt(sum(v^2))
+    lambda_k <- drop(t(v) %*% R %*% v)
+  }
   
   # initialize other values
   R2 <- R2k - lambda_k^2
