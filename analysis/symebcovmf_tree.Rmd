@@ -164,10 +164,20 @@ ggplot(data = NULL, aes(x = c(sim_data$YYt)[off_diag_idx], y = c(symebcovmf_tree
 
 ## Visualization of Residual Matrix
 
-For comparison, I also plot a heatmap of $S - \sum_{k=1}^{3} \hat{\lambda}_k \hat{\ell}_k \hat{\ell}_k$ where $\hat{\lambda}_k$ and $\hat{\ell}_k$ are estimates from symEBcovMF with the refitting step:
+For comparison, I also plot a heatmap of $S - \sum_{k=1}^{3} \hat{\lambda}_k \hat{\ell}_k \hat{\ell}_k$ where $\hat{\lambda}_k$ and $\hat{\ell}_k$ are estimates from symEBcovMF with the refitting step (note: in this visualization, we are using the estimate fit with 7 factors):
 ```{r}
 symebcovmf_tree_refit_resid <- sim_data$YYt - tcrossprod(symebcovmf_tree_refit_fit$L_pm[,c(1:3)] %*% diag(sqrt(symebcovmf_tree_refit_fit$lambda[1:3])))
-plot_heatmap(symebcovmf_tree_refit_resid, colors_range = c('blue','gray96','red'), brks = seq(-max(abs(symebcovmf_tree_refit_resid)), max(abs(symebcovmf_tree_resid)), length.out = 50))
+plot_heatmap(symebcovmf_tree_refit_resid, colors_range = c('blue','gray96','red'), brks = seq(-max(abs(symebcovmf_tree_refit_resid)), max(abs(symebcovmf_tree_refit_resid)), length.out = 50))
+```
+
+Here, I plot a heatmap of $S - \sum_{k=1}^{3} \hat{\lambda}_k \hat{\ell}_k \hat{\ell}_k$ where $\hat{\lambda}_k$ and $\hat{\ell}_k$ are estimates from symEBcovMF with the refitting step and Kmax = 3:
+```{r}
+symebcovmf_tree_refit_k3_fit <- sym_ebcovmf_fit(S = sim_data$YYt, ebnm_fn = ebnm_point_exponential, K = 3, maxiter = 100, rank_one_tol = 10^(-8), tol = 10^(-8), refit_lam = TRUE)
+```
+
+```{r}
+symebcovmf_tree_refit_k3_resid <- sim_data$YYt - tcrossprod(symebcovmf_tree_refit_k3_fit$L_pm %*% diag(sqrt(symebcovmf_tree_refit_k3_fit$lambda)))
+plot_heatmap(symebcovmf_tree_refit_k3_resid, colors_range = c('blue','gray96','red'), brks = seq(-max(abs(symebcovmf_tree_refit_k3_resid)), max(abs(symebcovmf_tree_refit_k3_resid)), length.out = 50))
 ```
 
 ## Observations
