@@ -1,0 +1,95 @@
+---
+title: "symebcovmf_null"
+author: "Annie Xie"
+date: "2025-04-21"
+output: 
+  workflowr::wflow_html:
+    code_folding: hide
+editor_options:
+  chunk_output_type: console
+---
+
+# Introduction
+In this example, we test out symEBcovMF on a null dataset -- the data matrix $X$ is generated from normal noise and then $S = XX'$ is formed.
+
+# Example
+
+```{r}
+library(ebnm)
+library(pheatmap)
+library(ggplot2)
+```
+
+```{r}
+source('code/symebcovmf_functions.R')
+source('code/visualization_functions.R')
+```
+
+## Data Generation
+
+```{r}
+sim_null_data <- function(args) {
+  set.seed(args$seed)
+  
+  Y <- matrix(rnorm(args$n * args$p, sd = args$indiv_sd), nrow = n)
+  YYt <- (1/args$p)*tcrossprod(Y)
+  
+  return(list(Y = Y, YYt = YYt))
+}
+```
+
+```{r}
+n <- 200
+p <- 1000
+indiv_sd <- 1
+seed <- 1
+sim_args = list(n = n, p = p, indiv_sd = indiv_sd, seed = seed)
+sim_data <- sim_null_data(sim_args)
+```
+
+This is a heatmap of the scaled Gram matrix:
+```{r}
+plot_heatmap(sim_data$YYt, colors_range = c('blue','gray96','red'), brks = seq(-max(abs(sim_data$YYt)), max(abs(sim_data$YYt)), length.out = 50))
+```
+
+# symEBcovMF
+```{r}
+symebcovmf_fit <- sym_ebcovmf_fit(S = sim_data$YYt, ebnm_fn = ebnm_point_exponential, K = 1, maxiter = 100, rank_one_tol = 10^(-8), tol = 10^(-8), refit_lam = FALSE)
+```
+
+## Progression of ELBO
+```{r}
+symebcovmf_full_elbo_vec <- symebcovmf_fit$vec_elbo_full[!(symebcovmf_fit$vec_elbo_full %in% c(1:length(symebcovmf_fit$vec_elbo_K)))]
+ggplot() + geom_line(data = NULL, aes(x = 1:length(symebcovmf_full_elbo_vec), y = symebcovmf_full_elbo_vec)) + xlab('Iter') + ylab('ELBO')
+```
+
+## Visualization of Estimate
+This is a scatter plot of $\hat{L}$, the estimate from symEBcovMF:
+```{r}
+pop_vec <- rep('A', n)
+plot_loadings(symebcovmf_fit$L_pm %*% diag(sqrt(symebcovmf_fit$lambda), ncol = length(symebcovmf_fit$lambda)), pop_vec, legendYN = FALSE)
+```
+
+This is the objective function value attained:
+```{r}
+symebcovmf_fit$elbo
+```
+
+## Visualization of Fit
+
+This is a heatmap of $\hat{L}\hat{\Lambda}\hat{L}'$:
+```{r}
+symebcovmf_fitted_vals <- tcrossprod(symebcovmf_fit$L_pm %*% diag(sqrt(symebcovmf_fit$lambda), ncol = length(symebcovmf_fit$lambda)))
+plot_heatmap(symebcovmf_fitted_vals, brks = seq(0, max(symebcovmf_fitted_vals), length.out = 50))
+```
+
+This is a scatter plot of fitted values vs. observed values for the off-diagonal entries:
+```{r}
+diag_idx <- seq(1, prod(dim(sim_data$YYt)), length.out = ncol(sim_data$YYt))
+off_diag_idx <- setdiff(c(1:prod(dim(sim_data$YYt))), diag_idx) 
+
+ggplot(data = NULL, aes(x = c(sim_data$YYt)[off_diag_idx], y = c(symebcovmf_fitted_vals)[off_diag_idx])) + geom_point() + ylim(-0.5, 0.5) + xlim(-0.5,0.5) + xlab('Observed Values') + ylab('Fitted Values') + geom_abline(slope = 1, intercept = 0, color = 'red')
+```
+
+## Observations
+In this null setting, we would hope that the method would not recover any factors. However, the method does find factors to add. I tested Kmax = 1, 10, 50, 100, and 200, and in all settings, the method utilizes the full factor allowance (i.e. for Kmax = 100, the method adds 100 factors). Flash also has this behavior in the covariance space. Some questions of interest: 1) Why does this happen? Is it because of model misspecification? 2) How can we remedy this? Matthew thought that the estimation of $\sigma^2$ could help.
