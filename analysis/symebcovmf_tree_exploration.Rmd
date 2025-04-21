@@ -184,8 +184,8 @@ plot(symebcovmf_exp_fit$vec_elbo_full[-c(1:idx)], type = 'b', xlab = 'Iter', yla
 
 ### Progression of Estimate
 ```{r}
-R <- sim_data$YYt - tcrossprod(symebcovmf_exp_init_fit$L_pm %*% diag(sqrt(symebcovmf_exp_init_fit$lambda), ncol = 3))
-estimates_exp_list <- list(sym_ebcovmf_r1_init(R)$v)
+R_exp <- sim_data$YYt - tcrossprod(symebcovmf_exp_init_fit$L_pm %*% diag(sqrt(symebcovmf_exp_init_fit$lambda), ncol = 3))
+estimates_exp_list <- list(sym_ebcovmf_r1_init(R_exp)$v)
 for (i in 1:13){
   estimates_exp_list[[(i+1)]] <- sym_ebcovmf_r1_fit(sim_data$YYt, symebcovmf_exp_init_fit, ebnm_fn = ebnm::ebnm_point_exponential, maxiter = i, tol = 10^(-8))$L_pm[,4]
 }
@@ -197,6 +197,10 @@ for (i in 1:14){
   plot(estimates_exp_list[[i]], main = paste('Iter', (i-1)), ylab = 'L')
 }
 par(mfrow = c(1,1))
+```
+
+```{r}
+plot_heatmap(R_exp, colors_range = c('blue','gray96','red'), brks = seq(-max(abs(R_exp)), max(abs(R_exp)), length.out = 50))
 ```
 
 ## Generalized binary prior
@@ -220,8 +224,8 @@ plot(symebcovmf_gb_fit$vec_elbo_full[-c(1:idx)], type = 'b', xlab = 'Iter', ylab
 
 ### Progression of Estimate
 ```{r}
-R <- sim_data$YYt - tcrossprod(symebcovmf_gb_init_fit$L_pm %*% diag(sqrt(symebcovmf_gb_init_fit$lambda), ncol = 3))
-estimates_gb_list <- list(sym_ebcovmf_r1_init(R)$v)
+R_gb <- sim_data$YYt - tcrossprod(symebcovmf_gb_init_fit$L_pm %*% diag(sqrt(symebcovmf_gb_init_fit$lambda), ncol = 3))
+estimates_gb_list <- list(sym_ebcovmf_r1_init(R_gb)$v)
 for (i in 1:11){
   estimates_gb_list[[(i+1)]] <- sym_ebcovmf_r1_fit(sim_data$YYt, symebcovmf_gb_init_fit, ebnm_fn = ebnm::ebnm_generalized_binary, maxiter = i, tol = 10^(-8))$L_pm[,4]
 }
@@ -230,11 +234,98 @@ for (i in 1:11){
 ```{r}
 par(mfrow = c(6,2), mar = c(2, 2, 1, 1) + 0.1)
 max_y <- max(sapply(estimates_gb_list, max))
+min_y <- min(sapply(estimates_gb_list, min))
 for (i in 1:12){
-  plot(estimates_gb_list[[i]], main = paste('Iter', (i-1)), ylab = 'L', ylim = c(0, max_y))
+  plot(estimates_gb_list[[i]], main = paste('Iter', (i-1)), ylab = 'L', ylim = c(min_y, max_y))
 }
 par(mfrow = c(1,1))
 ```
 
+
+```{r}
+plot_heatmap(R_gb, colors_range = c('blue','gray96','red'), brks = seq(-max(abs(R_gb)), max(abs(R_gb)), length.out = 50))
+```
+
 ## Observations
 We can see that point-exponential prior is able to find a sparser solution in this setting. On the other hand, the generalized binary prior found a less sparse, binary solution. Something to try in the future: if I initialize the generalized-binary prior fit with the correct factor, will it recover something close to the correct factor? General question: how sensitive is the generalized binary prior to initialization? My guess is it would be pretty sensitive.
+
+# Mixing point-exponential and generalized binary
+I want to try fitting the fourth factor with a point-exponential prior, but using the generalized-binary fit for the first three factors. I'm interested in this because I am interested in developing an procedure that uses the point-exponential prior as an initialization, and then refines the fit with a binary or generalized-binary prior.
+
+## Point-exponential prior 
+```{r}
+symebcovmf_exp_gb_fit <- sym_ebcovmf_r1_fit(sim_data$YYt, symebcovmf_gb_init_fit, ebnm_fn = ebnm::ebnm_point_exponential, maxiter = 500, tol = 10^(-8))
+symebcovmf_exp_gb_fit <- refit_lambda(sim_data$YYt, symebcovmf_exp_gb_fit)
+```
+
+### Visualization of Estimate
+```{r}
+plot(symebcovmf_exp_gb_fit$L_pm[,4])
+```
+
+### Visualization of ELBO
+
+This is a plot of the progression of the ELBO:
+```{r}
+idx <- which(symebcovmf_exp_gb_fit$vec_elbo_full == 4)
+plot(symebcovmf_exp_gb_fit$vec_elbo_full[-c(1:idx)], type = 'b', xlab = 'Iter', ylab = 'ELBO') 
+```
+
+### Progression of Estimate
+```{r}
+#R_gb <- sim_data$YYt - tcrossprod(symebcovmf_gb_init_fit$L_pm %*% diag(sqrt(symebcovmf_gb_init_fit$lambda), ncol = 3))
+estimates_exp_gb_list <- list(sym_ebcovmf_r1_init(R_gb)$v)
+for (i in 1:13){
+  estimates_exp_gb_list[[(i+1)]] <- sym_ebcovmf_r1_fit(sim_data$YYt, symebcovmf_gb_init_fit, ebnm_fn = ebnm::ebnm_point_exponential, maxiter = i, tol = 10^(-8))$L_pm[,4]
+}
+```
+
+```{r}
+par(mfrow = c(7,2), mar = c(2, 2, 1, 1) + 0.1)
+for (i in 1:14){
+  plot(estimates_exp_gb_list[[i]], main = paste('Iter', (i-1)), ylab = 'L')
+}
+par(mfrow = c(1,1))
+```
+
+### Observations
+Using the point-exponential prior to fit the fourth factor from the generalized-binary fit, we see that the fourth factor does not capture a singular population effect. Instead, it captures two populations. This suggests that the point-exponential prior alone may not be enough to get a sparse solution. Looking at the residual matrices and the eigenvalues, it looks like there is better separation between the first and second eigenvalue of the residual matrix from the point-exponential fit compared to that of the generalized-binary fit. Therefore, that may make it easier for the method to find only one population effect as a factor vs. grouping together effects. 
+
+## Generalized binary prior 
+```{r}
+symebcovmf_gb_exp_fit <- sym_ebcovmf_r1_fit(sim_data$YYt, symebcovmf_exp_init_fit, ebnm_fn = ebnm::ebnm_generalized_binary, maxiter = 500, tol = 10^(-8))
+symebcovmf_gb_exp_fit <- refit_lambda(sim_data$YYt, symebcovmf_gb_exp_fit)
+```
+
+### Visualization of Estimate
+```{r}
+plot(symebcovmf_gb_exp_fit$L_pm[,4])
+```
+
+### Visualization of ELBO
+
+This is a plot of the progression of the ELBO:
+```{r}
+idx <- which(symebcovmf_gb_exp_fit$vec_elbo_full == 4)
+plot(symebcovmf_gb_exp_fit$vec_elbo_full[-c(1:idx)], type = 'b', xlab = 'Iter', ylab = 'ELBO') 
+```
+
+### Progression of Estimate
+```{r}
+#R_gb <- sim_data$YYt - tcrossprod(symebcovmf_gb_init_fit$L_pm %*% diag(sqrt(symebcovmf_gb_init_fit$lambda), ncol = 3))
+estimates_gb_exp_list <- list(sym_ebcovmf_r1_init(R_exp)$v)
+for (i in 1:15){
+  estimates_gb_exp_list[[(i+1)]] <- sym_ebcovmf_r1_fit(sim_data$YYt, symebcovmf_exp_init_fit, ebnm_fn = ebnm::ebnm_generalized_binary, maxiter = i, tol = 10^(-8))$L_pm[,4]
+}
+```
+
+```{r}
+par(mfrow = c(8,2), mar = c(1.5, 1.5, 1, 1) + 0.1)
+for (i in 1:16){
+  plot(estimates_gb_exp_list[[i]], main = paste('Iter', (i-1)), ylab = 'L')
+}
+par(mfrow = c(1,1))
+```
+
+### Observations
+Using generalized binary for the fourth factor on the point-exponential fit yields an estimate that does not look like a population effect. Similar to other estimates, the factor captures the effect of two populations. Comparing generalized binary and point-exponential for fitting the fourth factor on the point-exponential fit, we see that the point-exponential prior is better at yielding sparse estimates than generalized-binary. The estimate that generalized binary finds is in line with what the prior encourages. Note that since we are using the generalized binary prior, there is nothing constraining the prior to be exactly binary.
