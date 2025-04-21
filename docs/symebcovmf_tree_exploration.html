@@ -534,15 +534,15 @@ project makes it easier to run your code on other machines.</p>
 <div class="panel panel-default">
 <div class="panel-heading">
 <p class="panel-title">
-<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomxxie6symmetriccovariancedecompositiontree0c0833ce3d6862f97f35871f914d36cdcad60f4atargetblank0c0833ca">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomxxie6symmetriccovariancedecompositiontree1adca4d545200629b644df42a2eb318a096f07c5targetblank1adca4da">
 <span class="glyphicon glyphicon-ok text-success"
 aria-hidden="true"></span> <strong>Repository version:</strong>
-<a href="https://github.com/xxie6/symmetric_covariance_decomposition/tree/0c0833ce3d6862f97f35871f914d36cdcad60f4a" target="_blank">0c0833c</a>
+<a href="https://github.com/xxie6/symmetric_covariance_decomposition/tree/1adca4d545200629b644df42a2eb318a096f07c5" target="_blank">1adca4d</a>
 </a>
 </p>
 </div>
 <div
-id="strongRepositoryversionstrongahrefhttpsgithubcomxxie6symmetriccovariancedecompositiontree0c0833ce3d6862f97f35871f914d36cdcad60f4atargetblank0c0833ca"
+id="strongRepositoryversionstrongahrefhttpsgithubcomxxie6symmetriccovariancedecompositiontree1adca4d545200629b644df42a2eb318a096f07c5targetblank1adca4da"
 class="panel-collapse collapse">
 <div class="panel-body">
 <p>
@@ -552,7 +552,7 @@ reproducibility.
 </p>
 <p>
 The results in this page were generated with repository version
-<a href="https://github.com/xxie6/symmetric_covariance_decomposition/tree/0c0833ce3d6862f97f35871f914d36cdcad60f4a" target="_blank">0c0833c</a>.
+<a href="https://github.com/xxie6/symmetric_covariance_decomposition/tree/1adca4d545200629b644df42a2eb318a096f07c5" target="_blank">1adca4d</a>.
 See the <em>Past versions</em> tab to see a history of the changes made
 to the R Markdown and HTML files.
 </p>
@@ -569,6 +569,9 @@ were generated:
 Ignored files:
     Ignored:    .DS_Store
     Ignored:    .Rhistory
+
+Untracked files:
+    Untracked:  analysis/symebcovmf_point_exp_init.Rmd
 
 </code></pre>
 <p>
@@ -615,6 +618,40 @@ Message
 </tr>
 </thead>
 <tbody>
+<tr>
+<td>
+Rmd
+</td>
+<td>
+<a href="https://github.com/xxie6/symmetric_covariance_decomposition/blob/1adca4d545200629b644df42a2eb318a096f07c5/analysis/symebcovmf_tree_exploration.Rmd" target="_blank">1adca4d</a>
+</td>
+<td>
+Annie Xie
+</td>
+<td>
+2025-04-21
+</td>
+<td>
+Edit source location of visualization functions
+</td>
+</tr>
+<tr>
+<td>
+html
+</td>
+<td>
+<a href="https://rawcdn.githack.com/xxie6/symmetric_covariance_decomposition/bbe75343a2b997f1e4589d54d213ffe6f98f7fed/docs/symebcovmf_tree_exploration.html" target="_blank">bbe7534</a>
+</td>
+<td>
+Annie Xie
+</td>
+<td>
+2025-04-21
+</td>
+<td>
+Build site.
+</td>
+</tr>
 <tr>
 <td>
 Rmd
@@ -682,39 +719,8 @@ Add comparison of priors in tree setting
 <pre class="r"><code>library(ebnm)
 library(pheatmap)
 library(ggplot2)</code></pre>
-<pre class="r"><code>plot_heatmap &lt;- function(L, title = &quot;&quot;, colors_range = c(&quot;gray96&quot;, &quot;red&quot;), brks = NULL){
-  ### define the color map
-  cols &lt;- colorRampPalette(colors_range)(49)
-  if (is.null(brks) == TRUE){
-    brks &lt;- seq(min(L), max(L), length=50)
-  }
-  
-  plt &lt;- pheatmap(L, show_rownames = FALSE, show_colnames = FALSE, cluster_rows = FALSE, cluster_cols = FALSE, color = cols, breaks = brks, main = title)
-  return(plt)
-}
-
-plot_loadings &lt;- function(L_est, Pop, legendYN = TRUE, scales_option = &quot;fixed&quot;){
-  # options for scales_option are &quot;fixed&quot; and &quot;free_y&quot;
-  n &lt;- nrow(L_est)
-  k &lt;- ncol(L_est)
-  Idx &lt;- rep(c(1:n), k)
-  Loading &lt;- c(L_est)
-  Factor &lt;- paste0(&#39;k=&#39;,c(sapply(c(1:k), function(x, n){rep(x, n)}, n = n)))
-  tib &lt;- data.frame(Idx, Loading, Factor, Pop)
-  plt &lt;- ggplot(tib, aes(x = Idx, y = Loading, col = Pop)) +
-    geom_point(show.legend = legendYN) +
-    geom_hline(yintercept = 0, linetype = &quot;dashed&quot;) +
-    facet_grid(cols = vars(Factor), scales = scales_option) +
-    theme(axis.title.x = element_blank(),
-          axis.title.y = element_blank(),
-          axis.ticks.x = element_blank(),
-          axis.ticks.y = element_blank(),
-          axis.text.x = element_blank(),
-          axis.text.y = element_blank(),
-          panel.spacing = unit(1, &quot;lines&quot;))
-  plot(plt)
-}</code></pre>
-<pre class="r"><code>source(&#39;code/symebcovmf_functions.R&#39;)</code></pre>
+<pre class="r"><code>source(&#39;code/visualization_functions.R&#39;)
+source(&#39;code/symebcovmf_functions.R&#39;)</code></pre>
 </div>
 <div id="data-generation" class="section level1">
 <h1>Data Generation</h1>
@@ -749,6 +755,10 @@ plot_loadings &lt;- function(L_est, Pop, legendYN = TRUE, scales_option = &quot;
 sim_data &lt;- sim_4pops(sim_args)</code></pre>
 <p>This is a heatmap of the scaled Gram matrix:</p>
 <pre class="r"><code>plot_heatmap(sim_data$YYt, colors_range = c(&#39;blue&#39;,&#39;gray96&#39;,&#39;red&#39;), brks = seq(-max(abs(sim_data$YYt)), max(abs(sim_data$YYt)), length.out = 50))</code></pre>
+<p><img src="figure/symebcovmf_tree_exploration.Rmd/unnamed-chunk-5-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>This is a scatter plot of the true loadings matrix:</p>
+<pre class="r"><code>pop_vec &lt;- c(rep(&#39;A&#39;, 40), rep(&#39;B&#39;, 40), rep(&#39;C&#39;, 40), rep(&#39;D&#39;, 40))
+plot_loadings(sim_data$LL, pop_vec)</code></pre>
 <p><img src="figure/symebcovmf_tree_exploration.Rmd/unnamed-chunk-6-1.png" width="672" style="display: block; margin: auto;" /></p>
 <p>
 <button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-6-1">
@@ -787,9 +797,9 @@ Annie Xie
 </table>
 </div>
 </div>
-<p>This is a scatter plot of the true loadings matrix:</p>
-<pre class="r"><code>pop_vec &lt;- c(rep(&#39;A&#39;, 40), rep(&#39;B&#39;, 40), rep(&#39;C&#39;, 40), rep(&#39;D&#39;, 40))
-plot_loadings(sim_data$LL, pop_vec)</code></pre>
+<p>This is a plot of the eigenvalues of the Gram matrix:</p>
+<pre class="r"><code>S_eigen &lt;- eigen(sim_data$YYt)
+plot(S_eigen$values) + abline(a = 0, b = 0, col = &#39;red&#39;)</code></pre>
 <p><img src="figure/symebcovmf_tree_exploration.Rmd/unnamed-chunk-7-1.png" width="672" style="display: block; margin: auto;" /></p>
 <p>
 <button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-7-1">
@@ -828,47 +838,6 @@ Annie Xie
 </table>
 </div>
 </div>
-<p>This is a plot of the eigenvalues of the Gram matrix:</p>
-<pre class="r"><code>S_eigen &lt;- eigen(sim_data$YYt)
-plot(S_eigen$values) + abline(a = 0, b = 0, col = &#39;red&#39;)</code></pre>
-<p><img src="figure/symebcovmf_tree_exploration.Rmd/unnamed-chunk-8-1.png" width="672" style="display: block; margin: auto;" /></p>
-<p>
-<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-8-1">
-Past versions of unnamed-chunk-8-1.png
-</button>
-</p>
-<div id="fig-unnamed-chunk-8-1" class="collapse">
-<div class="table-responsive">
-<table class="table table-condensed table-hover">
-<thead>
-<tr>
-<th>
-Version
-</th>
-<th>
-Author
-</th>
-<th>
-Date
-</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>
-<a href="https://github.com/xxie6/symmetric_covariance_decomposition/blob/a7697e56666018041c3eb1627fe249a12b84df66/docs/figure/symebcovmf_tree_exploration.Rmd/unnamed-chunk-8-1.png" target="_blank">a7697e5</a>
-</td>
-<td>
-Annie Xie
-</td>
-<td>
-2025-04-15
-</td>
-</tr>
-</tbody>
-</table>
-</div>
-</div>
 <pre><code>integer(0)</code></pre>
 <p>This is the minimum eigenvalue:</p>
 <pre class="r"><code>min(S_eigen$values)</code></pre>
@@ -886,6 +855,11 @@ class="math inline">\(\hat{L}_{exp}\)</span>, the estimate from
 symEBcovMF with point-exp prior:</p>
 <pre class="r"><code>bal_pops &lt;- c(rep(&#39;A&#39;, 40), rep(&#39;B&#39;, 40), rep(&#39;C&#39;, 40), rep(&#39;D&#39;, 40))
 plot_loadings(symebcovmf_exp_init_fit$L_pm %*% diag(sqrt(symebcovmf_exp_init_fit$lambda)), bal_pops)</code></pre>
+<p><img src="figure/symebcovmf_tree_exploration.Rmd/unnamed-chunk-11-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>This is a scatter plot of <span
+class="math inline">\(\hat{L}_{gb}\)</span>, the estimate from
+symEBcovMF with gb prior:</p>
+<pre class="r"><code>plot_loadings(symebcovmf_gb_init_fit$L_pm %*% diag(sqrt(symebcovmf_gb_init_fit$lambda)), bal_pops)</code></pre>
 <p><img src="figure/symebcovmf_tree_exploration.Rmd/unnamed-chunk-12-1.png" width="672" style="display: block; margin: auto;" /></p>
 <p>
 <button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-12-1">
@@ -924,10 +898,10 @@ Annie Xie
 </table>
 </div>
 </div>
-<p>This is a scatter plot of <span
-class="math inline">\(\hat{L}_{gb}\)</span>, the estimate from
-symEBcovMF with gb prior:</p>
-<pre class="r"><code>plot_loadings(symebcovmf_gb_init_fit$L_pm %*% diag(sqrt(symebcovmf_gb_init_fit$lambda)), bal_pops)</code></pre>
+<p>This is a plot of the eigenvalues of the residual matrix for
+point-exp prior:</p>
+<pre class="r"><code>resid_exp_eigen &lt;- eigen(sim_data$YYt - tcrossprod(symebcovmf_exp_init_fit$L_pm %*% diag(sqrt(symebcovmf_exp_init_fit$lambda), ncol = 1)))
+plot(resid_exp_eigen$values) + abline(h=0, col = &#39;red&#39;)</code></pre>
 <p><img src="figure/symebcovmf_tree_exploration.Rmd/unnamed-chunk-13-1.png" width="672" style="display: block; margin: auto;" /></p>
 <p>
 <button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-13-1">
@@ -966,48 +940,6 @@ Annie Xie
 </table>
 </div>
 </div>
-<p>This is a plot of the eigenvalues of the residual matrix for
-point-exp prior:</p>
-<pre class="r"><code>resid_exp_eigen &lt;- eigen(sim_data$YYt - tcrossprod(symebcovmf_exp_init_fit$L_pm %*% diag(sqrt(symebcovmf_exp_init_fit$lambda), ncol = 1)))
-plot(resid_exp_eigen$values) + abline(h=0, col = &#39;red&#39;)</code></pre>
-<p><img src="figure/symebcovmf_tree_exploration.Rmd/unnamed-chunk-14-1.png" width="672" style="display: block; margin: auto;" /></p>
-<p>
-<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-14-1">
-Past versions of unnamed-chunk-14-1.png
-</button>
-</p>
-<div id="fig-unnamed-chunk-14-1" class="collapse">
-<div class="table-responsive">
-<table class="table table-condensed table-hover">
-<thead>
-<tr>
-<th>
-Version
-</th>
-<th>
-Author
-</th>
-<th>
-Date
-</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>
-<a href="https://github.com/xxie6/symmetric_covariance_decomposition/blob/a7697e56666018041c3eb1627fe249a12b84df66/docs/figure/symebcovmf_tree_exploration.Rmd/unnamed-chunk-14-1.png" target="_blank">a7697e5</a>
-</td>
-<td>
-Annie Xie
-</td>
-<td>
-2025-04-15
-</td>
-</tr>
-</tbody>
-</table>
-</div>
-</div>
 <pre><code>integer(0)</code></pre>
 <pre class="r"><code>min(resid_exp_eigen$values)</code></pre>
 <pre><code>[1] 0.3724341</code></pre>
@@ -1015,44 +947,7 @@ Annie Xie
 prior:</p>
 <pre class="r"><code>resid_gb_eigen &lt;- eigen(sim_data$YYt - tcrossprod(symebcovmf_gb_init_fit$L_pm %*% diag(sqrt(symebcovmf_gb_init_fit$lambda), ncol = 1)))
 plot(resid_gb_eigen$values) + abline(h=0, col = &#39;red&#39;)</code></pre>
-<p><img src="figure/symebcovmf_tree_exploration.Rmd/unnamed-chunk-16-1.png" width="672" style="display: block; margin: auto;" /></p>
-<p>
-<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-16-1">
-Past versions of unnamed-chunk-16-1.png
-</button>
-</p>
-<div id="fig-unnamed-chunk-16-1" class="collapse">
-<div class="table-responsive">
-<table class="table table-condensed table-hover">
-<thead>
-<tr>
-<th>
-Version
-</th>
-<th>
-Author
-</th>
-<th>
-Date
-</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>
-<a href="https://github.com/xxie6/symmetric_covariance_decomposition/blob/a7697e56666018041c3eb1627fe249a12b84df66/docs/figure/symebcovmf_tree_exploration.Rmd/unnamed-chunk-16-1.png" target="_blank">a7697e5</a>
-</td>
-<td>
-Annie Xie
-</td>
-<td>
-2025-04-15
-</td>
-</tr>
-</tbody>
-</table>
-</div>
-</div>
+<p><img src="figure/symebcovmf_tree_exploration.Rmd/unnamed-chunk-15-1.png" width="672" style="display: block; margin: auto;" /></p>
 <pre><code>integer(0)</code></pre>
 <pre class="r"><code>min(resid_gb_eigen$values)</code></pre>
 <pre><code>[1] 0.3724332</code></pre>
@@ -1066,6 +961,13 @@ symebcovmf_exp_fit &lt;- refit_lambda(sim_data$YYt, symebcovmf_exp_fit)</code></
 <div id="visualization-of-estimate" class="section level3">
 <h3>Visualization of Estimate</h3>
 <pre class="r"><code>plot(symebcovmf_exp_fit$L_pm[,4])</code></pre>
+<p><img src="figure/symebcovmf_tree_exploration.Rmd/unnamed-chunk-18-1.png" width="672" style="display: block; margin: auto;" /></p>
+</div>
+<div id="visualization-of-elbo" class="section level3">
+<h3>Visualization of ELBO</h3>
+<p>This is a plot of the progression of the ELBO:</p>
+<pre class="r"><code>idx &lt;- which(symebcovmf_exp_fit$vec_elbo_full == 4)
+plot(symebcovmf_exp_fit$vec_elbo_full[-c(1:idx)], type = &#39;b&#39;, xlab = &#39;Iter&#39;, ylab = &#39;ELBO&#39;) </code></pre>
 <p><img src="figure/symebcovmf_tree_exploration.Rmd/unnamed-chunk-19-1.png" width="672" style="display: block; margin: auto;" /></p>
 <p>
 <button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-19-1">
@@ -1105,50 +1007,6 @@ Annie Xie
 </div>
 </div>
 </div>
-<div id="visualization-of-elbo" class="section level3">
-<h3>Visualization of ELBO</h3>
-<p>This is a plot of the progression of the ELBO:</p>
-<pre class="r"><code>idx &lt;- which(symebcovmf_exp_fit$vec_elbo_full == 4)
-plot(symebcovmf_exp_fit$vec_elbo_full[-c(1:idx)], type = &#39;b&#39;, xlab = &#39;Iter&#39;, ylab = &#39;ELBO&#39;) </code></pre>
-<p><img src="figure/symebcovmf_tree_exploration.Rmd/unnamed-chunk-20-1.png" width="672" style="display: block; margin: auto;" /></p>
-<p>
-<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-20-1">
-Past versions of unnamed-chunk-20-1.png
-</button>
-</p>
-<div id="fig-unnamed-chunk-20-1" class="collapse">
-<div class="table-responsive">
-<table class="table table-condensed table-hover">
-<thead>
-<tr>
-<th>
-Version
-</th>
-<th>
-Author
-</th>
-<th>
-Date
-</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>
-<a href="https://github.com/xxie6/symmetric_covariance_decomposition/blob/a7697e56666018041c3eb1627fe249a12b84df66/docs/figure/symebcovmf_tree_exploration.Rmd/unnamed-chunk-20-1.png" target="_blank">a7697e5</a>
-</td>
-<td>
-Annie Xie
-</td>
-<td>
-2025-04-15
-</td>
-</tr>
-</tbody>
-</table>
-</div>
-</div>
-</div>
 <div id="progression-of-estimate" class="section level3">
 <h3>Progression of Estimate</h3>
 <pre class="r"><code>R_exp &lt;- sim_data$YYt - tcrossprod(symebcovmf_exp_init_fit$L_pm %*% diag(sqrt(symebcovmf_exp_init_fit$lambda), ncol = 3))
@@ -1160,6 +1018,9 @@ for (i in 1:13){
 for (i in 1:14){
   plot(estimates_exp_list[[i]], main = paste(&#39;Iter&#39;, (i-1)), ylab = &#39;L&#39;)
 }</code></pre>
+<p><img src="figure/symebcovmf_tree_exploration.Rmd/unnamed-chunk-21-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>par(mfrow = c(1,1))</code></pre>
+<pre class="r"><code>plot_heatmap(R_exp, colors_range = c(&#39;blue&#39;,&#39;gray96&#39;,&#39;red&#39;), brks = seq(-max(abs(R_exp)), max(abs(R_exp)), length.out = 50))</code></pre>
 <p><img src="figure/symebcovmf_tree_exploration.Rmd/unnamed-chunk-22-1.png" width="672" style="display: block; margin: auto;" /></p>
 <p>
 <button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-22-1">
@@ -1198,9 +1059,6 @@ Annie Xie
 </table>
 </div>
 </div>
-<pre class="r"><code>par(mfrow = c(1,1))</code></pre>
-<pre class="r"><code>plot_heatmap(R_exp, colors_range = c(&#39;blue&#39;,&#39;gray96&#39;,&#39;red&#39;), brks = seq(-max(abs(R_exp)), max(abs(R_exp)), length.out = 50))</code></pre>
-<p><img src="figure/symebcovmf_tree_exploration.Rmd/unnamed-chunk-23-1.png" width="672" style="display: block; margin: auto;" /></p>
 </div>
 </div>
 <div id="generalized-binary-prior" class="section level2">
@@ -1210,6 +1068,61 @@ symebcovmf_gb_fit &lt;- refit_lambda(sim_data$YYt, symebcovmf_gb_fit)</code></pr
 <div id="visualization-of-estimate-1" class="section level3">
 <h3>Visualization of Estimate</h3>
 <pre class="r"><code>plot(symebcovmf_gb_fit$L_pm[,4])</code></pre>
+<p><img src="figure/symebcovmf_tree_exploration.Rmd/unnamed-chunk-24-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-24-1">
+Past versions of unnamed-chunk-24-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-24-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/xxie6/symmetric_covariance_decomposition/blob/bbe75343a2b997f1e4589d54d213ffe6f98f7fed/docs/figure/symebcovmf_tree_exploration.Rmd/unnamed-chunk-24-1.png" target="_blank">bbe7534</a>
+</td>
+<td>
+Annie Xie
+</td>
+<td>
+2025-04-21
+</td>
+</tr>
+<tr>
+<td>
+<a href="https://github.com/xxie6/symmetric_covariance_decomposition/blob/a7697e56666018041c3eb1627fe249a12b84df66/docs/figure/symebcovmf_tree_exploration.Rmd/unnamed-chunk-24-1.png" target="_blank">a7697e5</a>
+</td>
+<td>
+Annie Xie
+</td>
+<td>
+2025-04-15
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+<div id="visualization-of-elbo-1" class="section level3">
+<h3>Visualization of ELBO</h3>
+<p>This is a plot of the progression of the ELBO:</p>
+<pre class="r"><code>idx &lt;- which(symebcovmf_gb_fit$vec_elbo_full == 4)
+plot(symebcovmf_gb_fit$vec_elbo_full[-c(1:idx)], type = &#39;b&#39;, xlab = &#39;Iter&#39;, ylab = &#39;ELBO&#39;) </code></pre>
 <p><img src="figure/symebcovmf_tree_exploration.Rmd/unnamed-chunk-25-1.png" width="672" style="display: block; margin: auto;" /></p>
 <p>
 <button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-25-1">
@@ -1235,6 +1148,17 @@ Date
 <tbody>
 <tr>
 <td>
+<a href="https://github.com/xxie6/symmetric_covariance_decomposition/blob/bbe75343a2b997f1e4589d54d213ffe6f98f7fed/docs/figure/symebcovmf_tree_exploration.Rmd/unnamed-chunk-25-1.png" target="_blank">bbe7534</a>
+</td>
+<td>
+Annie Xie
+</td>
+<td>
+2025-04-21
+</td>
+</tr>
+<tr>
+<td>
 <a href="https://github.com/xxie6/symmetric_covariance_decomposition/blob/a7697e56666018041c3eb1627fe249a12b84df66/docs/figure/symebcovmf_tree_exploration.Rmd/unnamed-chunk-25-1.png" target="_blank">a7697e5</a>
 </td>
 <td>
@@ -1249,13 +1173,6 @@ Annie Xie
 </div>
 </div>
 </div>
-<div id="visualization-of-elbo-1" class="section level3">
-<h3>Visualization of ELBO</h3>
-<p>This is a plot of the progression of the ELBO:</p>
-<pre class="r"><code>idx &lt;- which(symebcovmf_gb_fit$vec_elbo_full == 4)
-plot(symebcovmf_gb_fit$vec_elbo_full[-c(1:idx)], type = &#39;b&#39;, xlab = &#39;Iter&#39;, ylab = &#39;ELBO&#39;) </code></pre>
-<p><img src="figure/symebcovmf_tree_exploration.Rmd/unnamed-chunk-26-1.png" width="672" style="display: block; margin: auto;" /></p>
-</div>
 <div id="progression-of-estimate-1" class="section level3">
 <h3>Progression of Estimate</h3>
 <pre class="r"><code>R_gb &lt;- sim_data$YYt - tcrossprod(symebcovmf_gb_init_fit$L_pm %*% diag(sqrt(symebcovmf_gb_init_fit$lambda), ncol = 3))
@@ -1269,10 +1186,95 @@ min_y &lt;- min(sapply(estimates_gb_list, min))
 for (i in 1:12){
   plot(estimates_gb_list[[i]], main = paste(&#39;Iter&#39;, (i-1)), ylab = &#39;L&#39;, ylim = c(min_y, max_y))
 }</code></pre>
-<p><img src="figure/symebcovmf_tree_exploration.Rmd/unnamed-chunk-28-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p><img src="figure/symebcovmf_tree_exploration.Rmd/unnamed-chunk-27-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-27-1">
+Past versions of unnamed-chunk-27-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-27-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/xxie6/symmetric_covariance_decomposition/blob/bbe75343a2b997f1e4589d54d213ffe6f98f7fed/docs/figure/symebcovmf_tree_exploration.Rmd/unnamed-chunk-27-1.png" target="_blank">bbe7534</a>
+</td>
+<td>
+Annie Xie
+</td>
+<td>
+2025-04-21
+</td>
+</tr>
+<tr>
+<td>
+<a href="https://github.com/xxie6/symmetric_covariance_decomposition/blob/a7697e56666018041c3eb1627fe249a12b84df66/docs/figure/symebcovmf_tree_exploration.Rmd/unnamed-chunk-27-1.png" target="_blank">a7697e5</a>
+</td>
+<td>
+Annie Xie
+</td>
+<td>
+2025-04-15
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <pre class="r"><code>par(mfrow = c(1,1))</code></pre>
 <pre class="r"><code>plot_heatmap(R_gb, colors_range = c(&#39;blue&#39;,&#39;gray96&#39;,&#39;red&#39;), brks = seq(-max(abs(R_gb)), max(abs(R_gb)), length.out = 50))</code></pre>
-<p><img src="figure/symebcovmf_tree_exploration.Rmd/unnamed-chunk-29-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p><img src="figure/symebcovmf_tree_exploration.Rmd/unnamed-chunk-28-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-28-1">
+Past versions of unnamed-chunk-28-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-28-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/xxie6/symmetric_covariance_decomposition/blob/bbe75343a2b997f1e4589d54d213ffe6f98f7fed/docs/figure/symebcovmf_tree_exploration.Rmd/unnamed-chunk-28-1.png" target="_blank">bbe7534</a>
+</td>
+<td>
+Annie Xie
+</td>
+<td>
+2025-04-21
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 </div>
 </div>
 <div id="observations" class="section level2">
@@ -1301,14 +1303,51 @@ symebcovmf_exp_gb_fit &lt;- refit_lambda(sim_data$YYt, symebcovmf_exp_gb_fit)</c
 <div id="visualization-of-estimate-2" class="section level3">
 <h3>Visualization of Estimate</h3>
 <pre class="r"><code>plot(symebcovmf_exp_gb_fit$L_pm[,4])</code></pre>
-<p><img src="figure/symebcovmf_tree_exploration.Rmd/unnamed-chunk-31-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p><img src="figure/symebcovmf_tree_exploration.Rmd/unnamed-chunk-30-1.png" width="672" style="display: block; margin: auto;" /></p>
 </div>
 <div id="visualization-of-elbo-2" class="section level3">
 <h3>Visualization of ELBO</h3>
 <p>This is a plot of the progression of the ELBO:</p>
 <pre class="r"><code>idx &lt;- which(symebcovmf_exp_gb_fit$vec_elbo_full == 4)
 plot(symebcovmf_exp_gb_fit$vec_elbo_full[-c(1:idx)], type = &#39;b&#39;, xlab = &#39;Iter&#39;, ylab = &#39;ELBO&#39;) </code></pre>
-<p><img src="figure/symebcovmf_tree_exploration.Rmd/unnamed-chunk-32-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p><img src="figure/symebcovmf_tree_exploration.Rmd/unnamed-chunk-31-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-31-1">
+Past versions of unnamed-chunk-31-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-31-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/xxie6/symmetric_covariance_decomposition/blob/bbe75343a2b997f1e4589d54d213ffe6f98f7fed/docs/figure/symebcovmf_tree_exploration.Rmd/unnamed-chunk-31-1.png" target="_blank">bbe7534</a>
+</td>
+<td>
+Annie Xie
+</td>
+<td>
+2025-04-21
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 </div>
 <div id="progression-of-estimate-2" class="section level3">
 <h3>Progression of Estimate</h3>
@@ -1321,7 +1360,7 @@ for (i in 1:13){
 for (i in 1:14){
   plot(estimates_exp_gb_list[[i]], main = paste(&#39;Iter&#39;, (i-1)), ylab = &#39;L&#39;)
 }</code></pre>
-<p><img src="figure/symebcovmf_tree_exploration.Rmd/unnamed-chunk-34-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p><img src="figure/symebcovmf_tree_exploration.Rmd/unnamed-chunk-33-1.png" width="672" style="display: block; margin: auto;" /></p>
 <pre class="r"><code>par(mfrow = c(1,1))</code></pre>
 </div>
 <div id="observations-1" class="section level3">
@@ -1345,14 +1384,51 @@ symebcovmf_gb_exp_fit &lt;- refit_lambda(sim_data$YYt, symebcovmf_gb_exp_fit)</c
 <div id="visualization-of-estimate-3" class="section level3">
 <h3>Visualization of Estimate</h3>
 <pre class="r"><code>plot(symebcovmf_gb_exp_fit$L_pm[,4])</code></pre>
-<p><img src="figure/symebcovmf_tree_exploration.Rmd/unnamed-chunk-36-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p><img src="figure/symebcovmf_tree_exploration.Rmd/unnamed-chunk-35-1.png" width="672" style="display: block; margin: auto;" /></p>
 </div>
 <div id="visualization-of-elbo-3" class="section level3">
 <h3>Visualization of ELBO</h3>
 <p>This is a plot of the progression of the ELBO:</p>
 <pre class="r"><code>idx &lt;- which(symebcovmf_gb_exp_fit$vec_elbo_full == 4)
 plot(symebcovmf_gb_exp_fit$vec_elbo_full[-c(1:idx)], type = &#39;b&#39;, xlab = &#39;Iter&#39;, ylab = &#39;ELBO&#39;) </code></pre>
-<p><img src="figure/symebcovmf_tree_exploration.Rmd/unnamed-chunk-37-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p><img src="figure/symebcovmf_tree_exploration.Rmd/unnamed-chunk-36-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-36-1">
+Past versions of unnamed-chunk-36-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-36-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/xxie6/symmetric_covariance_decomposition/blob/bbe75343a2b997f1e4589d54d213ffe6f98f7fed/docs/figure/symebcovmf_tree_exploration.Rmd/unnamed-chunk-36-1.png" target="_blank">bbe7534</a>
+</td>
+<td>
+Annie Xie
+</td>
+<td>
+2025-04-21
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 </div>
 <div id="progression-of-estimate-3" class="section level3">
 <h3>Progression of Estimate</h3>
@@ -1365,7 +1441,7 @@ for (i in 1:15){
 for (i in 1:16){
   plot(estimates_gb_exp_list[[i]], main = paste(&#39;Iter&#39;, (i-1)), ylab = &#39;L&#39;)
 }</code></pre>
-<p><img src="figure/symebcovmf_tree_exploration.Rmd/unnamed-chunk-39-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p><img src="figure/symebcovmf_tree_exploration.Rmd/unnamed-chunk-38-1.png" width="672" style="display: block; margin: auto;" /></p>
 <pre class="r"><code>par(mfrow = c(1,1))</code></pre>
 </div>
 <div id="observations-2" class="section level3">
