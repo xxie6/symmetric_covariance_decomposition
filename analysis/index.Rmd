@@ -17,6 +17,6 @@ Main takeways thus far:
 symEBcovMF analyses:    
 * Exploration of [symEBcovMF in the balanced nonoverlapping setting](symebcovmf_bal_nonoverlap.html)  
 * Exploration of [symEBcovMF in the tree setting](symebcovmf_tree.html)  
-* Exploration of [symEBcovMF in the sparse, overlapping setting](symebcovmf_overlap.html) 
-* Exploration of [symEBcovMF in the null setting](symebcovmf_null.html). 
-* Exploration of [generalized binary symEBcovMF with point exponential initialization](symebcovmf_point_exp_init.html)
+* Exploration of [symEBcovMF in the sparse, overlapping setting](symebcovmf_overlap.html)   
+* Exploration of [symEBcovMF in the null setting](symebcovmf_null.html)   
+* Exploration of [generalized binary symEBcovMF with point exponential initialization](symebcovmf_point_exp_init.html). 
