@@ -87,7 +87,7 @@ This is the minimum eigenvalue:
 min(S_eigen$values)
 ```
 
-# Generalized bianry symEBcovMF
+# Generalized binary symEBcovMF
 
 ```{r}
 symebcovmf_fit <- sym_ebcovmf_fit(S = sim_data$YYt, ebnm_fn = ebnm::ebnm_generalized_binary, K = 7, maxiter = 500, rank_one_tol = 10^(-8), tol = 10^(-8), refit_lam = TRUE)
@@ -152,6 +152,19 @@ plot_loadings(symebcovmf_full_pexp_init_fit$L_pm %*% diag(sqrt(symebcovmf_full_p
 This is the ELBO:
 ```{r}
 symebcovmf_full_pexp_init_fit$elbo
+```
+
+## Comparison
+```{r}
+ggplot(data = NULL, aes(x = symebcovmf_fit$L_pm[,1], y = symebcovmf_full_pexp_init_fit$L_pm[,1])) + geom_point() + geom_abline(slope = 1, intercept = 0, color = 'red')
+```
+
+```{r}
+ggplot(data = NULL, aes(x = symebcovmf_fit$L_pm[,2], y = symebcovmf_full_pexp_init_fit$L_pm[,2])) + geom_point() + geom_abline(slope = 1, intercept = 0, color = 'red')
+```
+
+```{r}
+ggplot(data = NULL, aes(x = symebcovmf_fit$L_pm[,3], y = symebcovmf_full_pexp_init_fit$L_pm[,3])) + geom_point() + geom_abline(slope = 1, intercept = 0, color = 'red')
 ```
 
 ## Observations
