@@ -1,0 +1,186 @@
+---
+title: "symebcovmf_gb_tree_exploration"
+author: "Annie Xie"
+date: "2025-04-29"
+output: 
+  workflowr::wflow_html:
+    code_folding: hide
+editor_options:
+  chunk_output_type: console
+---
+
+# Introduction
+In this analysis, I am interested in exploring symEBcovMF with the generalized binary prior in the tree setting. 
+
+## Motivation
+When applying symEBcovMF with generalized binary prior to tree data, I found that instead of population effect factors, the method would group two population effects together. I tried using the point-exponential prior to remedy this, but found that the point-exponential prior also found factors which grouped two population effects. Therefore, I am interested in exploring the following questions: 1) does the method prefer this over solution over our desired solution? does it have a higher elbo? 2) does decreasing the convergence tolerance fix this? 3) how often does this happen?
+
+# Packages and Functions
+
+```{r}
+library(ebnm)
+library(pheatmap)
+library(ggplot2)
+```
+
+```{r}
+source('code/visualization_functions.R')
+source('code/symebcovmf_functions.R')
+```
+
+# Data
+In this analysis, I will focus on fitting the fourth factor. Let $S$ be the scaled Gram matrix, formed from tree-structured data matrix $X$. Let $\hat{\lambda}_1, \dots \hat{\lambda}_3, \ \hat{\ell}_1, \dots \hat{\ell}_3$ be the output from running symEBcovMF (with refitting) with generalized binary prior on $S$. I will read in the residual matrix, $S - \sum_{k=1}^{3}\hat{\lambda}_k \hat{\ell}_k \hat{\ell}_k'$.
+
+```{r}
+S <- readRDS('data/symebcovmf_gb_tree_resid_matrix.rds')
+```
+
+This is a heatmap of the residual matrix, $S - \sum_{k=1}^{3}\hat{\lambda}_k \hat{\ell}_k \hat{\ell}_k'$:
+```{r}
+plot_heatmap(S, colors_range = c('blue','gray96','red'), brks = seq(-max(abs(S)), max(abs(S)), length.out = 50))
+```
+
+# symEBcovMF with point exponential prior
+Here, I use symEBcovMF with point-exponential prior to fit the fourth factor.
+
+```{r}
+symebcovmf_init_obj <- sym_ebcovmf_init(S)
+symebcovmf_exp_fit <- sym_ebcovmf_r1_fit(S, symebcovmf_init_obj, ebnm_fn = ebnm::ebnm_point_exponential, maxiter = 100, tol = 10^(-8))
+```
+
+This is a plot of the estimate for the fourth factor:
+```{r}
+plot(symebcovmf_exp_fit$L_pm[,1], ylab = 'Fourth Factor')
+```
+
+This is the ELBO:
+```{r}
+symebcovmf_exp_fit$elbo
+```
+
+## Decrease convergence tolerance
+Here, I try decreasing the convergence tolerance to see if that yields more shrinkage for one of the group effects.
+
+```{r}
+symebcovmf_exp_fit_decrease_tol <-  sym_ebcovmf_r1_fit(S, symebcovmf_init_obj, ebnm_fn = ebnm::ebnm_point_exponential, maxiter = 100, tol = 10^(-15))
+```
+
+This is a plot of the estimate for the fourth factor:
+```{r}
+plot(symebcovmf_exp_fit_decrease_tol$L_pm[,1], ylab = 'Fourth Factor')
+```
+
+This is the ELBO:
+```{r}
+symebcovmf_exp_fit_decrease_tol$elbo
+```
+
+This is a scatter plot of the entries of the two estimates:
+```{r}
+ggplot(data = NULL, aes(y = symebcovmf_exp_fit_decrease_tol$L_pm[,1], x = symebcovmf_exp_fit$L_pm[,1])) + geom_point() + geom_abline(slope = 1, intercept = 0, color = 'red') + xlab('Regular symEBcovMF Estimate') + ylab('symEBcovMF with decreased tolerance Estimate')
+```
+
+I found that decreasing the convergence tolerance did not lead to further shrinkage of either of the group effects. The method does stop because there is a very small decrease in objective function (the decrease is of order $10^{-12}$, so I'm guessing that it is a numerical issue), so it's possible that if I had let the method keep going, it would eventually zero out the first group effect. However, it seems like there is no difference between these two estimates. So there is minimal empirical evidence to suggest the extra iterations will yield further shrinkage.
+
+## Try initializing from true factor
+Here, I try initializing from the true group effect factor.
+
+```{r}
+true_factor_4 <- rep(c(0,1), times = c(120, 40))
+symebcovmf_exp_true_init <- sym_ebcovmf_r1_fit(S, symebcovmf_init_obj, ebnm_fn = ebnm::ebnm_point_exponential, maxiter = 100, tol = 10^(-8), v_init = true_factor_4)
+```
+
+This is a plot of the estimate for the fourth factor:
+```{r}
+plot(symebcovmf_exp_true_init$L_pm[,1], ylab = 'Fourth Factor')
+```
+
+This is the ELBO:
+```{r}
+symebcovmf_exp_true_init$elbo
+```
+
+This is a plot of the progression of the ELBO:
+```{r}
+plot(symebcovmf_exp_true_init$vec_elbo_full[-1], ylab = 'ELBO')
+```
+
+These are plots of the progression of the estimate:
+```{r}
+estimates_exp_true_init_list <- list(true_factor_4)
+for (i in 1:12){
+  estimates_exp_true_init_list[[(i+1)]] <- sym_ebcovmf_r1_fit(S, symebcovmf_init_obj, ebnm_fn = ebnm::ebnm_point_exponential, maxiter = (i-1)*5+5, tol = 10^(-8), v_init = true_factor_4)$L_pm[,1]
+}
+```
+
+```{r}
+idx_seq <- seq(from = 0, to = 60, by = 5)
+par(mfrow = c(7,2), mar = c(2, 2, 1, 1) + 0.1)
+for (i in 1:13){
+  plot(estimates_exp_true_init_list[[i]], main = paste('Iter', idx_seq[i]), ylab = 'L')
+}
+par(mfrow = c(1,1))
+```
+
+Initializing from the true factor yields the same estimate. This suggests that the method does prefer this estimate. Looking at the progression of the estimate, we see that the first group effect starts at zero and then gradually increases.
+
+# How often does this happen?
+
+## Data Generation
+
+```{r}
+sim_4pops <- function(args) {
+  set.seed(args$seed)
+  
+  n <- sum(args$pop_sizes)
+  p <- args$n_genes
+  
+  FF <- matrix(rnorm(7 * p, sd = rep(args$branch_sds, each = p)), ncol = 7)
+  # if (args$constrain_F) {
+  #   FF_svd <- svd(FF)
+  #   FF <- FF_svd$u
+  #   FF <- t(t(FF) * branch_sds * sqrt(p))
+  # }
+  
+  LL <- matrix(0, nrow = n, ncol = 7)
+  LL[, 1] <- 1
+  LL[, 2] <- rep(c(1, 1, 0, 0), times = args$pop_sizes)
+  LL[, 3] <- rep(c(0, 0, 1, 1), times = args$pop_sizes)
+  LL[, 4] <- rep(c(1, 0, 0, 0), times = args$pop_sizes)
+  LL[, 5] <- rep(c(0, 1, 0, 0), times = args$pop_sizes)
+  LL[, 6] <- rep(c(0, 0, 1, 0), times = args$pop_sizes)
+  LL[, 7] <- rep(c(0, 0, 0, 1), times = args$pop_sizes)
+  
+  E <- matrix(rnorm(n * p, sd = args$indiv_sd), nrow = n)
+  Y <- LL %*% t(FF) + E
+  YYt <- (1/p)*tcrossprod(Y)
+  return(list(Y = Y, YYt = YYt, LL = LL, FF = FF, K = ncol(LL)))
+}
+```
+
+## Repeated Experiments
+Here, I generate 10 tree-structured datasets and apply symEBcovMF in the way I had done previously -- I fit the first three factors with generalized binary prior and then fit the fourth factor with point-exponential prior.
+
+```{r}
+exp_symebcovmf_lists <- list()
+for(i in c(1:10)){
+  # generate data
+  sim_args = list(pop_sizes = rep(40, 4), n_genes = 1000, branch_sds = rep(2,7), indiv_sd = 1, seed = i)
+  sim_data <- sim_4pops(sim_args)
+  
+  # apply gb symebcovmf
+  rank_3_gb_init_fit <- sym_ebcovmf_fit(S = sim_data$YYt, ebnm_fn = ebnm::ebnm_generalized_binary, K = 3, maxiter = 500, rank_one_tol = 10^(-8), tol = 10^(-8), refit_lam = TRUE)
+  
+  exp_symebcovmf_lists[[i]] <- sym_ebcovmf_r1_fit(sim_data$YYt, rank_3_gb_init_fit, ebnm_fn = ebnm::ebnm_point_exponential, maxiter = 500, tol = 10^(-8))$L_pm[,4]
+}
+```
+
+```{r}
+par(mfrow = c(5,2), mar = c(2, 2, 1, 1) + 0.1)
+for (i in 1:10){
+  plot(exp_symebcovmf_lists[[i]], main = paste('Dataset', i), ylab = 'Fourth Factor')
+}
+par(mfrow = c(1,1))
+```
+
+Half of the datasets find a single population effect in the fourth factor and the other half group two population effects. A follow up question is whether we can find a way to ensure we have a situation where the method finds a single group effect as opposed to grouping two group effects.
