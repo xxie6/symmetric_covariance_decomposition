@@ -176,6 +176,7 @@ sym_ebcovmf_r1_fit <- function(S, sym_ebcovmf_obj, ebnm_fn, maxiter, tol, v_init
   
   # initialize estimate for l
   if (is.null(v_init) == TRUE){
+    # need to add something that checks non-negativity of prior
     sym_ebcovmf_v_init <- sym_ebcovmf_r1_init(R)
     v <- sym_ebcovmf_v_init$v
     lambda_k <- sym_ebcovmf_v_init$lambda_k
@@ -266,12 +267,32 @@ sym_ebcovmf_r1_fit <- function(S, sym_ebcovmf_obj, ebnm_fn, maxiter, tol, v_init
   return(sym_ebcovmf_obj)
 }
 
-sym_ebcovmf_r1_init <- function(R){
+sym_ebcovmf_r1_init <- function(R, nonnegative = TRUE){
   svd1 <- RSpectra::eigs_sym(R, k = 1)
   v <- svd1$vectors # scaled such that v'v = 1
-  if (abs(min(v)) > abs(max(v))){
-    v <- -1*v
-  }
+  # if (abs(min(v)) > abs(max(v))){
+  #   v <- -1*v
+  # }
   lambda_k <- svd1$values
+  if(nonnegative == TRUE){
+    svd_v <- v
+    v <- pmax(svd_v, 0)
+    if (sqrt(sum(v^2)) > 0){
+      v <- v/sqrt(sum(v^2))
+    }
+    
+    minus_v <- pmax(-svd_v, 0)
+    if(sqrt(sum(minus_v^2)) > 0){
+      minus_v <- minus_v/sqrt(sum(minus_v^2))
+    }
+  }
+  lambda_options <- c(drop(t(v) %*% R %*% v), drop(t(minus_v) %*% R %*% minus_v))
+  if(which.max(lambda_options) == 1){
+    v <- v
+    lambda_k <- lambda_options[1]
+  } else {
+    v <- minus_v
+    lambda_k <- lambda_options[2]
+  }
   return(list(v = v, lambda_k = lambda_k))
 }
