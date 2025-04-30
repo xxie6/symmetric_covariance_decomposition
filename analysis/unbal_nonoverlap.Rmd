@@ -1,0 +1,170 @@
+---
+title: "symebcovmf_unbal_nonoverlap"
+author: "Annie Xie"
+date: "2025-04-29"
+output: 
+  workflowr::wflow_html:
+    code_folding: hide
+editor_options:
+  chunk_output_type: console
+---
+
+# Introduction
+In this example, we test out symEBcovMF on unbalanced, star-structured data.
+
+# Example
+
+```{r}
+library(ebnm)
+library(pheatmap)
+library(ggplot2)
+```
+
+```{r}
+source('code/symebcovmf_functions.R')
+source('code/visualization_functions.R')
+```
+
+## Data Generation
+
+```{r}
+# adapted from Jason's code
+# args is a list containing pop_sizes, branch_sds, indiv_sd, n_genes, and seed
+sim_star_data <- function(args) {
+  set.seed(args$seed)
+  
+  n <- sum(args$pop_sizes)
+  p <- args$n_genes
+  K <- length(args$pop_sizes)
+  
+  FF <- matrix(rnorm(K * p, sd = rep(args$branch_sds, each = p)), ncol = K)
+  
+  LL <- matrix(0, nrow = n, ncol = K)
+  for (k in 1:K) {
+    vec <- rep(0, K)
+    vec[k] <- 1
+    LL[, k] <- rep(vec, times = args$pop_sizes)
+  }
+  
+  E <- matrix(rnorm(n * p, sd = args$indiv_sd), nrow = n)
+  Y <- LL %*% t(FF) + E
+  YYt <- (1/p)*tcrossprod(Y)
+  
+  return(list(Y = Y, YYt = YYt, LL = LL, FF = FF, K = ncol(LL)))
+}
+```
+
+```{r}
+pop_sizes <- c(20,50,30,60)
+n_genes <- 1000
+branch_sds <- rep(2,4)
+indiv_sd <- 1
+seed <- 1
+sim_args = list(pop_sizes = pop_sizes, branch_sds = branch_sds, indiv_sd = indiv_sd, n_genes = n_genes, seed = seed)
+sim_data <- sim_star_data(sim_args)
+```
+
+This is a heatmap of the scaled Gram matrix:
+```{r}
+plot_heatmap(sim_data$YYt, colors_range = c('blue','gray96','red'), brks = seq(-max(abs(sim_data$YYt)), max(abs(sim_data$YYt)), length.out = 50))
+```
+
+This is a scatter plot of the true loadings matrix:
+```{r}
+pop_vec <- rep(c('A','B','C','D'), times = pop_sizes)
+plot_loadings(sim_data$LL, pop_vec)
+```
+
+# symEBcovMF 
+```{r}
+symebcovmf_unbal_fit <- sym_ebcovmf_fit(S = sim_data$YYt, ebnm_fn = ebnm_point_exponential, K = 4, maxiter = 100, rank_one_tol = 10^(-8), tol = 10^(-8))
+```
+
+## Progression of ELBO
+```{r}
+symebcovmf_unbal_full_elbo_vec <- symebcovmf_unbal_fit$vec_elbo_full[!(symebcovmf_unbal_fit$vec_elbo_full %in% c(1:length(symebcovmf_unbal_fit$vec_elbo_K)))]
+ggplot() + geom_line(data = NULL, aes(x = 1:length(symebcovmf_unbal_full_elbo_vec), y = symebcovmf_unbal_full_elbo_vec)) + xlab('Iter') + ylab('ELBO')
+```
+
+
+## Visualization of Estimate
+This is a scatter plot of $\hat{L}$, the estimate from symEBcovMF:
+```{r}
+plot_loadings(symebcovmf_unbal_fit$L_pm %*% diag(sqrt(symebcovmf_unbal_fit$lambda)), pop_vec)
+```
+
+This is the objective function value attained:
+```{r}
+symebcovmf_unbal_fit$elbo
+```
+
+## Visualization of Fit
+
+This is a heatmap of $\hat{L}\hat{\Lambda}\hat{L}'$:
+```{r}
+symebcovmf_unbal_fitted_vals <- tcrossprod(symebcovmf_unbal_fit$L_pm %*% diag(sqrt(symebcovmf_unbal_fit$lambda)))
+plot_heatmap(symebcovmf_unbal_fitted_vals, brks = seq(0, max(symebcovmf_unbal_fitted_vals), length.out = 50))
+```
+
+This is a scatter plot of fitted values vs. observed values for the off-diagonal entries:
+```{r}
+diag_idx <- seq(1, prod(dim(sim_data$YYt)), length.out = ncol(sim_data$YYt))
+off_diag_idx <- setdiff(c(1:prod(dim(sim_data$YYt))), diag_idx) 
+
+ggplot(data = NULL, aes(x = c(sim_data$YYt)[off_diag_idx], y = c(symebcovmf_unbal_fitted_vals)[off_diag_idx])) + geom_point() + ylim(-1, 5) + xlim(-1,5) + xlab('Observed Values') + ylab('Fitted Values') + geom_abline(slope = 1, intercept = 0, color = 'red')
+```
+
+## Observations
+symEBcovMF does a relatively good job at recovering the four population effects. Interestingly, while factor 3 primarily recovers the third group effect, it has a small (but still notable) loading on the first group effect. I explore this more in another analysis.
+
+# symEBcovMF with refit step
+
+```{r}
+symebcovmf_unbal_refit_fit <- sym_ebcovmf_fit(S = sim_data$YYt, ebnm_fn = ebnm_point_exponential, K = 4, maxiter = 100, rank_one_tol = 10^(-8), tol = 10^(-8), refit_lam = TRUE)
+```
+
+## Progression of ELBO
+```{r}
+symebcovmf_unbal_refit_full_elbo_vec <- symebcovmf_unbal_refit_fit$vec_elbo_full[!(symebcovmf_unbal_refit_fit$vec_elbo_full %in% c(1:length(symebcovmf_unbal_refit_fit$vec_elbo_K)))]
+ggplot() + geom_line(data = NULL, aes(x = 1:length(symebcovmf_unbal_refit_full_elbo_vec), y = symebcovmf_unbal_refit_full_elbo_vec)) + xlab('Iter') + ylab('ELBO')
+```
+A note: I don't think I save the ELBO value after the refitting step in vec_elbo_full. But the refitting does change this vector since it changes the residual matrix that is used when you add a new vector.
+
+## Visualization of Estimate
+This is a scatter plot of $\hat{L}_{refit}$, the estimate from symEBcovMF:
+```{r}
+plot_loadings(symebcovmf_unbal_refit_fit$L_pm %*% diag(sqrt(symebcovmf_unbal_refit_fit$lambda)), pop_vec)
+```
+
+This is the objective function value attained:
+```{r}
+symebcovmf_unbal_refit_fit$elbo
+```
+
+## Visualization of Fit
+
+This is a heatmap of $\hat{L}_{refit}\hat{\Lambda}_{refit}\hat{L}_{refit}'$:
+```{r}
+symebcovmf_unbal_refit_fitted_vals <- tcrossprod(symebcovmf_unbal_refit_fit$L_pm %*% diag(sqrt(symebcovmf_unbal_refit_fit$lambda)))
+plot_heatmap(symebcovmf_unbal_refit_fitted_vals, brks = seq(0, max(symebcovmf_unbal_refit_fitted_vals), length.out = 50))
+```
+
+This is a scatter plot of fitted values vs. observed values for the off-diagonal entries:
+```{r}
+diag_idx <- seq(1, prod(dim(sim_data$YYt)), length.out = ncol(sim_data$YYt))
+off_diag_idx <- setdiff(c(1:prod(dim(sim_data$YYt))), diag_idx) 
+
+ggplot(data = NULL, aes(x = c(sim_data$YYt)[off_diag_idx], y = c(symebcovmf_unbal_refit_fitted_vals)[off_diag_idx])) + geom_point() + ylim(-1, 5) + xlim(-1,5) + xlab('Observed Values') + ylab('Fitted Values') + geom_abline(slope = 1, intercept = 0, color = 'red')
+```
+
+## Comparison of Estimates
+
+Comparison of the factors:
+```{r}
+for (i in 1:4){
+  print(ggplot(data = NULL, aes(x = symebcovmf_unbal_fit$L_pm[,i], y = symebcovmf_unbal_refit_fit$L_pm[,i])) + geom_point() + geom_abline(slope = 1, intercept = 0, color = 'red') + ylab('symEBcovMF with refitting') + xlab('Regular symEBcovMF') + labs(title=paste('Factor',i)))
+}
+```
+
+## Observations
+The estimate from symEBcovMF with refitting qualitatively looks the same as the estimate from regular symEBcovMF. Plotting the values of the two estimates show that they are nearly the same.
