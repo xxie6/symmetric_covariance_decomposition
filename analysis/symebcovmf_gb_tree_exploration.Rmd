@@ -163,6 +163,7 @@ Here, I generate 10 tree-structured datasets and apply symEBcovMF in the way I h
 
 ```{r}
 exp_symebcovmf_lists <- list()
+# rank_3_gb_init_fits <- list()
 for(i in c(1:10)){
   # generate data
   sim_args = list(pop_sizes = rep(40, 4), n_genes = 1000, branch_sds = rep(2,7), indiv_sd = 1, seed = i)
@@ -170,6 +171,7 @@ for(i in c(1:10)){
   
   # apply gb symebcovmf
   rank_3_gb_init_fit <- sym_ebcovmf_fit(S = sim_data$YYt, ebnm_fn = ebnm::ebnm_generalized_binary, K = 3, maxiter = 500, rank_one_tol = 10^(-8), tol = 10^(-8), refit_lam = TRUE)
+  # rank_3_gb_init_fits[[i]] <- rank_3_gb_init_fit$L_pm
   
   exp_symebcovmf_lists[[i]] <- sym_ebcovmf_r1_fit(sim_data$YYt, rank_3_gb_init_fit, ebnm_fn = ebnm::ebnm_point_exponential, maxiter = 500, tol = 10^(-8))$L_pm[,4]
 }
@@ -183,4 +185,4 @@ for (i in 1:10){
 par(mfrow = c(1,1))
 ```
 
-Half of the datasets find a single population effect in the fourth factor and the other half group two population effects. A follow up question is whether we can find a way to ensure we have a situation where the method finds a single group effect as opposed to grouping two group effects.
+Half of the datasets find a single population effect in the fourth factor and the other half group two population effects. A follow up question is whether we can find a way to ensure we have a situation where the method finds single group effects as opposed to grouping two group effects.
