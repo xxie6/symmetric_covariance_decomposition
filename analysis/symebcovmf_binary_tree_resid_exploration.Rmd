@@ -328,4 +328,4 @@ par(mfrow = c(1,1))
 ```
 
 # Observations
-The results from all the priors are similar, and there is no evidence of convergence issues. This suggests that the strictness of the binary prior does not seem to help find single population effect factors for this dataset. Follow up hypotheses: the noise is structured and the method is fitting the structure in the noise? Or is the estimation of $\lambda$ off, leaving behind structural components that should have been taken out?
+The results from all the priors are similar, and there is no evidence of convergence issues. This suggests that the strictness of the binary prior does not seem to help find single population effect factors for this dataset. Follow up hypotheses: the noise is structured and the method is fitting the structure in the noise? Or the method is picking up structure due to slight correlations in the columns of the $F$ matrix? Or is the estimation of $\lambda$ off, leaving behind structural components that should have been taken out?
