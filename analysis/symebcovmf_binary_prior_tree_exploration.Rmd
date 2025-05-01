@@ -1,0 +1,221 @@
+---
+title: "symebcovmf_binary_prior_tree_exploration"
+author: "Annie Xie"
+date: "2025-04-29"
+output: 
+  workflowr::wflow_html:
+    code_folding: hide
+editor_options:
+  chunk_output_type: console
+---
+
+# Introduction
+In this analysis, I am interested in exploring symEBcovMF with the generalized binary prior and other binary priors in the tree setting. 
+
+## Motivation
+When applying symEBcovMF with generalized binary prior to tree data, I found that instead of population effect factors, the method would group two population effects together. I tried using the point-exponential prior to remedy this, but found that the point-exponential prior also found factors which grouped two population effects. After further exploring this, I found that the method preferred the factor with two population effects -- when initialized from the true population effect factor, the method still converged to the factor with two population effects. In this analysis, I am interested in other binary priors (binormal prior and generalized binary prior with different scales) and whether any of them yield a tree-structured loadings estimate.
+
+# Packages and Functions
+
+```{r}
+library(ebnm)
+library(pheatmap)
+library(ggplot2)
+```
+
+```{r}
+source('code/visualization_functions.R')
+source('code/symebcovmf_functions.R')
+```
+
+# Data Generation
+
+```{r}
+sim_4pops <- function(args) {
+  set.seed(args$seed)
+  
+  n <- sum(args$pop_sizes)
+  p <- args$n_genes
+  
+  FF <- matrix(rnorm(7 * p, sd = rep(args$branch_sds, each = p)), ncol = 7)
+  # if (args$constrain_F) {
+  #   FF_svd <- svd(FF)
+  #   FF <- FF_svd$u
+  #   FF <- t(t(FF) * branch_sds * sqrt(p))
+  # }
+  
+  LL <- matrix(0, nrow = n, ncol = 7)
+  LL[, 1] <- 1
+  LL[, 2] <- rep(c(1, 1, 0, 0), times = args$pop_sizes)
+  LL[, 3] <- rep(c(0, 0, 1, 1), times = args$pop_sizes)
+  LL[, 4] <- rep(c(1, 0, 0, 0), times = args$pop_sizes)
+  LL[, 5] <- rep(c(0, 1, 0, 0), times = args$pop_sizes)
+  LL[, 6] <- rep(c(0, 0, 1, 0), times = args$pop_sizes)
+  LL[, 7] <- rep(c(0, 0, 0, 1), times = args$pop_sizes)
+  
+  E <- matrix(rnorm(n * p, sd = args$indiv_sd), nrow = n)
+  Y <- LL %*% t(FF) + E
+  YYt <- (1/p)*tcrossprod(Y)
+  return(list(Y = Y, YYt = YYt, LL = LL, FF = FF, K = ncol(LL)))
+}
+```
+
+```{r}
+sim_args = list(pop_sizes = rep(40, 4), n_genes = 1000, branch_sds = rep(2,7), indiv_sd = 1, seed = 1)
+sim_data <- sim_4pops(sim_args)
+```
+
+This is a heatmap of the scaled Gram matrix:
+```{r}
+plot_heatmap(sim_data$YYt, colors_range = c('blue','gray96','red'), brks = seq(-max(abs(sim_data$YYt)), max(abs(sim_data$YYt)), length.out = 50))
+```
+
+This is a scatter plot of the true loadings matrix:
+```{r}
+pop_vec <- c(rep('A', 40), rep('B', 40), rep('C', 40), rep('D', 40))
+plot_loadings(sim_data$LL, pop_vec)
+```
+
+This is a plot of the eigenvalues of the Gram matrix:
+```{r}
+S_eigen <- eigen(sim_data$YYt)
+plot(S_eigen$values) + abline(a = 0, b = 0, col = 'red')
+```
+
+This is the minimum eigenvalue:
+```{r}
+min(S_eigen$values)
+```
+
+# symEBcovMF with generalized binary prior
+Here, we apply symEBcovMF with generalized binary prior (using the default scale setting, `scale - 0.1`):
+
+```{r}
+symebcovmf_gb_fit <- sym_ebcovmf_fit(S = sim_data$YYt, ebnm_fn = ebnm::ebnm_generalized_binary, K = 7, maxiter = 500, rank_one_tol = 10^(-8), tol = 10^(-8), refit_lam = TRUE)
+```
+
+This is a plot of the loadings estimate:
+```{r}
+plot_loadings(symebcovmf_gb_fit$L_pm %*% diag(sqrt(symebcovmf_gb_fit$lambda)), pop_vec)
+```
+
+This is a plot of the estimate for the fourth factor:
+```{r}
+plot(symebcovmf_gb_fit$L_pm[,4], ylab = 'Fourth Factor')
+```
+
+This is the ELBO:
+```{r}
+symebcovmf_gb_fit$elbo
+```
+
+As noted in our motivation, the estimate does not have four single population effect factors. It has one, but the other three factors group two population effects together. I have not looked into whether this is a convergence issue (i.e. does this solution have a higher ELBO than the desired solution?) or whether the method prefers this solution.
+
+# Alter ratio parameter of generalized binary
+The first thing I will try is changing the `scale` parameter in the generalized binary prior. The `scale` parameter refers to the ratio $\sigma/mu$. If the ratio is small, then the prior will be closer to a strictly binary prior. The idea behind this approach is to make the factors closer to binary in order to prevent the "point of no return" where the method prefers to add factors with grouped effects rather than sparse group effect factors.
+
+```{r}
+ebnm_generalized_binary_fix_scale <- function(x, s, mode = 'estimate', g_init = NULL, fix_g = FALSE, output = ebnm_output_default(), control = NULL){
+  ebnm_gb_output <- ebnm::ebnm_generalized_binary(x = x, s = s, mode = mode, 
+                                                  scale = 0.01, 
+                                                  g_init = g_init, fix_g = fix_g,
+                                                  output = output, control = control)
+  return(ebnm_gb_output)
+}
+```
+
+```{r, warning = FALSE}
+symebcovmf_gb_fix_scale_fit <- sym_ebcovmf_fit(S = sim_data$YYt, ebnm_fn = ebnm_generalized_binary_fix_scale, K = 7, maxiter = 500, rank_one_tol = 10^(-8), tol = 10^(-8), refit_lam = TRUE)
+```
+Note: There's a very significant ELBO decrease when I run symEBcovMF with this prior. Previously, I had attributed ELBO decreases with the generalized binary prior to optimization issues. This is a note to myself to double check that. (Maybe we see ELBO decreases because the residual matrices are not positive definite?)
+
+This is a plot of the loadings estimate:
+```{r}
+plot_loadings(symebcovmf_gb_fix_scale_fit$L_pm %*% diag(sqrt(symebcovmf_gb_fix_scale_fit$lambda)), pop_vec)
+```
+
+This is a plot of the estimate for the fourth factor:
+```{r}
+plot(symebcovmf_gb_fix_scale_fit$L_pm[,4], ylab = 'Fourth Factor')
+```
+
+This is the ELBO:
+```{r}
+symebcovmf_gb_fix_scale_fit$elbo
+```
+
+Altering the scale parameter did not fix the problem. I did try decreasing the convergence tolerance and increasing the maximum number of iterations to see if any further shrinkage happens. But the estimate seems to be the same. Another observation is the ELBO for this estimate is higher than that of method with the default settings.
+
+# Try binormal prior
+Here, I try symEBcovMF with the binormal prior. I don't have particularly high hopes given that generalized binary with different scales didn't work. But let's try it.
+
+```{r}
+dbinormal = function (x,s,s0,lambda,log=TRUE){
+  pi0 = 0.5
+  pi1 = 0.5
+  s2 = s^2
+  s02 = s0^2
+  l0 = dnorm(x,0,sqrt(lambda^2 * s02 + s2),log=TRUE)
+  l1 = dnorm(x,lambda,sqrt(lambda^2 * s02 + s2),log=TRUE)
+  logsum = log(pi0*exp(l0) + pi1*exp(l1))
+ 
+  m = pmax(l0,l1)
+  logsum = m + log(pi0*exp(l0-m) + pi1*exp(l1-m))
+  if (log) return(sum(logsum))
+  else return(exp(sum(logsum)))
+}
+```
+
+```{r}
+ebnm_binormal = function(x,s, g_init = NULL, fix_g = FALSE, output = ebnm_output_default(), control = NULL){
+  # Add g_init to make the method run
+  if(is.null(dim(x)) == FALSE){
+    x <- c(x)
+  }
+  s0 = 0.01
+  lambda = optimize(function(lambda){-dbinormal(x,s,s0,lambda,log=TRUE)},
+              lower = 0, upper = max(x))$minimum
+  g = ashr::normalmix(pi=c(0.5,0.5), mean=c(0,lambda), sd=c(lambda * s0,lambda * s0))
+  postmean = ashr::postmean(g,ashr::set_data(x,s))
+  postsd = ashr::postsd(g,ashr::set_data(x,s))
+  log_likelihood <- ashr::calc_loglik(g, ashr::set_data(x,s))
+  return(list(fitted_g = g, posterior = data.frame(mean=postmean,sd=postsd), log_likelihood = log_likelihood))
+}
+```
+
+```{r, eval = FALSE, include = FALSE}
+# test function
+set.seed(1)
+s = 1
+s0 = 0.1
+lambda = exp(4)
+
+s2 = s^2
+s02 = s0^2
+n = 1000
+x = c(rnorm(n,0,sqrt(lambda^2 * s02 + s2)),rnorm(n,lambda,sqrt(lambda^2 * s02 + s2)))
+
+res = ebnm_binormal(x,s)
+plot(x,res$posterior$mean)
+```
+
+```{r, warning = FALSE}
+symebcovmf_binormal_fit <- sym_ebcovmf_fit(S = sim_data$YYt, ebnm_fn = ebnm_binormal, K = 7, maxiter = 500, rank_one_tol = 10^(-8), tol = 10^(-8), refit_lam = TRUE)
+```
+
+This is a plot of the loadings estimate:
+```{r}
+plot_loadings(symebcovmf_binormal_fit$L_pm %*% diag(sqrt(symebcovmf_binormal_fit$lambda)), pop_vec)
+```
+
+This is a plot of the estimate for the fourth factor:
+```{r}
+plot(symebcovmf_binormal_fit$L_pm[,4], ylab = 'Fourth Factor')
+```
+
+This is the ELBO:
+```{r}
+symebcovmf_binormal_fit$elbo
+```
+
+symEBcovMF with binormal prior finds a similar estimate to that from symEBcovMF with generalized binary prior.
