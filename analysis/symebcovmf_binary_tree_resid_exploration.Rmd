@@ -1,0 +1,331 @@
+---
+title: "symebcovmf_binary_tree_resid_exploration"
+author: "Annie Xie"
+date: "2025-04-30"
+output: 
+  workflowr::wflow_html:
+    code_folding: hide
+editor_options:
+  chunk_output_type: console
+---
+
+# Introduction
+In this analysis, I am interested in exploring symEBcovMF with the generalized binary prior in the tree setting. This analysis will focus on the residual matrix example that I investigated in a different analysis.
+
+## Motivation
+When applying symEBcovMF with generalized binary prior to tree data, I found that instead of population effect factors, the method would group two population effects together. I tried using the point-exponential prior to remedy this, but found that the point-exponential prior also found factors which grouped two population effects. After further exploring this, I found that the method preferred the factor with two population effects -- when initialized from the true population effect factor, the method still converged to the factor with two population effects. In this analysis, I am interested in exploring the following question: if the prior is more strictly binary, will the rank-one fit with point-exponential prior find a single population effect factor for the fourth factor?
+
+# Packages and Functions
+
+```{r}
+library(ebnm)
+library(pheatmap)
+library(ggplot2)
+```
+
+```{r}
+source('code/visualization_functions.R')
+source('code/symebcovmf_functions.R')
+```
+
+# Data Generation
+
+```{r}
+sim_4pops <- function(args) {
+  set.seed(args$seed)
+  
+  n <- sum(args$pop_sizes)
+  p <- args$n_genes
+  
+  FF <- matrix(rnorm(7 * p, sd = rep(args$branch_sds, each = p)), ncol = 7)
+  # if (args$constrain_F) {
+  #   FF_svd <- svd(FF)
+  #   FF <- FF_svd$u
+  #   FF <- t(t(FF) * branch_sds * sqrt(p))
+  # }
+  
+  LL <- matrix(0, nrow = n, ncol = 7)
+  LL[, 1] <- 1
+  LL[, 2] <- rep(c(1, 1, 0, 0), times = args$pop_sizes)
+  LL[, 3] <- rep(c(0, 0, 1, 1), times = args$pop_sizes)
+  LL[, 4] <- rep(c(1, 0, 0, 0), times = args$pop_sizes)
+  LL[, 5] <- rep(c(0, 1, 0, 0), times = args$pop_sizes)
+  LL[, 6] <- rep(c(0, 0, 1, 0), times = args$pop_sizes)
+  LL[, 7] <- rep(c(0, 0, 0, 1), times = args$pop_sizes)
+  
+  E <- matrix(rnorm(n * p, sd = args$indiv_sd), nrow = n)
+  Y <- LL %*% t(FF) + E
+  YYt <- (1/p)*tcrossprod(Y)
+  return(list(Y = Y, YYt = YYt, LL = LL, FF = FF, K = ncol(LL)))
+}
+```
+
+```{r}
+sim_args = list(pop_sizes = rep(40, 4), n_genes = 1000, branch_sds = rep(2,7), indiv_sd = 1, seed = 1)
+sim_data <- sim_4pops(sim_args)
+```
+
+This is a heatmap of the scaled Gram matrix:
+```{r}
+plot_heatmap(sim_data$YYt, colors_range = c('blue','gray96','red'), brks = seq(-max(abs(sim_data$YYt)), max(abs(sim_data$YYt)), length.out = 50))
+```
+
+This is a scatter plot of the true loadings matrix:
+```{r}
+pop_vec <- c(rep('A', 40), rep('B', 40), rep('C', 40), rep('D', 40))
+plot_loadings(sim_data$LL, pop_vec)
+```
+
+This is a plot of the eigenvalues of the Gram matrix:
+```{r}
+S_eigen <- eigen(sim_data$YYt)
+plot(S_eigen$values) + abline(a = 0, b = 0, col = 'red')
+```
+
+This is the minimum eigenvalue:
+```{r}
+min(S_eigen$values)
+```
+
+# Generalized binary with different scale parameter
+First, I will try generalized binary prior with a different `scale` parameter. The `scale` parameter refers to the ratio $\sigma/mu$. If the ratio is small, then the prior will be closer to a strictly binary prior.
+
+```{r}
+ebnm_generalized_binary_fix_scale <- function(x, s, mode = 'estimate', g_init = NULL, fix_g = FALSE, output = ebnm_output_default(), control = NULL){
+  ebnm_gb_output <- ebnm::ebnm_generalized_binary(x = x, s = s, mode = mode, 
+                                                  scale = 0.01, 
+                                                  g_init = g_init, fix_g = fix_g,
+                                                  output = output, control = control)
+  return(ebnm_gb_output)
+}
+```
+
+## Residual Matrix
+This is the residual matrix computed from a fit of three factors.
+
+```{r, warning = FALSE}
+symebcovmf_gb_fix_scale_rank3_fit <- sym_ebcovmf_fit(S = sim_data$YYt, ebnm_fn = ebnm_generalized_binary_fix_scale, K = 3, maxiter = 500, rank_one_tol = 10^(-8), tol = 10^(-8), refit_lam = TRUE)
+```
+
+```{r}
+rank3_gb_fix_scale_resid_matrix <- sim_data$YYt - tcrossprod(symebcovmf_gb_fix_scale_rank3_fit$L_pm %*% diag(sqrt(symebcovmf_gb_fix_scale_rank3_fit$lambda)))
+```
+
+```{r}
+plot_loadings(symebcovmf_gb_fix_scale_rank3_fit$L_pm %*% diag(sqrt(symebcovmf_gb_fix_scale_rank3_fit$lambda)), pop_vec)
+```
+
+```{r}
+plot_heatmap(rank3_gb_fix_scale_resid_matrix, colors_range = c('blue','gray96','red'), brks = seq(-max(abs(rank3_gb_fix_scale_resid_matrix)), max(abs(rank3_gb_fix_scale_resid_matrix)), length.out = 50))
+```
+
+## Try fitting fourth factor with point-exponential prior
+Now we try fitting a fourth factor using the rank-one fit with point-exponential prior.
+
+```{r}
+symebcovmf_gb_fix_scale_exp_fac4_fit <- sym_ebcovmf_r1_fit(sim_data$YYt, symebcovmf_gb_fix_scale_rank3_fit, ebnm_fn = ebnm_point_exponential, maxiter = 100, tol = 10^(-8))
+```
+
+```{r}
+plot(symebcovmf_gb_fix_scale_exp_fac4_fit$L_pm[,4], ylab = 'Fourth Factor')
+```
+
+```{r}
+fac4_idx <- which(symebcovmf_gb_fix_scale_exp_fac4_fit$vec_elbo_full == 4)
+plot(symebcovmf_gb_fix_scale_exp_fac4_fit$vec_elbo_full[(fac4_idx+1): length(symebcovmf_gb_fix_scale_exp_fac4_fit$vec_elbo_full)], xlab = 'Iter', ylab = 'ELBO')
+```
+
+We see that the method still finds a factor with two population effects.
+
+### Progression of Estimate
+This is the progression of the estimate.
+
+```{r}
+estimates_gb_fix_scale_exp_list <- list(sym_ebcovmf_r1_init(rank3_gb_fix_scale_resid_matrix)$v)
+for (i in 1:11){
+  estimates_gb_fix_scale_exp_list[[(i+1)]] <- sym_ebcovmf_r1_fit(sim_data$YYt, symebcovmf_gb_fix_scale_rank3_fit, ebnm_fn = ebnm_point_exponential, maxiter = i, tol = 10^(-8))$L_pm[,4]
+}
+```
+
+```{r}
+par(mfrow = c(6,2), mar = c(2, 2, 1, 1) + 0.1)
+max_y <- max(sapply(estimates_gb_fix_scale_exp_list, max))
+min_y <- min(sapply(estimates_gb_fix_scale_exp_list, min))
+for (i in 1:12){
+  plot(estimates_gb_fix_scale_exp_list[[i]], main = paste('Iter', (i-1)), ylab = 'L', ylim = c(min_y, max_y))
+}
+par(mfrow = c(1,1))
+```
+
+## Try fitting fourth factor initialized at true factor
+Now, I will try initializing with the true single population effect factor. This will help us determine if this is a convergence issue.
+
+```{r}
+true_fac4 <- rep(c(1,0), times = c(40, 120))
+true_fac4 <- true_fac4/sqrt(sum(true_fac4^2))
+symebcovmf_gb_fix_scale_exp_true_init_fac4_fit <- sym_ebcovmf_r1_fit(sim_data$YYt, symebcovmf_gb_fix_scale_rank3_fit, ebnm_fn = ebnm_point_exponential, maxiter = 100, tol = 10^(-8), v_init = true_fac4)
+```
+
+```{r}
+plot(symebcovmf_gb_fix_scale_exp_true_init_fac4_fit$L_pm[,4], ylab = 'Fourth Factor')
+```
+
+```{r}
+fac4_idx <- which(symebcovmf_gb_fix_scale_exp_true_init_fac4_fit$vec_elbo_full == 4)
+plot(symebcovmf_gb_fix_scale_exp_true_init_fac4_fit$vec_elbo_full[(fac4_idx+1): length(symebcovmf_gb_fix_scale_exp_true_init_fac4_fit$vec_elbo_full)], xlab = 'Iter', ylab = 'ELBO')
+```
+
+We see that the method still converges to a factor with two population groups. This suggests this method prefers this factor as opposed to the single population effect factor.
+
+### Progression of Estimate
+This is the progression of the estimate.
+
+```{r}
+estimates_gb_fix_scale_exp_true_init_list <- list(true_fac4)
+for (i in 1:11){
+  estimates_gb_fix_scale_exp_true_init_list[[(i+1)]] <- sym_ebcovmf_r1_fit(sim_data$YYt, symebcovmf_gb_fix_scale_rank3_fit, ebnm_fn = ebnm_point_exponential, maxiter = i, tol = 10^(-8), v_init = rep(c(1,0), times = c(40, 120)))$L_pm[,4]
+}
+```
+
+```{r}
+par(mfrow = c(6,2), mar = c(2, 2, 1, 1) + 0.1)
+for (i in 1:12){
+  plot(estimates_gb_fix_scale_exp_true_init_list[[i]], main = paste('Iter', (i-1)), ylab = 'L')
+}
+par(mfrow = c(1,1))
+```
+
+# Binormal Prior
+Here, I will try the binormal prior. Given that changing the scale of the generalized binary prior didn't work and it doesn't appear to be a convergence issue, I don't really expect this to perform much better. But it's also possible this prior has better shrinkage or convergence properties, so maybe it will.
+
+```{r}
+dbinormal = function (x,s,s0,lambda,log=TRUE){
+  pi0 = 0.5
+  pi1 = 0.5
+  s2 = s^2
+  s02 = s0^2
+  l0 = dnorm(x,0,sqrt(lambda^2 * s02 + s2),log=TRUE)
+  l1 = dnorm(x,lambda,sqrt(lambda^2 * s02 + s2),log=TRUE)
+  logsum = log(pi0*exp(l0) + pi1*exp(l1))
+ 
+  m = pmax(l0,l1)
+  logsum = m + log(pi0*exp(l0-m) + pi1*exp(l1-m))
+  if (log) return(sum(logsum))
+  else return(exp(sum(logsum)))
+}
+```
+
+```{r}
+ebnm_binormal = function(x,s, g_init = NULL, fix_g = FALSE, output = ebnm_output_default(), control = NULL){
+  # Add g_init to make the method run
+  if(is.null(dim(x)) == FALSE){
+    x <- c(x)
+  }
+  s0 = 0.01
+  lambda = optimize(function(lambda){-dbinormal(x,s,s0,lambda,log=TRUE)},
+              lower = 0, upper = max(x))$minimum
+  g = ashr::normalmix(pi=c(0.5,0.5), mean=c(0,lambda), sd=c(lambda * s0,lambda * s0))
+  postmean = ashr::postmean(g,ashr::set_data(x,s))
+  postsd = ashr::postsd(g,ashr::set_data(x,s))
+  log_likelihood <- ashr::calc_loglik(g, ashr::set_data(x,s))
+  return(list(fitted_g = g, posterior = data.frame(mean=postmean,sd=postsd), log_likelihood = log_likelihood))
+}
+```
+
+## Residual Matrix
+This is the residual matrix computed from a fit of three factors.
+
+```{r, warning = FALSE}
+symebcovmf_binormal_rank3_fit <- sym_ebcovmf_fit(S = sim_data$YYt, ebnm_fn = ebnm_binormal, K = 3, maxiter = 500, rank_one_tol = 10^(-8), tol = 10^(-8), refit_lam = TRUE)
+```
+
+```{r}
+rank3_binormal_resid_matrix <- sim_data$YYt - tcrossprod(symebcovmf_binormal_rank3_fit$L_pm %*% diag(sqrt(symebcovmf_binormal_rank3_fit$lambda)))
+```
+
+```{r}
+plot_loadings(symebcovmf_binormal_rank3_fit$L_pm %*% diag(sqrt(symebcovmf_binormal_rank3_fit$lambda)), pop_vec)
+```
+
+```{r}
+plot_heatmap(rank3_binormal_resid_matrix, colors_range = c('blue','gray96','red'), brks = seq(-max(abs(rank3_binormal_resid_matrix)), max(abs(rank3_binormal_resid_matrix)), length.out = 50))
+```
+
+## Try fitting fourth factor with point-exponential prior
+Now we try fitting a fourth factor using the rank-one fit with point-exponential prior.
+
+```{r}
+symebcovmf_binormal_exp_fac4_fit <- sym_ebcovmf_r1_fit(sim_data$YYt, symebcovmf_binormal_rank3_fit, ebnm_fn = ebnm_point_exponential, maxiter = 100, tol = 10^(-8))
+```
+
+```{r}
+plot(symebcovmf_binormal_exp_fac4_fit$L_pm[,4], ylab = 'Fourth Factor')
+```
+
+```{r}
+fac4_idx <- which(symebcovmf_binormal_exp_fac4_fit$vec_elbo_full == 4)
+plot(symebcovmf_binormal_exp_fac4_fit$vec_elbo_full[(fac4_idx+1): length(symebcovmf_binormal_exp_fac4_fit$vec_elbo_full)], xlab = 'Iter', ylab = 'ELBO')
+```
+
+Again, we see the method fits a factor with two population effects.
+
+### Progression of Estimate
+This is the progression of the estimate.
+
+```{r}
+estimates_binormal_exp_list <- list(sym_ebcovmf_r1_init(rank3_binormal_resid_matrix)$v)
+for (i in 1:11){
+  estimates_binormal_exp_list[[(i+1)]] <- sym_ebcovmf_r1_fit(sim_data$YYt, symebcovmf_binormal_rank3_fit, ebnm_fn = ebnm_point_exponential, maxiter = i, tol = 10^(-8))$L_pm[,4]
+}
+```
+
+```{r}
+par(mfrow = c(6,2), mar = c(2, 2, 1, 1) + 0.1)
+max_y <- max(sapply(estimates_binormal_exp_list, max))
+min_y <- min(sapply(estimates_binormal_exp_list, min))
+for (i in 1:12){
+  plot(estimates_binormal_exp_list[[i]], main = paste('Iter', (i-1)), ylab = 'L', ylim = c(min_y, max_y))
+}
+par(mfrow = c(1,1))
+```
+
+## Try fitting fourth factor initialized at true factor
+Now, I will try initializing with the true single population effect factor.
+
+```{r}
+true_fac4 <- rep(c(1,0), times = c(40, 120))
+true_fac4 <- true_fac4/sqrt(sum(true_fac4^2))
+symebcovmf_binormal_exp_true_init_fac4_fit <- sym_ebcovmf_r1_fit(sim_data$YYt, symebcovmf_binormal_rank3_fit, ebnm_fn = ebnm_point_exponential, maxiter = 100, tol = 10^(-8), v_init = true_fac4)
+```
+
+```{r}
+plot(symebcovmf_binormal_exp_true_init_fac4_fit$L_pm[,4], ylab = 'Fourth Factor')
+```
+
+```{r}
+fac4_idx <- which(symebcovmf_binormal_exp_true_init_fac4_fit$vec_elbo_full == 4)
+plot(symebcovmf_binormal_exp_true_init_fac4_fit$vec_elbo_full[(fac4_idx+1): length(symebcovmf_binormal_exp_true_init_fac4_fit$vec_elbo_full)], xlab = 'Iter', ylab = 'ELBO')
+```
+
+Again, the method fits a factor with two population effects, suggesting it prefers this solution.
+
+### Progression of Estimate
+This is the progression of the estimate.
+
+```{r}
+estimates_binormal_exp_true_init_list <- list(true_fac4)
+for (i in 1:11){
+  estimates_binormal_exp_true_init_list[[(i+1)]] <- sym_ebcovmf_r1_fit(sim_data$YYt, symebcovmf_binormal_rank3_fit, ebnm_fn = ebnm_point_exponential, maxiter = i, tol = 10^(-8), v_init = rep(c(1,0), times = c(40, 120)))$L_pm[,4]
+}
+```
+
+```{r}
+par(mfrow = c(6,2), mar = c(2, 2, 1, 1) + 0.1)
+for (i in 1:12){
+  plot(estimates_binormal_exp_true_init_list[[i]], main = paste('Iter', (i-1)), ylab = 'L')
+}
+par(mfrow = c(1,1))
+```
+
+# Observations
+The results from all the priors are similar, and there is no evidence of convergence issues. This suggests that the strictness of the binary prior does not seem to help find single population effect factors for this dataset. Follow up hypotheses: the noise is structured and the method is fitting the structure in the noise? Or is the estimation of $\lambda$ off, leaving behind structural components that should have been taken out?
