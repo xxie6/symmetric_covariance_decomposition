@@ -101,7 +101,7 @@ ebnm_generalized_binary_fix_scale <- function(x, s, mode = 'estimate', g_init = 
 ```
 
 ## Residual Matrix
-This is the residual matrix computed from a fit of three factors.
+We construct the residual matrix from a fit of three factors.
 
 ```{r, warning = FALSE}
 symebcovmf_gb_fix_scale_rank3_fit <- sym_ebcovmf_fit(S = sim_data$YYt, ebnm_fn = ebnm_generalized_binary_fix_scale, K = 3, maxiter = 500, rank_one_tol = 10^(-8), tol = 10^(-8), refit_lam = TRUE)
@@ -111,10 +111,12 @@ symebcovmf_gb_fix_scale_rank3_fit <- sym_ebcovmf_fit(S = sim_data$YYt, ebnm_fn =
 rank3_gb_fix_scale_resid_matrix <- sim_data$YYt - tcrossprod(symebcovmf_gb_fix_scale_rank3_fit$L_pm %*% diag(sqrt(symebcovmf_gb_fix_scale_rank3_fit$lambda)))
 ```
 
+This is a plot of the loadings estimate.
 ```{r}
 plot_loadings(symebcovmf_gb_fix_scale_rank3_fit$L_pm %*% diag(sqrt(symebcovmf_gb_fix_scale_rank3_fit$lambda)), pop_vec)
 ```
 
+This is a heatmap of the residual matrix.
 ```{r}
 plot_heatmap(rank3_gb_fix_scale_resid_matrix, colors_range = c('blue','gray96','red'), brks = seq(-max(abs(rank3_gb_fix_scale_resid_matrix)), max(abs(rank3_gb_fix_scale_resid_matrix)), length.out = 50))
 ```
@@ -126,10 +128,12 @@ Now we try fitting a fourth factor using the rank-one fit with point-exponential
 symebcovmf_gb_fix_scale_exp_fac4_fit <- sym_ebcovmf_r1_fit(sim_data$YYt, symebcovmf_gb_fix_scale_rank3_fit, ebnm_fn = ebnm_point_exponential, maxiter = 100, tol = 10^(-8))
 ```
 
+This is a plot of the fourth factor estimate.
 ```{r}
 plot(symebcovmf_gb_fix_scale_exp_fac4_fit$L_pm[,4], ylab = 'Fourth Factor')
 ```
 
+This is a plot of the ELBO when optimizing the fourth factor.
 ```{r}
 fac4_idx <- which(symebcovmf_gb_fix_scale_exp_fac4_fit$vec_elbo_full == 4)
 plot(symebcovmf_gb_fix_scale_exp_fac4_fit$vec_elbo_full[(fac4_idx+1): length(symebcovmf_gb_fix_scale_exp_fac4_fit$vec_elbo_full)], xlab = 'Iter', ylab = 'ELBO')
@@ -166,10 +170,12 @@ true_fac4 <- true_fac4/sqrt(sum(true_fac4^2))
 symebcovmf_gb_fix_scale_exp_true_init_fac4_fit <- sym_ebcovmf_r1_fit(sim_data$YYt, symebcovmf_gb_fix_scale_rank3_fit, ebnm_fn = ebnm_point_exponential, maxiter = 100, tol = 10^(-8), v_init = true_fac4)
 ```
 
+This is a plot of the fourth factor estimate.
 ```{r}
 plot(symebcovmf_gb_fix_scale_exp_true_init_fac4_fit$L_pm[,4], ylab = 'Fourth Factor')
 ```
 
+This is a plot of the ELBO when optimizing the fourth factor.
 ```{r}
 fac4_idx <- which(symebcovmf_gb_fix_scale_exp_true_init_fac4_fit$vec_elbo_full == 4)
 plot(symebcovmf_gb_fix_scale_exp_true_init_fac4_fit$vec_elbo_full[(fac4_idx+1): length(symebcovmf_gb_fix_scale_exp_true_init_fac4_fit$vec_elbo_full)], xlab = 'Iter', ylab = 'ELBO')
@@ -233,7 +239,7 @@ ebnm_binormal = function(x,s, g_init = NULL, fix_g = FALSE, output = ebnm_output
 ```
 
 ## Residual Matrix
-This is the residual matrix computed from a fit of three factors.
+We construct the residual matrix from a fit of three factors.
 
 ```{r, warning = FALSE}
 symebcovmf_binormal_rank3_fit <- sym_ebcovmf_fit(S = sim_data$YYt, ebnm_fn = ebnm_binormal, K = 3, maxiter = 500, rank_one_tol = 10^(-8), tol = 10^(-8), refit_lam = TRUE)
@@ -243,10 +249,12 @@ symebcovmf_binormal_rank3_fit <- sym_ebcovmf_fit(S = sim_data$YYt, ebnm_fn = ebn
 rank3_binormal_resid_matrix <- sim_data$YYt - tcrossprod(symebcovmf_binormal_rank3_fit$L_pm %*% diag(sqrt(symebcovmf_binormal_rank3_fit$lambda)))
 ```
 
+This is a plot of the loadings estimate.
 ```{r}
 plot_loadings(symebcovmf_binormal_rank3_fit$L_pm %*% diag(sqrt(symebcovmf_binormal_rank3_fit$lambda)), pop_vec)
 ```
 
+This is a heatmap of the residual matrix.
 ```{r}
 plot_heatmap(rank3_binormal_resid_matrix, colors_range = c('blue','gray96','red'), brks = seq(-max(abs(rank3_binormal_resid_matrix)), max(abs(rank3_binormal_resid_matrix)), length.out = 50))
 ```
@@ -258,10 +266,12 @@ Now we try fitting a fourth factor using the rank-one fit with point-exponential
 symebcovmf_binormal_exp_fac4_fit <- sym_ebcovmf_r1_fit(sim_data$YYt, symebcovmf_binormal_rank3_fit, ebnm_fn = ebnm_point_exponential, maxiter = 100, tol = 10^(-8))
 ```
 
+This is a plot of the fourth factor estimate.
 ```{r}
 plot(symebcovmf_binormal_exp_fac4_fit$L_pm[,4], ylab = 'Fourth Factor')
 ```
 
+This is a plot of the ELBO when optimizing the fourth factor.
 ```{r}
 fac4_idx <- which(symebcovmf_binormal_exp_fac4_fit$vec_elbo_full == 4)
 plot(symebcovmf_binormal_exp_fac4_fit$vec_elbo_full[(fac4_idx+1): length(symebcovmf_binormal_exp_fac4_fit$vec_elbo_full)], xlab = 'Iter', ylab = 'ELBO')
@@ -298,10 +308,12 @@ true_fac4 <- true_fac4/sqrt(sum(true_fac4^2))
 symebcovmf_binormal_exp_true_init_fac4_fit <- sym_ebcovmf_r1_fit(sim_data$YYt, symebcovmf_binormal_rank3_fit, ebnm_fn = ebnm_point_exponential, maxiter = 100, tol = 10^(-8), v_init = true_fac4)
 ```
 
+This is a plot of the fourth factor estimate.
 ```{r}
 plot(symebcovmf_binormal_exp_true_init_fac4_fit$L_pm[,4], ylab = 'Fourth Factor')
 ```
 
+This is a plot of the ELBO when optimizing the fourth factor.
 ```{r}
 fac4_idx <- which(symebcovmf_binormal_exp_true_init_fac4_fit$vec_elbo_full == 4)
 plot(symebcovmf_binormal_exp_true_init_fac4_fit$vec_elbo_full[(fac4_idx+1): length(symebcovmf_binormal_exp_true_init_fac4_fit$vec_elbo_full)], xlab = 'Iter', ylab = 'ELBO')
