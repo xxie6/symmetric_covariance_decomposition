@@ -285,6 +285,8 @@ sym_ebcovmf_r1_init <- function(R, nonnegative = TRUE){
     if(sqrt(sum(minus_v^2)) > 0){
       minus_v <- minus_v/sqrt(sum(minus_v^2))
     }
+  } else {
+    minus_v <- -v
   }
   lambda_options <- c(drop(t(v) %*% R %*% v), drop(t(minus_v) %*% R %*% minus_v))
   if(which.max(lambda_options) == 1){
