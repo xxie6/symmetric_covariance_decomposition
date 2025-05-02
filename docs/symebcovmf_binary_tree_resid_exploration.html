@@ -534,15 +534,15 @@ project makes it easier to run your code on other machines.</p>
 <div class="panel panel-default">
 <div class="panel-heading">
 <p class="panel-title">
-<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomxxie6symmetriccovariancedecompositiontree818d4cfae0086979334452767261e5b5168a7051targetblank818d4cfa">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomxxie6symmetriccovariancedecompositiontree846345da1a5f1fc99ffb908b08e8dbbc4fb8c903targetblank846345da">
 <span class="glyphicon glyphicon-ok text-success"
 aria-hidden="true"></span> <strong>Repository version:</strong>
-<a href="https://github.com/xxie6/symmetric_covariance_decomposition/tree/818d4cfae0086979334452767261e5b5168a7051" target="_blank">818d4cf</a>
+<a href="https://github.com/xxie6/symmetric_covariance_decomposition/tree/846345da1a5f1fc99ffb908b08e8dbbc4fb8c903" target="_blank">846345d</a>
 </a>
 </p>
 </div>
 <div
-id="strongRepositoryversionstrongahrefhttpsgithubcomxxie6symmetriccovariancedecompositiontree818d4cfae0086979334452767261e5b5168a7051targetblank818d4cfa"
+id="strongRepositoryversionstrongahrefhttpsgithubcomxxie6symmetriccovariancedecompositiontree846345da1a5f1fc99ffb908b08e8dbbc4fb8c903targetblank846345da"
 class="panel-collapse collapse">
 <div class="panel-body">
 <p>
@@ -552,7 +552,7 @@ reproducibility.
 </p>
 <p>
 The results in this page were generated with repository version
-<a href="https://github.com/xxie6/symmetric_covariance_decomposition/tree/818d4cfae0086979334452767261e5b5168a7051" target="_blank">818d4cf</a>.
+<a href="https://github.com/xxie6/symmetric_covariance_decomposition/tree/846345da1a5f1fc99ffb908b08e8dbbc4fb8c903" target="_blank">846345d</a>.
 See the <em>Past versions</em> tab to see a history of the changes made
 to the R Markdown and HTML files.
 </p>
@@ -622,6 +622,40 @@ Message
 </tr>
 </thead>
 <tbody>
+<tr>
+<td>
+Rmd
+</td>
+<td>
+<a href="https://github.com/xxie6/symmetric_covariance_decomposition/blob/846345da1a5f1fc99ffb908b08e8dbbc4fb8c903/analysis/symebcovmf_binary_tree_resid_exploration.Rmd" target="_blank">846345d</a>
+</td>
+<td>
+Annie Xie
+</td>
+<td>
+2025-05-02
+</td>
+<td>
+Add text to residual matrix example
+</td>
+</tr>
+<tr>
+<td>
+html
+</td>
+<td>
+<a href="https://rawcdn.githack.com/xxie6/symmetric_covariance_decomposition/a1149d83614026a52b6dfe0c4545dde9deaaa6b7/docs/symebcovmf_binary_tree_resid_exploration.html" target="_blank">a1149d8</a>
+</td>
+<td>
+Annie Xie
+</td>
+<td>
+2025-05-02
+</td>
+<td>
+Build site.
+</td>
+</tr>
 <tr>
 <td>
 Rmd
@@ -918,9 +952,10 @@ is small, then the prior will be closer to a strictly binary prior.</p>
 }</code></pre>
 <div id="residual-matrix" class="section level2">
 <h2>Residual Matrix</h2>
-<p>This is the residual matrix computed from a fit of three factors.</p>
+<p>We construct the residual matrix from a fit of three factors.</p>
 <pre class="r"><code>symebcovmf_gb_fix_scale_rank3_fit &lt;- sym_ebcovmf_fit(S = sim_data$YYt, ebnm_fn = ebnm_generalized_binary_fix_scale, K = 3, maxiter = 500, rank_one_tol = 10^(-8), tol = 10^(-8), refit_lam = TRUE)</code></pre>
 <pre class="r"><code>rank3_gb_fix_scale_resid_matrix &lt;- sim_data$YYt - tcrossprod(symebcovmf_gb_fix_scale_rank3_fit$L_pm %*% diag(sqrt(symebcovmf_gb_fix_scale_rank3_fit$lambda)))</code></pre>
+<p>This is a plot of the loadings estimate.</p>
 <pre class="r"><code>plot_loadings(symebcovmf_gb_fix_scale_rank3_fit$L_pm %*% diag(sqrt(symebcovmf_gb_fix_scale_rank3_fit$lambda)), pop_vec)</code></pre>
 <p><img src="figure/symebcovmf_binary_tree_resid_exploration.Rmd/unnamed-chunk-12-1.png" width="672" style="display: block; margin: auto;" /></p>
 <p>
@@ -960,6 +995,7 @@ Annie Xie
 </table>
 </div>
 </div>
+<p>This is a heatmap of the residual matrix.</p>
 <pre class="r"><code>plot_heatmap(rank3_gb_fix_scale_resid_matrix, colors_range = c(&#39;blue&#39;,&#39;gray96&#39;,&#39;red&#39;), brks = seq(-max(abs(rank3_gb_fix_scale_resid_matrix)), max(abs(rank3_gb_fix_scale_resid_matrix)), length.out = 50))</code></pre>
 <p><img src="figure/symebcovmf_binary_tree_resid_exploration.Rmd/unnamed-chunk-13-1.png" width="672" style="display: block; margin: auto;" /></p>
 <p>
@@ -1006,6 +1042,7 @@ class="section level2">
 <p>Now we try fitting a fourth factor using the rank-one fit with
 point-exponential prior.</p>
 <pre class="r"><code>symebcovmf_gb_fix_scale_exp_fac4_fit &lt;- sym_ebcovmf_r1_fit(sim_data$YYt, symebcovmf_gb_fix_scale_rank3_fit, ebnm_fn = ebnm_point_exponential, maxiter = 100, tol = 10^(-8))</code></pre>
+<p>This is a plot of the fourth factor estimate.</p>
 <pre class="r"><code>plot(symebcovmf_gb_fix_scale_exp_fac4_fit$L_pm[,4], ylab = &#39;Fourth Factor&#39;)</code></pre>
 <p><img src="figure/symebcovmf_binary_tree_resid_exploration.Rmd/unnamed-chunk-15-1.png" width="672" style="display: block; margin: auto;" /></p>
 <p>
@@ -1045,6 +1082,7 @@ Annie Xie
 </table>
 </div>
 </div>
+<p>This is a plot of the ELBO when optimizing the fourth factor.</p>
 <pre class="r"><code>fac4_idx &lt;- which(symebcovmf_gb_fix_scale_exp_fac4_fit$vec_elbo_full == 4)
 plot(symebcovmf_gb_fix_scale_exp_fac4_fit$vec_elbo_full[(fac4_idx+1): length(symebcovmf_gb_fix_scale_exp_fac4_fit$vec_elbo_full)], xlab = &#39;Iter&#39;, ylab = &#39;ELBO&#39;)</code></pre>
 <p><img src="figure/symebcovmf_binary_tree_resid_exploration.Rmd/unnamed-chunk-16-1.png" width="672" style="display: block; margin: auto;" /></p>
@@ -1149,6 +1187,7 @@ factor. This will help us determine if this is a convergence issue.</p>
 <pre class="r"><code>true_fac4 &lt;- rep(c(1,0), times = c(40, 120))
 true_fac4 &lt;- true_fac4/sqrt(sum(true_fac4^2))
 symebcovmf_gb_fix_scale_exp_true_init_fac4_fit &lt;- sym_ebcovmf_r1_fit(sim_data$YYt, symebcovmf_gb_fix_scale_rank3_fit, ebnm_fn = ebnm_point_exponential, maxiter = 100, tol = 10^(-8), v_init = true_fac4)</code></pre>
+<p>This is a plot of the fourth factor estimate.</p>
 <pre class="r"><code>plot(symebcovmf_gb_fix_scale_exp_true_init_fac4_fit$L_pm[,4], ylab = &#39;Fourth Factor&#39;)</code></pre>
 <p><img src="figure/symebcovmf_binary_tree_resid_exploration.Rmd/unnamed-chunk-20-1.png" width="672" style="display: block; margin: auto;" /></p>
 <p>
@@ -1188,6 +1227,7 @@ Annie Xie
 </table>
 </div>
 </div>
+<p>This is a plot of the ELBO when optimizing the fourth factor.</p>
 <pre class="r"><code>fac4_idx &lt;- which(symebcovmf_gb_fix_scale_exp_true_init_fac4_fit$vec_elbo_full == 4)
 plot(symebcovmf_gb_fix_scale_exp_true_init_fac4_fit$vec_elbo_full[(fac4_idx+1): length(symebcovmf_gb_fix_scale_exp_true_init_fac4_fit$vec_elbo_full)], xlab = &#39;Iter&#39;, ylab = &#39;ELBO&#39;)</code></pre>
 <p><img src="figure/symebcovmf_binary_tree_resid_exploration.Rmd/unnamed-chunk-21-1.png" width="672" style="display: block; margin: auto;" /></p>
@@ -1321,9 +1361,10 @@ properties, so maybe it will.</p>
 }</code></pre>
 <div id="residual-matrix-1" class="section level2">
 <h2>Residual Matrix</h2>
-<p>This is the residual matrix computed from a fit of three factors.</p>
+<p>We construct the residual matrix from a fit of three factors.</p>
 <pre class="r"><code>symebcovmf_binormal_rank3_fit &lt;- sym_ebcovmf_fit(S = sim_data$YYt, ebnm_fn = ebnm_binormal, K = 3, maxiter = 500, rank_one_tol = 10^(-8), tol = 10^(-8), refit_lam = TRUE)</code></pre>
 <pre class="r"><code>rank3_binormal_resid_matrix &lt;- sim_data$YYt - tcrossprod(symebcovmf_binormal_rank3_fit$L_pm %*% diag(sqrt(symebcovmf_binormal_rank3_fit$lambda)))</code></pre>
+<p>This is a plot of the loadings estimate.</p>
 <pre class="r"><code>plot_loadings(symebcovmf_binormal_rank3_fit$L_pm %*% diag(sqrt(symebcovmf_binormal_rank3_fit$lambda)), pop_vec)</code></pre>
 <p><img src="figure/symebcovmf_binary_tree_resid_exploration.Rmd/unnamed-chunk-28-1.png" width="672" style="display: block; margin: auto;" /></p>
 <p>
@@ -1363,6 +1404,7 @@ Annie Xie
 </table>
 </div>
 </div>
+<p>This is a heatmap of the residual matrix.</p>
 <pre class="r"><code>plot_heatmap(rank3_binormal_resid_matrix, colors_range = c(&#39;blue&#39;,&#39;gray96&#39;,&#39;red&#39;), brks = seq(-max(abs(rank3_binormal_resid_matrix)), max(abs(rank3_binormal_resid_matrix)), length.out = 50))</code></pre>
 <p><img src="figure/symebcovmf_binary_tree_resid_exploration.Rmd/unnamed-chunk-29-1.png" width="672" style="display: block; margin: auto;" /></p>
 <p>
@@ -1409,6 +1451,7 @@ class="section level2">
 <p>Now we try fitting a fourth factor using the rank-one fit with
 point-exponential prior.</p>
 <pre class="r"><code>symebcovmf_binormal_exp_fac4_fit &lt;- sym_ebcovmf_r1_fit(sim_data$YYt, symebcovmf_binormal_rank3_fit, ebnm_fn = ebnm_point_exponential, maxiter = 100, tol = 10^(-8))</code></pre>
+<p>This is a plot of the fourth factor estimate.</p>
 <pre class="r"><code>plot(symebcovmf_binormal_exp_fac4_fit$L_pm[,4], ylab = &#39;Fourth Factor&#39;)</code></pre>
 <p><img src="figure/symebcovmf_binary_tree_resid_exploration.Rmd/unnamed-chunk-31-1.png" width="672" style="display: block; margin: auto;" /></p>
 <p>
@@ -1448,6 +1491,7 @@ Annie Xie
 </table>
 </div>
 </div>
+<p>This is a plot of the ELBO when optimizing the fourth factor.</p>
 <pre class="r"><code>fac4_idx &lt;- which(symebcovmf_binormal_exp_fac4_fit$vec_elbo_full == 4)
 plot(symebcovmf_binormal_exp_fac4_fit$vec_elbo_full[(fac4_idx+1): length(symebcovmf_binormal_exp_fac4_fit$vec_elbo_full)], xlab = &#39;Iter&#39;, ylab = &#39;ELBO&#39;)</code></pre>
 <p><img src="figure/symebcovmf_binary_tree_resid_exploration.Rmd/unnamed-chunk-32-1.png" width="672" style="display: block; margin: auto;" /></p>
@@ -1552,6 +1596,7 @@ factor.</p>
 <pre class="r"><code>true_fac4 &lt;- rep(c(1,0), times = c(40, 120))
 true_fac4 &lt;- true_fac4/sqrt(sum(true_fac4^2))
 symebcovmf_binormal_exp_true_init_fac4_fit &lt;- sym_ebcovmf_r1_fit(sim_data$YYt, symebcovmf_binormal_rank3_fit, ebnm_fn = ebnm_point_exponential, maxiter = 100, tol = 10^(-8), v_init = true_fac4)</code></pre>
+<p>This is a plot of the fourth factor estimate.</p>
 <pre class="r"><code>plot(symebcovmf_binormal_exp_true_init_fac4_fit$L_pm[,4], ylab = &#39;Fourth Factor&#39;)</code></pre>
 <p><img src="figure/symebcovmf_binary_tree_resid_exploration.Rmd/unnamed-chunk-36-1.png" width="672" style="display: block; margin: auto;" /></p>
 <p>
@@ -1591,6 +1636,7 @@ Annie Xie
 </table>
 </div>
 </div>
+<p>This is a plot of the ELBO when optimizing the fourth factor.</p>
 <pre class="r"><code>fac4_idx &lt;- which(symebcovmf_binormal_exp_true_init_fac4_fit$vec_elbo_full == 4)
 plot(symebcovmf_binormal_exp_true_init_fac4_fit$vec_elbo_full[(fac4_idx+1): length(symebcovmf_binormal_exp_true_init_fac4_fit$vec_elbo_full)], xlab = &#39;Iter&#39;, ylab = &#39;ELBO&#39;)</code></pre>
 <p><img src="figure/symebcovmf_binary_tree_resid_exploration.Rmd/unnamed-chunk-37-1.png" width="672" style="display: block; margin: auto;" /></p>
