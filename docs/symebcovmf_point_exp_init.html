@@ -402,7 +402,7 @@ class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span>
 <div class="tab-content">
 <div id="summary" class="tab-pane fade in active">
 <p>
-<strong>Last updated:</strong> 2025-04-28
+<strong>Last updated:</strong> 2025-05-05
 </p>
 <p>
 <strong>Checks:</strong> <span
@@ -534,15 +534,15 @@ project makes it easier to run your code on other machines.</p>
 <div class="panel panel-default">
 <div class="panel-heading">
 <p class="panel-title">
-<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomxxie6symmetriccovariancedecompositiontreedaf1ee3051b4baed8f897faaf333a72496567d67targetblankdaf1ee3a">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomxxie6symmetriccovariancedecompositiontreef70efd70007e7e81237dc063c9c357c828ab5f6atargetblankf70efd7a">
 <span class="glyphicon glyphicon-ok text-success"
 aria-hidden="true"></span> <strong>Repository version:</strong>
-<a href="https://github.com/xxie6/symmetric_covariance_decomposition/tree/daf1ee3051b4baed8f897faaf333a72496567d67" target="_blank">daf1ee3</a>
+<a href="https://github.com/xxie6/symmetric_covariance_decomposition/tree/f70efd70007e7e81237dc063c9c357c828ab5f6a" target="_blank">f70efd7</a>
 </a>
 </p>
 </div>
 <div
-id="strongRepositoryversionstrongahrefhttpsgithubcomxxie6symmetriccovariancedecompositiontreedaf1ee3051b4baed8f897faaf333a72496567d67targetblankdaf1ee3a"
+id="strongRepositoryversionstrongahrefhttpsgithubcomxxie6symmetriccovariancedecompositiontreef70efd70007e7e81237dc063c9c357c828ab5f6atargetblankf70efd7a"
 class="panel-collapse collapse">
 <div class="panel-body">
 <p>
@@ -552,7 +552,7 @@ reproducibility.
 </p>
 <p>
 The results in this page were generated with repository version
-<a href="https://github.com/xxie6/symmetric_covariance_decomposition/tree/daf1ee3051b4baed8f897faaf333a72496567d67" target="_blank">daf1ee3</a>.
+<a href="https://github.com/xxie6/symmetric_covariance_decomposition/tree/f70efd70007e7e81237dc063c9c357c828ab5f6a" target="_blank">f70efd7</a>.
 See the <em>Past versions</em> tab to see a history of the changes made
 to the R Markdown and HTML files.
 </p>
@@ -569,6 +569,13 @@ were generated:
 Ignored files:
     Ignored:    .DS_Store
     Ignored:    .Rhistory
+
+Untracked files:
+    Untracked:  analysis/symebcovmf_binary_tree_resid_orthog_exploration.Rmd
+    Untracked:  analysis/unbal_nonoverlap_exploration.Rmd
+
+Unstaged changes:
+    Modified:   analysis/unbal_nonoverlap.Rmd
 
 </code></pre>
 <p>
@@ -615,6 +622,40 @@ Message
 </tr>
 </thead>
 <tbody>
+<tr>
+<td>
+Rmd
+</td>
+<td>
+<a href="https://github.com/xxie6/symmetric_covariance_decomposition/blob/f70efd70007e7e81237dc063c9c357c828ab5f6a/analysis/symebcovmf_point_exp_init.Rmd" target="_blank">f70efd7</a>
+</td>
+<td>
+Annie Xie
+</td>
+<td>
+2025-05-05
+</td>
+<td>
+Edit text in point-exponential init analysis
+</td>
+</tr>
+<tr>
+<td>
+html
+</td>
+<td>
+<a href="https://rawcdn.githack.com/xxie6/symmetric_covariance_decomposition/484b3224b7491767724eb5b0b785597341a867c1/docs/symebcovmf_point_exp_init.html" target="_blank">484b322</a>
+</td>
+<td>
+Annie Xie
+</td>
+<td>
+2025-04-28
+</td>
+<td>
+Build site.
+</td>
+</tr>
 <tr>
 <td>
 Rmd
@@ -854,8 +895,9 @@ Annie Xie
 <div id="generalized-binary-symebcovmf" class="section level1">
 <h1>Generalized binary symEBcovMF</h1>
 <pre class="r"><code>symebcovmf_fit &lt;- sym_ebcovmf_fit(S = sim_data$YYt, ebnm_fn = ebnm::ebnm_generalized_binary, K = 7, maxiter = 500, rank_one_tol = 10^(-8), tol = 10^(-8), refit_lam = TRUE)</code></pre>
-<pre><code>[1] &quot;elbo decreased by 0.204520186045556&quot;
-[1] &quot;elbo decreased by 0.00983061176884803&quot;</code></pre>
+<pre><code>[1] &quot;elbo decreased by 0.185693113584421&quot;
+[1] &quot;elbo decreased by 0.0114876429142896&quot;
+[1] &quot;elbo decreased by 1.5825207810849e-10&quot;</code></pre>
 <p>This is a scatter plot of <span
 class="math inline">\(\hat{L}\)</span>, the estimate from
 symEBcovMF:</p>
@@ -900,7 +942,7 @@ Annie Xie
 </div>
 </div>
 <pre class="r"><code>symebcovmf_fit$elbo</code></pre>
-<pre><code>[1] -14982.02</code></pre>
+<pre><code>[1] -14979.17</code></pre>
 </div>
 <div
 id="generalized-binary-symebcovmf-initialized-with-point-exponential-fit"
@@ -914,7 +956,10 @@ which I call <span class="math inline">\(\hat{L}_{exp}\)</span>. Then, I
 run symEBcovMF with a generalized-binary prior. I initialize the
 rank-one fit for factor <span class="math inline">\(k\)</span> with the
 <span class="math inline">\(k\)</span>-th column of <span
-class="math inline">\(\hat{L}_{exp}\)</span>.</p>
+class="math inline">\(\hat{L}_{exp}\)</span>. This procedure is a little
+weird, and I probably will not go with this in the end. Of the options I
+tried, this was the only one that worked (but there are other options I
+can try).</p>
 <pre class="r"><code>sym_ebcovmf_point_exp_init_full_fit &lt;- function(S, ebnm_fn, Kmax, maxiter, rank_one_tol, tol, refit_lam = FALSE){
   #initialize object
   sym_ebcovmf_obj &lt;- sym_ebcovmf_init(S)
@@ -946,10 +991,10 @@ class="math inline">\(\hat{L}_{exp}\)</span>.</p>
   return(sym_ebcovmf_obj)
 }</code></pre>
 <pre class="r"><code>symebcovmf_full_pexp_init_fit &lt;- sym_ebcovmf_point_exp_init_full_fit(S = sim_data$YYt, ebnm_fn = ebnm::ebnm_generalized_binary, K = 7, maxiter = 500, rank_one_tol = 10^(-8), tol = 10^(-8), refit_lam = TRUE)</code></pre>
-<pre><code>[1] &quot;elbo decreased by 0.175264986013644&quot;
-[1] &quot;elbo decreased by 0.0427249788735935&quot;
-[1] &quot;elbo decreased by 0.0834470106638037&quot;
-[1] &quot;elbo decreased by 0.000637921650195494&quot;</code></pre>
+<pre><code>[1] &quot;elbo decreased by 0.175264992671146&quot;
+[1] &quot;elbo decreased by 0.0427249965578085&quot;
+[1] &quot;elbo decreased by 0.0834464683030092&quot;
+[1] &quot;elbo decreased by 0.0006379234000633&quot;</code></pre>
 <p>This is a scatter plot of <span
 class="math inline">\(\hat{L}_{exp-init}\)</span>, the estimate from
 symEBcovMF initialized with a point-exponential fit:</p>
@@ -1000,10 +1045,121 @@ Annie Xie
 <h2>Comparison</h2>
 <pre class="r"><code>ggplot(data = NULL, aes(x = symebcovmf_fit$L_pm[,1], y = symebcovmf_full_pexp_init_fit$L_pm[,1])) + geom_point() + geom_abline(slope = 1, intercept = 0, color = &#39;red&#39;)</code></pre>
 <p><img src="figure/symebcovmf_point_exp_init.Rmd/unnamed-chunk-16-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-16-1">
+Past versions of unnamed-chunk-16-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-16-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/xxie6/symmetric_covariance_decomposition/blob/484b3224b7491767724eb5b0b785597341a867c1/docs/figure/symebcovmf_point_exp_init.Rmd/unnamed-chunk-16-1.png" target="_blank">484b322</a>
+</td>
+<td>
+Annie Xie
+</td>
+<td>
+2025-04-28
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <pre class="r"><code>ggplot(data = NULL, aes(x = symebcovmf_fit$L_pm[,2], y = symebcovmf_full_pexp_init_fit$L_pm[,2])) + geom_point() + geom_abline(slope = 1, intercept = 0, color = &#39;red&#39;)</code></pre>
 <p><img src="figure/symebcovmf_point_exp_init.Rmd/unnamed-chunk-17-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-17-1">
+Past versions of unnamed-chunk-17-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-17-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/xxie6/symmetric_covariance_decomposition/blob/484b3224b7491767724eb5b0b785597341a867c1/docs/figure/symebcovmf_point_exp_init.Rmd/unnamed-chunk-17-1.png" target="_blank">484b322</a>
+</td>
+<td>
+Annie Xie
+</td>
+<td>
+2025-04-28
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <pre class="r"><code>ggplot(data = NULL, aes(x = symebcovmf_fit$L_pm[,3], y = symebcovmf_full_pexp_init_fit$L_pm[,3])) + geom_point() + geom_abline(slope = 1, intercept = 0, color = &#39;red&#39;)</code></pre>
 <p><img src="figure/symebcovmf_point_exp_init.Rmd/unnamed-chunk-18-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-18-1">
+Past versions of unnamed-chunk-18-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-18-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/xxie6/symmetric_covariance_decomposition/blob/484b3224b7491767724eb5b0b785597341a867c1/docs/figure/symebcovmf_point_exp_init.Rmd/unnamed-chunk-18-1.png" target="_blank">484b322</a>
+</td>
+<td>
+Annie Xie
+</td>
+<td>
+2025-04-28
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 </div>
 <div id="observations" class="section level2">
 <h2>Observations</h2>
