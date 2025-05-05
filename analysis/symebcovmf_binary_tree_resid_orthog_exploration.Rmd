@@ -1,0 +1,193 @@
+---
+title: "symebcovmf_binary_tree_resid_orthog_exploration"
+author: "Annie Xie"
+date: "2025-05-01"
+output: 
+  workflowr::wflow_html:
+    code_folding: hide
+editor_options:
+  chunk_output_type: console
+---
+
+# Introduction
+This analysis is a continuation of my exploration in using point-exponential prior to fit a fourth factor on a fit of three factors fit using generalized binary (or another binary) prior. These are the hypotheses I have ruled out from my exploration in other analyses: 1) it is a convergence issue -- it does not appear to be a convergence issue; when initialized with the true value, the method still converges to the same estimate, 2) if the factors are more binary, the method won't have to compensate differences in the later factors -- this also does not appear to be the case. One standing hypothesis I have is the method is uncovering structure related to slight correlations between the factors -- I explore this in this analysis.
+
+# Packages and Functions
+
+```{r}
+library(ebnm)
+library(pheatmap)
+library(ggplot2)
+```
+
+```{r}
+source('code/visualization_functions.R')
+source('code/symebcovmf_functions.R')
+```
+
+# Data Generation
+
+```{r}
+sim_4pops <- function(args) {
+  set.seed(args$seed)
+  
+  n <- sum(args$pop_sizes)
+  p <- args$n_genes
+  
+  FF <- matrix(rnorm(7 * p, sd = rep(args$branch_sds, each = p)), ncol = 7)
+  if (args$constrain_F) {
+    FF_svd <- svd(FF)
+    FF <- FF_svd$u
+    FF <- t(t(FF) * args$branch_sds * sqrt(p))
+  }
+  
+  LL <- matrix(0, nrow = n, ncol = 7)
+  LL[, 1] <- 1
+  LL[, 2] <- rep(c(1, 1, 0, 0), times = args$pop_sizes)
+  LL[, 3] <- rep(c(0, 0, 1, 1), times = args$pop_sizes)
+  LL[, 4] <- rep(c(1, 0, 0, 0), times = args$pop_sizes)
+  LL[, 5] <- rep(c(0, 1, 0, 0), times = args$pop_sizes)
+  LL[, 6] <- rep(c(0, 0, 1, 0), times = args$pop_sizes)
+  LL[, 7] <- rep(c(0, 0, 0, 1), times = args$pop_sizes)
+  
+  E <- matrix(rnorm(n * p, sd = args$indiv_sd), nrow = n)
+  Y <- LL %*% t(FF) + E
+  YYt <- (1/p)*tcrossprod(Y)
+  return(list(Y = Y, YYt = YYt, LL = LL, FF = FF, K = ncol(LL)))
+}
+```
+
+```{r}
+sim_args = list(pop_sizes = rep(40, 4), n_genes = 1000, branch_sds = rep(2,7), indiv_sd = 1, seed = 1, constrain_F = FALSE)
+sim_data <- sim_4pops(sim_args)
+```
+
+# Exploration of F matrix
+In this section, I explore the $F$ matrix.
+
+```{r}
+FtF <- crossprod(sim_data$FF)
+```
+
+This is a heatmap of $F'F$:
+```{r}
+plot_heatmap(FtF, colors_range = c('blue','gray96','red'), brks = seq(-max(abs(FtF)), max(abs(FtF)), length.out = 50))
+```
+
+This is a heatmap of $F'F$ where the diagonal entries are set to zero. (This is to get a sense of the scale of the off-diagonal entries):
+```{r}
+FtF_minus_diag <- FtF
+diag(FtF_minus_diag) <- 0
+plot_heatmap(FtF_minus_diag, colors_range = c('blue','gray96','red'), brks = seq(-max(abs(FtF_minus_diag)), max(abs(FtF_minus_diag)), length.out = 50))
+```
+
+```{r}
+fitted_values <- (1/ncol(sim_data$Y))*sim_data$LL %*% diag(diag(FtF)) %*% t(sim_data$LL) 
+noise_mat <- sim_data$YYt - fitted_values
+
+withf_fitted_values <- (1/ncol(sim_data$Y))*tcrossprod(tcrossprod(sim_data$LL, sim_data$FF))
+withf_noise_mat <- sim_data$YYt - withf_fitted_values
+```
+
+This is a heatmap of the scaled Gram matrix, $S = \frac{1}{p}XX'$:
+```{r}
+plot_heatmap(sim_data$YYt, colors_range = c('blue','gray96','red'), brks = seq(-max(abs(sim_data$YYt)), max(abs(sim_data$YYt)), length.out = 50))
+```
+
+This is a heatmap of $\frac{1}{p}LL'$ where $L$ is appropriately scaled such that $S \approx LL'$:
+```{r}
+plot_heatmap(fitted_values, colors_range = c('blue','gray96','red'), brks = seq(-max(abs(fitted_values)), max(abs(fitted_values)), length.out = 50))
+```
+
+This is a heatmap of $S - LL'$:
+```{r}
+plot_heatmap(noise_mat, colors_range = c('blue','gray96','red'), brks = seq(-max(abs(noise_mat)), max(abs(noise_mat)), length.out = 50))
+```
+
+This is a heatmap of $\frac{1}{p}LF'FL'$ (the scaling on $L$ here may be different from the scaling on $L$ in the previous construction):
+```{r}
+plot_heatmap(withf_fitted_values, colors_range = c('blue','gray96','red'), brks = seq(-max(abs(withf_fitted_values)), max(abs(withf_fitted_values)), length.out = 50))
+```
+
+This is a heatmap of $S - \frac{1}{p}LF'FL'$:
+```{r}
+plot_heatmap(withf_noise_mat, colors_range = c('blue','gray96','red'), brks = seq(-max(abs(withf_noise_mat)), max(abs(withf_noise_mat)), length.out = 50))
+```
+
+It seems like some of the off-diagonal entries in $F'F$ contribute to a small level of correlation between groups 1 and 4 that is apparent in the scaled Gram matrix. So my guess is that symEBcovMF is trying to fit this structure, and thus chooses to group together the effects of group 1 and group 4.
+
+# What if I generate data with orthogonal F?
+Here, I generate the data with an orthogonal $F$ matrix. I picked a particular example where symEBcovMF with generalized binary does not yield the desired loadings estimate.
+
+```{r}
+sim_args_orthog = list(pop_sizes = rep(40, 4), n_genes = 1000, branch_sds = rep(2,7), indiv_sd = 1, seed = 6, constrain_F = TRUE)
+sim_data_orthog <- sim_4pops(sim_args_orthog)
+```
+
+This is a heatmap of the scaled Gram matrix:
+```{r}
+plot_heatmap(sim_data_orthog$YYt, colors_range = c('blue','gray96','red'), brks = seq(-max(abs(sim_data_orthog$YYt)), max(abs(sim_data_orthog$YYt)), length.out = 50))
+```
+
+This is a scatter plot of the true loadings matrix:
+```{r}
+pop_vec <- c(rep('A', 40), rep('B', 40), rep('C', 40), rep('D', 40))
+plot_loadings(sim_data_orthog$LL, pop_vec)
+```
+
+This is a plot of the eigenvalues of the Gram matrix:
+```{r}
+S_orthog_eigen <- eigen(sim_data_orthog$YYt)
+plot(S_orthog_eigen$values) + abline(a = 0, b = 0, col = 'red')
+```
+
+This is the minimum eigenvalue:
+```{r}
+min(S_orthog_eigen$values)
+```
+
+## symEBcovMF with generalized binary prior
+Here, we run symEBcovMF with generalized binary prior and `Kmax = 7`:
+```{r}
+symebcovmf_orthog_gb_rank7_fit <- sym_ebcovmf_fit(S = sim_data_orthog$YYt, ebnm_fn = ebnm::ebnm_generalized_binary, K = 7, maxiter = 500, rank_one_tol = 10^(-8), tol = 10^(-8), refit_lam = TRUE)
+```
+
+This is a plot of the loadings estimate:
+```{r}
+plot_loadings(symebcovmf_orthog_gb_rank7_fit$L_pm %*% diag(sqrt(symebcovmf_orthog_gb_rank7_fit$lambda)), pop_vec)
+```
+
+The loadings estimate does not follow a tree structure. In particular, the method does not find four single population effect factors. It finds factors which group together two population effects.
+
+## Residual Matrix example
+Now, we run the procedure for the residual matrix example we've been working with. First, we run symEBcovMF with generalized binary prior and `Kmax = 3` to fit the first three factors.
+```{r}
+symebcovmf_orthog_gb_fit <- sym_ebcovmf_fit(S = sim_data_orthog$YYt, ebnm_fn = ebnm::ebnm_generalized_binary, K = 3, maxiter = 500, rank_one_tol = 10^(-8), tol = 10^(-8), refit_lam = TRUE)
+```
+
+This is a plot of the estimates for the first three factors.
+```{r}
+plot_loadings(symebcovmf_orthog_gb_fit$L_pm %*% diag(sqrt(symebcovmf_orthog_gb_fit$lambda)), pop_vec)
+```
+
+Now, we compute the residual matrix $R = S - \sum_{k=1}^{3} \hat{\lambda}_k \hat{\ell}_3 \hat{\ell}_3'$:
+```{r}
+rank3_orthog_resid_matrix <- sim_data_orthog$YYt - tcrossprod(symebcovmf_orthog_gb_fit$L_pm %*% diag(sqrt(symebcovmf_orthog_gb_fit$lambda)))
+```
+
+This is a heatmap of the residual matrix, $R$:
+```{r}
+plot_heatmap(rank3_orthog_resid_matrix, colors_range = c('blue','gray96','red'), brks = seq(-max(abs(rank3_orthog_resid_matrix)), max(abs(rank3_orthog_resid_matrix)), length.out = 50))
+```
+
+Now, we fit a fourth factor using a point-exponential prior.
+```{r}
+symebcovmf_orthog_gb_exp_fac4_fit <- sym_ebcovmf_r1_fit(sim_data_orthog$YYt, symebcovmf_orthog_gb_fit, ebnm_fn = ebnm_point_exponential, maxiter = 100, tol = 10^(-8))
+```
+
+This is a plot of the estimate for the fourth factor.
+```{r}
+plot(symebcovmf_orthog_gb_exp_fac4_fit$L_pm[,4], ylab = 'Fourth Factor')
+```
+
+In this example, the point-exponential prior for the fourth factor does find the single effect factor. This seems to suggest that even mild correlations in the $F$ matrix can sway the method, causing it to recover structure that is not really interesting to us. My guess is that other methods like GBCD can overcome this issue through backfitting.
