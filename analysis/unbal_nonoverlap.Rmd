@@ -115,7 +115,7 @@ ggplot(data = NULL, aes(x = c(sim_data$YYt)[off_diag_idx], y = c(symebcovmf_unba
 ```
 
 ## Observations
-symEBcovMF does a relatively good job at recovering the four population effects. Interestingly, while factor 3 primarily recovers the third group effect, it has a small (but still notable) loading on the first group effect. I explore this more in another analysis.
+symEBcovMF does a relatively good job at recovering the four population effects. Interestingly, while factor 3 primarily recovers the third group effect, it has a small (but still notable) loading on the first group effect. I explore this more in another analysis. I did also try symEBcovMF with generalized binary prior, and in that case, the factors primarily captured one group effect each.
 
 # symEBcovMF with refit step
 
