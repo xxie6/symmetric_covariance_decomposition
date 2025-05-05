@@ -104,7 +104,7 @@ symebcovmf_fit$elbo
 ```
 
 # Generalized binary symEBcovMF initialized with point-exponential fit
-For this procedure, I start by running symEBcovMF with a point-exponential prior with Kmax set to the inputted Kmax value. From this, I get an estimate for $L$, which I call $\hat{L}_{exp}$. Then, I run symEBcovMF with a generalized-binary prior. I initialize the rank-one fit for factor $k$ with the $k$-th column of $\hat{L}_{exp}$.
+For this procedure, I start by running symEBcovMF with a point-exponential prior with Kmax set to the inputted Kmax value. From this, I get an estimate for $L$, which I call $\hat{L}_{exp}$. Then, I run symEBcovMF with a generalized-binary prior. I initialize the rank-one fit for factor $k$ with the $k$-th column of $\hat{L}_{exp}$. This procedure is a little weird, and I probably will not go with this in the end. Of the options I tried, this was the only one that worked (but there are other options I can try).
 
 ```{r}
 sym_ebcovmf_point_exp_init_full_fit <- function(S, ebnm_fn, Kmax, maxiter, rank_one_tol, tol, refit_lam = FALSE){
