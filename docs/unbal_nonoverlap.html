@@ -402,7 +402,7 @@ class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span>
 <div class="tab-content">
 <div id="summary" class="tab-pane fade in active">
 <p>
-<strong>Last updated:</strong> 2025-04-30
+<strong>Last updated:</strong> 2025-05-05
 </p>
 <p>
 <strong>Checks:</strong> <span
@@ -534,15 +534,15 @@ project makes it easier to run your code on other machines.</p>
 <div class="panel panel-default">
 <div class="panel-heading">
 <p class="panel-title">
-<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomxxie6symmetriccovariancedecompositiontree28d3567ec62307843365e715920948d44f3a078ftargetblank28d3567a">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomxxie6symmetriccovariancedecompositiontree2e1803aa47a0c175bc011c0cfa15387e8d8eb266targetblank2e1803aa">
 <span class="glyphicon glyphicon-ok text-success"
 aria-hidden="true"></span> <strong>Repository version:</strong>
-<a href="https://github.com/xxie6/symmetric_covariance_decomposition/tree/28d3567ec62307843365e715920948d44f3a078f" target="_blank">28d3567</a>
+<a href="https://github.com/xxie6/symmetric_covariance_decomposition/tree/2e1803aa47a0c175bc011c0cfa15387e8d8eb266" target="_blank">2e1803a</a>
 </a>
 </p>
 </div>
 <div
-id="strongRepositoryversionstrongahrefhttpsgithubcomxxie6symmetriccovariancedecompositiontree28d3567ec62307843365e715920948d44f3a078ftargetblank28d3567a"
+id="strongRepositoryversionstrongahrefhttpsgithubcomxxie6symmetriccovariancedecompositiontree2e1803aa47a0c175bc011c0cfa15387e8d8eb266targetblank2e1803aa"
 class="panel-collapse collapse">
 <div class="panel-body">
 <p>
@@ -552,7 +552,7 @@ reproducibility.
 </p>
 <p>
 The results in this page were generated with repository version
-<a href="https://github.com/xxie6/symmetric_covariance_decomposition/tree/28d3567ec62307843365e715920948d44f3a078f" target="_blank">28d3567</a>.
+<a href="https://github.com/xxie6/symmetric_covariance_decomposition/tree/2e1803aa47a0c175bc011c0cfa15387e8d8eb266" target="_blank">2e1803a</a>.
 See the <em>Past versions</em> tab to see a history of the changes made
 to the R Markdown and HTML files.
 </p>
@@ -571,7 +571,6 @@ Ignored files:
     Ignored:    .Rhistory
 
 Untracked files:
-    Untracked:  analysis/symebcovmf_binary_prior_tree_exploration.Rmd
     Untracked:  analysis/unbal_nonoverlap_exploration.Rmd
 
 </code></pre>
@@ -618,6 +617,40 @@ Message
 </tr>
 </thead>
 <tbody>
+<tr>
+<td>
+Rmd
+</td>
+<td>
+<a href="https://github.com/xxie6/symmetric_covariance_decomposition/blob/2e1803aa47a0c175bc011c0cfa15387e8d8eb266/analysis/unbal_nonoverlap.Rmd" target="_blank">2e1803a</a>
+</td>
+<td>
+Annie Xie
+</td>
+<td>
+2025-05-05
+</td>
+<td>
+Update unbalanced nonoverlapping example
+</td>
+</tr>
+<tr>
+<td>
+html
+</td>
+<td>
+<a href="https://rawcdn.githack.com/xxie6/symmetric_covariance_decomposition/4ad25a4c77b9deb708c0eba72c94dad1fc7f73f0/docs/unbal_nonoverlap.html" target="_blank">4ad25a4</a>
+</td>
+<td>
+Annie Xie
+</td>
+<td>
+2025-04-30
+</td>
+<td>
+Build site.
+</td>
+</tr>
 <tr>
 <td>
 Rmd
@@ -690,10 +723,84 @@ sim_data &lt;- sim_star_data(sim_args)</code></pre>
 <p>This is a heatmap of the scaled Gram matrix:</p>
 <pre class="r"><code>plot_heatmap(sim_data$YYt, colors_range = c(&#39;blue&#39;,&#39;gray96&#39;,&#39;red&#39;), brks = seq(-max(abs(sim_data$YYt)), max(abs(sim_data$YYt)), length.out = 50))</code></pre>
 <p><img src="figure/unbal_nonoverlap.Rmd/unnamed-chunk-5-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-5-1">
+Past versions of unnamed-chunk-5-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-5-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/xxie6/symmetric_covariance_decomposition/blob/4ad25a4c77b9deb708c0eba72c94dad1fc7f73f0/docs/figure/unbal_nonoverlap.Rmd/unnamed-chunk-5-1.png" target="_blank">4ad25a4</a>
+</td>
+<td>
+Annie Xie
+</td>
+<td>
+2025-04-30
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <p>This is a scatter plot of the true loadings matrix:</p>
 <pre class="r"><code>pop_vec &lt;- rep(c(&#39;A&#39;,&#39;B&#39;,&#39;C&#39;,&#39;D&#39;), times = pop_sizes)
 plot_loadings(sim_data$LL, pop_vec)</code></pre>
 <p><img src="figure/unbal_nonoverlap.Rmd/unnamed-chunk-6-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-6-1">
+Past versions of unnamed-chunk-6-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-6-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/xxie6/symmetric_covariance_decomposition/blob/4ad25a4c77b9deb708c0eba72c94dad1fc7f73f0/docs/figure/unbal_nonoverlap.Rmd/unnamed-chunk-6-1.png" target="_blank">4ad25a4</a>
+</td>
+<td>
+Annie Xie
+</td>
+<td>
+2025-04-30
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 </div>
 </div>
 <div id="symebcovmf" class="section level1">
@@ -704,6 +811,43 @@ plot_loadings(sim_data$LL, pop_vec)</code></pre>
 <pre class="r"><code>symebcovmf_unbal_full_elbo_vec &lt;- symebcovmf_unbal_fit$vec_elbo_full[!(symebcovmf_unbal_fit$vec_elbo_full %in% c(1:length(symebcovmf_unbal_fit$vec_elbo_K)))]
 ggplot() + geom_line(data = NULL, aes(x = 1:length(symebcovmf_unbal_full_elbo_vec), y = symebcovmf_unbal_full_elbo_vec)) + xlab(&#39;Iter&#39;) + ylab(&#39;ELBO&#39;)</code></pre>
 <p><img src="figure/unbal_nonoverlap.Rmd/unnamed-chunk-8-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-8-1">
+Past versions of unnamed-chunk-8-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-8-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/xxie6/symmetric_covariance_decomposition/blob/4ad25a4c77b9deb708c0eba72c94dad1fc7f73f0/docs/figure/unbal_nonoverlap.Rmd/unnamed-chunk-8-1.png" target="_blank">4ad25a4</a>
+</td>
+<td>
+Annie Xie
+</td>
+<td>
+2025-04-30
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 </div>
 <div id="visualization-of-estimate" class="section level2">
 <h2>Visualization of Estimate</h2>
@@ -712,6 +856,43 @@ class="math inline">\(\hat{L}\)</span>, the estimate from
 symEBcovMF:</p>
 <pre class="r"><code>plot_loadings(symebcovmf_unbal_fit$L_pm %*% diag(sqrt(symebcovmf_unbal_fit$lambda)), pop_vec)</code></pre>
 <p><img src="figure/unbal_nonoverlap.Rmd/unnamed-chunk-9-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-9-1">
+Past versions of unnamed-chunk-9-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-9-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/xxie6/symmetric_covariance_decomposition/blob/4ad25a4c77b9deb708c0eba72c94dad1fc7f73f0/docs/figure/unbal_nonoverlap.Rmd/unnamed-chunk-9-1.png" target="_blank">4ad25a4</a>
+</td>
+<td>
+Annie Xie
+</td>
+<td>
+2025-04-30
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <p>This is the objective function value attained:</p>
 <pre class="r"><code>symebcovmf_unbal_fit$elbo</code></pre>
 <pre><code>[1] 1087.677</code></pre>
@@ -723,6 +904,43 @@ class="math inline">\(\hat{L}\hat{\Lambda}\hat{L}&#39;\)</span>:</p>
 <pre class="r"><code>symebcovmf_unbal_fitted_vals &lt;- tcrossprod(symebcovmf_unbal_fit$L_pm %*% diag(sqrt(symebcovmf_unbal_fit$lambda)))
 plot_heatmap(symebcovmf_unbal_fitted_vals, brks = seq(0, max(symebcovmf_unbal_fitted_vals), length.out = 50))</code></pre>
 <p><img src="figure/unbal_nonoverlap.Rmd/unnamed-chunk-11-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-11-1">
+Past versions of unnamed-chunk-11-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-11-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/xxie6/symmetric_covariance_decomposition/blob/4ad25a4c77b9deb708c0eba72c94dad1fc7f73f0/docs/figure/unbal_nonoverlap.Rmd/unnamed-chunk-11-1.png" target="_blank">4ad25a4</a>
+</td>
+<td>
+Annie Xie
+</td>
+<td>
+2025-04-30
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <p>This is a scatter plot of fitted values vs. observed values for the
 off-diagonal entries:</p>
 <pre class="r"><code>diag_idx &lt;- seq(1, prod(dim(sim_data$YYt)), length.out = ncol(sim_data$YYt))
@@ -730,13 +948,52 @@ off_diag_idx &lt;- setdiff(c(1:prod(dim(sim_data$YYt))), diag_idx)
 
 ggplot(data = NULL, aes(x = c(sim_data$YYt)[off_diag_idx], y = c(symebcovmf_unbal_fitted_vals)[off_diag_idx])) + geom_point() + ylim(-1, 5) + xlim(-1,5) + xlab(&#39;Observed Values&#39;) + ylab(&#39;Fitted Values&#39;) + geom_abline(slope = 1, intercept = 0, color = &#39;red&#39;)</code></pre>
 <p><img src="figure/unbal_nonoverlap.Rmd/unnamed-chunk-12-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-12-1">
+Past versions of unnamed-chunk-12-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-12-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/xxie6/symmetric_covariance_decomposition/blob/4ad25a4c77b9deb708c0eba72c94dad1fc7f73f0/docs/figure/unbal_nonoverlap.Rmd/unnamed-chunk-12-1.png" target="_blank">4ad25a4</a>
+</td>
+<td>
+Annie Xie
+</td>
+<td>
+2025-04-30
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 </div>
 <div id="observations" class="section level2">
 <h2>Observations</h2>
 <p>symEBcovMF does a relatively good job at recovering the four
 population effects. Interestingly, while factor 3 primarily recovers the
 third group effect, it has a small (but still notable) loading on the
-first group effect. I explore this more in another analysis.</p>
+first group effect. I explore this more in another analysis. I did also
+try symEBcovMF with generalized binary prior, and in that case, the
+factors primarily captured one group effect each.</p>
 </div>
 </div>
 <div id="symebcovmf-with-refit-step" class="section level1">
@@ -746,9 +1003,46 @@ first group effect. I explore this more in another analysis.</p>
 <h2>Progression of ELBO</h2>
 <pre class="r"><code>symebcovmf_unbal_refit_full_elbo_vec &lt;- symebcovmf_unbal_refit_fit$vec_elbo_full[!(symebcovmf_unbal_refit_fit$vec_elbo_full %in% c(1:length(symebcovmf_unbal_refit_fit$vec_elbo_K)))]
 ggplot() + geom_line(data = NULL, aes(x = 1:length(symebcovmf_unbal_refit_full_elbo_vec), y = symebcovmf_unbal_refit_full_elbo_vec)) + xlab(&#39;Iter&#39;) + ylab(&#39;ELBO&#39;)</code></pre>
-<p><img src="figure/unbal_nonoverlap.Rmd/unnamed-chunk-14-1.png" width="672" style="display: block; margin: auto;" />
-A note: I don’t think I save the ELBO value after the refitting step in
-vec_elbo_full. But the refitting does change this vector since it
+<p><img src="figure/unbal_nonoverlap.Rmd/unnamed-chunk-14-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-14-1">
+Past versions of unnamed-chunk-14-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-14-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/xxie6/symmetric_covariance_decomposition/blob/4ad25a4c77b9deb708c0eba72c94dad1fc7f73f0/docs/figure/unbal_nonoverlap.Rmd/unnamed-chunk-14-1.png" target="_blank">4ad25a4</a>
+</td>
+<td>
+Annie Xie
+</td>
+<td>
+2025-04-30
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<p>A note: I don’t think I save the ELBO value after the refitting step
+in vec_elbo_full. But the refitting does change this vector since it
 changes the residual matrix that is used when you add a new vector.</p>
 </div>
 <div id="visualization-of-estimate-1" class="section level2">
@@ -758,6 +1052,43 @@ class="math inline">\(\hat{L}_{refit}\)</span>, the estimate from
 symEBcovMF:</p>
 <pre class="r"><code>plot_loadings(symebcovmf_unbal_refit_fit$L_pm %*% diag(sqrt(symebcovmf_unbal_refit_fit$lambda)), pop_vec)</code></pre>
 <p><img src="figure/unbal_nonoverlap.Rmd/unnamed-chunk-15-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-15-1">
+Past versions of unnamed-chunk-15-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-15-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/xxie6/symmetric_covariance_decomposition/blob/4ad25a4c77b9deb708c0eba72c94dad1fc7f73f0/docs/figure/unbal_nonoverlap.Rmd/unnamed-chunk-15-1.png" target="_blank">4ad25a4</a>
+</td>
+<td>
+Annie Xie
+</td>
+<td>
+2025-04-30
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <p>This is the objective function value attained:</p>
 <pre class="r"><code>symebcovmf_unbal_refit_fit$elbo</code></pre>
 <pre><code>[1] 1097.095</code></pre>
@@ -769,6 +1100,43 @@ class="math inline">\(\hat{L}_{refit}\hat{\Lambda}_{refit}\hat{L}_{refit}&#39;\)
 <pre class="r"><code>symebcovmf_unbal_refit_fitted_vals &lt;- tcrossprod(symebcovmf_unbal_refit_fit$L_pm %*% diag(sqrt(symebcovmf_unbal_refit_fit$lambda)))
 plot_heatmap(symebcovmf_unbal_refit_fitted_vals, brks = seq(0, max(symebcovmf_unbal_refit_fitted_vals), length.out = 50))</code></pre>
 <p><img src="figure/unbal_nonoverlap.Rmd/unnamed-chunk-17-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-17-1">
+Past versions of unnamed-chunk-17-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-17-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/xxie6/symmetric_covariance_decomposition/blob/4ad25a4c77b9deb708c0eba72c94dad1fc7f73f0/docs/figure/unbal_nonoverlap.Rmd/unnamed-chunk-17-1.png" target="_blank">4ad25a4</a>
+</td>
+<td>
+Annie Xie
+</td>
+<td>
+2025-04-30
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <p>This is a scatter plot of fitted values vs. observed values for the
 off-diagonal entries:</p>
 <pre class="r"><code>diag_idx &lt;- seq(1, prod(dim(sim_data$YYt)), length.out = ncol(sim_data$YYt))
@@ -776,6 +1144,43 @@ off_diag_idx &lt;- setdiff(c(1:prod(dim(sim_data$YYt))), diag_idx)
 
 ggplot(data = NULL, aes(x = c(sim_data$YYt)[off_diag_idx], y = c(symebcovmf_unbal_refit_fitted_vals)[off_diag_idx])) + geom_point() + ylim(-1, 5) + xlim(-1,5) + xlab(&#39;Observed Values&#39;) + ylab(&#39;Fitted Values&#39;) + geom_abline(slope = 1, intercept = 0, color = &#39;red&#39;)</code></pre>
 <p><img src="figure/unbal_nonoverlap.Rmd/unnamed-chunk-18-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-18-1">
+Past versions of unnamed-chunk-18-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-18-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/xxie6/symmetric_covariance_decomposition/blob/4ad25a4c77b9deb708c0eba72c94dad1fc7f73f0/docs/figure/unbal_nonoverlap.Rmd/unnamed-chunk-18-1.png" target="_blank">4ad25a4</a>
+</td>
+<td>
+Annie Xie
+</td>
+<td>
+2025-04-30
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 </div>
 <div id="comparison-of-estimates" class="section level2">
 <h2>Comparison of Estimates</h2>
@@ -783,7 +1188,158 @@ ggplot(data = NULL, aes(x = c(sim_data$YYt)[off_diag_idx], y = c(symebcovmf_unba
 <pre class="r"><code>for (i in 1:4){
   print(ggplot(data = NULL, aes(x = symebcovmf_unbal_fit$L_pm[,i], y = symebcovmf_unbal_refit_fit$L_pm[,i])) + geom_point() + geom_abline(slope = 1, intercept = 0, color = &#39;red&#39;) + ylab(&#39;symEBcovMF with refitting&#39;) + xlab(&#39;Regular symEBcovMF&#39;) + labs(title=paste(&#39;Factor&#39;,i)))
 }</code></pre>
-<p><img src="figure/unbal_nonoverlap.Rmd/unnamed-chunk-19-1.png" width="672" style="display: block; margin: auto;" /><img src="figure/unbal_nonoverlap.Rmd/unnamed-chunk-19-2.png" width="672" style="display: block; margin: auto;" /><img src="figure/unbal_nonoverlap.Rmd/unnamed-chunk-19-3.png" width="672" style="display: block; margin: auto;" /><img src="figure/unbal_nonoverlap.Rmd/unnamed-chunk-19-4.png" width="672" style="display: block; margin: auto;" /></p>
+<p><img src="figure/unbal_nonoverlap.Rmd/unnamed-chunk-19-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-19-1">
+Past versions of unnamed-chunk-19-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-19-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/xxie6/symmetric_covariance_decomposition/blob/4ad25a4c77b9deb708c0eba72c94dad1fc7f73f0/docs/figure/unbal_nonoverlap.Rmd/unnamed-chunk-19-1.png" target="_blank">4ad25a4</a>
+</td>
+<td>
+Annie Xie
+</td>
+<td>
+2025-04-30
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<p><img src="figure/unbal_nonoverlap.Rmd/unnamed-chunk-19-2.png" width="672" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-19-2">
+Past versions of unnamed-chunk-19-2.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-19-2" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/xxie6/symmetric_covariance_decomposition/blob/4ad25a4c77b9deb708c0eba72c94dad1fc7f73f0/docs/figure/unbal_nonoverlap.Rmd/unnamed-chunk-19-2.png" target="_blank">4ad25a4</a>
+</td>
+<td>
+Annie Xie
+</td>
+<td>
+2025-04-30
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<p><img src="figure/unbal_nonoverlap.Rmd/unnamed-chunk-19-3.png" width="672" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-19-3">
+Past versions of unnamed-chunk-19-3.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-19-3" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/xxie6/symmetric_covariance_decomposition/blob/4ad25a4c77b9deb708c0eba72c94dad1fc7f73f0/docs/figure/unbal_nonoverlap.Rmd/unnamed-chunk-19-3.png" target="_blank">4ad25a4</a>
+</td>
+<td>
+Annie Xie
+</td>
+<td>
+2025-04-30
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<p><img src="figure/unbal_nonoverlap.Rmd/unnamed-chunk-19-4.png" width="672" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-19-4">
+Past versions of unnamed-chunk-19-4.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-19-4" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/xxie6/symmetric_covariance_decomposition/blob/4ad25a4c77b9deb708c0eba72c94dad1fc7f73f0/docs/figure/unbal_nonoverlap.Rmd/unnamed-chunk-19-4.png" target="_blank">4ad25a4</a>
+</td>
+<td>
+Annie Xie
+</td>
+<td>
+2025-04-30
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 </div>
 <div id="observations-1" class="section level2">
 <h2>Observations</h2>
