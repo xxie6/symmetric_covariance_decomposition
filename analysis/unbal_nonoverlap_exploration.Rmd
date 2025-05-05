@@ -1,0 +1,192 @@
+---
+title: "unbal_nonoverlap_exploration"
+author: "Annie Xie"
+date: "2025-04-29"
+output: 
+  workflowr::wflow_html:
+    code_folding: hide
+editor_options:
+  chunk_output_type: console
+---
+
+# Introduction
+In this analysis, I explore the unbalanced non-overlapping setting.
+
+# Packages and Functions
+
+```{r}
+library(ebnm)
+library(pheatmap)
+library(ggplot2)
+```
+
+```{r}
+source('code/symebcovmf_functions.R')
+source('code/visualization_functions.R')
+```
+
+# Data Generation
+
+```{r}
+# adapted from Jason's code
+# args is a list containing pop_sizes, branch_sds, indiv_sd, n_genes, and seed
+sim_star_data <- function(args) {
+  set.seed(args$seed)
+  
+  n <- sum(args$pop_sizes)
+  p <- args$n_genes
+  K <- length(args$pop_sizes)
+  
+  FF <- matrix(rnorm(K * p, sd = rep(args$branch_sds, each = p)), ncol = K)
+  
+  LL <- matrix(0, nrow = n, ncol = K)
+  for (k in 1:K) {
+    vec <- rep(0, K)
+    vec[k] <- 1
+    LL[, k] <- rep(vec, times = args$pop_sizes)
+  }
+  
+  E <- matrix(rnorm(n * p, sd = args$indiv_sd), nrow = n)
+  Y <- LL %*% t(FF) + E
+  YYt <- (1/p)*tcrossprod(Y)
+  
+  return(list(Y = Y, YYt = YYt, LL = LL, FF = FF, K = ncol(LL)))
+}
+```
+
+```{r}
+pop_sizes <- c(20,50,30,60)
+n_genes <- 1000
+branch_sds <- rep(2,4)
+indiv_sd <- 1
+seed <- 1
+sim_args = list(pop_sizes = pop_sizes, branch_sds = branch_sds, indiv_sd = indiv_sd, n_genes = n_genes, seed = seed)
+sim_data <- sim_star_data(sim_args)
+```
+
+This is a heatmap of the scaled Gram matrix:
+```{r}
+plot_heatmap(sim_data$YYt, colors_range = c('blue','gray96','red'), brks = seq(-max(abs(sim_data$YYt)), max(abs(sim_data$YYt)), length.out = 50))
+```
+
+This is a scatter plot of the true loadings matrix:
+```{r}
+pop_vec <- rep(c('A','B','C','D'), times = pop_sizes)
+plot_loadings(sim_data$LL, pop_vec)
+```
+
+# symEBcovMF with refitting
+
+```{r}
+symebcovmf_unbal_refit_fit <- sym_ebcovmf_fit(S = sim_data$YYt, ebnm_fn = ebnm_point_exponential, K = 4, maxiter = 100, rank_one_tol = 10^(-8), tol = 10^(-8), refit_lam = TRUE)
+```
+
+## Visualization of Estimate
+This is a scatter plot of $\hat{L}_{refit}$, the estimate from symEBcovMF:
+```{r}
+plot_loadings(symebcovmf_unbal_refit_fit$L_pm %*% diag(sqrt(symebcovmf_unbal_refit_fit$lambda)), pop_vec)
+```
+
+This is the objective function value attained:
+```{r}
+symebcovmf_unbal_refit_fit$elbo
+```
+
+## Visualization of Fit
+
+This is a heatmap of $\hat{L}_{refit}\hat{\Lambda}_{refit}\hat{L}_{refit}'$:
+```{r}
+symebcovmf_unbal_refit_fitted_vals <- tcrossprod(symebcovmf_unbal_refit_fit$L_pm %*% diag(sqrt(symebcovmf_unbal_refit_fit$lambda)))
+plot_heatmap(symebcovmf_unbal_refit_fitted_vals, brks = seq(0, max(symebcovmf_unbal_refit_fitted_vals), length.out = 50))
+```
+
+This is a scatter plot of fitted values vs. observed values for the off-diagonal entries:
+```{r}
+diag_idx <- seq(1, prod(dim(sim_data$YYt)), length.out = ncol(sim_data$YYt))
+off_diag_idx <- setdiff(c(1:prod(dim(sim_data$YYt))), diag_idx) 
+
+ggplot(data = NULL, aes(x = c(sim_data$YYt)[off_diag_idx], y = c(symebcovmf_unbal_refit_fitted_vals)[off_diag_idx])) + geom_point() + ylim(-1, 5) + xlim(-1,5) + xlab('Observed Values') + ylab('Fitted Values') + geom_abline(slope = 1, intercept = 0, color = 'red')
+```
+
+## Observations
+As noted in a different analysis, symEBcovMF does a relatively good job at recovering the four population effects. However, one undesired aspect of the estimate is that factor 3 contains the effects of two different groups. I would like to figure out why this is happening. Furthermore, the group 1 effect is much smaller than the group 4 effect, so I'm wondering if it's possible to shrink the group 1 effect down to zero so that the factor only captures one group.
+
+# Trying a smaller convergence tolerance
+In this section, we explore whether a smaller convergence tolerance will yield a factor which captures only one group. Perhaps the group 1 effect is in the process of being (slowly) shrunk down to zero, and a smaller tolerance will allow for more shrinkage.
+
+```{r}
+symebcovmf_unbal_refit_smaller_tol_fit <- sym_ebcovmf_fit(S = sim_data$YYt, ebnm_fn = ebnm_point_exponential, K = 4, maxiter = 100, rank_one_tol = 10^(-15), tol = 10^(-8), refit_lam = TRUE)
+```
+
+## Visualization of Estimate
+This is a scatter plot of $\hat{L}_{refit}$, the estimate from symEBcovMF:
+```{r}
+plot_loadings(symebcovmf_unbal_refit_smaller_tol_fit$L_pm %*% diag(sqrt(symebcovmf_unbal_refit_smaller_tol_fit$lambda)), pop_vec)
+```
+
+This is the objective function value attained:
+```{r}
+symebcovmf_unbal_refit_smaller_tol_fit$elbo
+```
+
+Comparison of factor 3 estimates:
+```{r}
+ggplot(data = NULL, aes(x = symebcovmf_unbal_refit_fit$L_pm[,3], y = symebcovmf_unbal_refit_smaller_tol_fit$L_pm[,3])) + geom_point() + geom_abline(slope = 1, intercept = 0, color = 'red')
+```
+
+## Observations
+Decreasing the convergence tolerance does not lead to more shrinkage of the group 1 effect in the factor 3 estimate. The optimization procedure for factor 3 does stop because the ELBO slightly decreases (on the order of $10^{-11}$). My guess is the decrease is caused by a numerical issue. So it's possible that we would see more shrinkage if we let the optimization run for more iterations.
+
+# Try initializing from true factor
+To check if this is a convergence issue, I try fitting the third factor initialized from the true single population effect factor. 
+
+First, we fit the first two factors.
+```{r}
+symebcovmf_unbal_refit_rank2_fit <- sym_ebcovmf_fit(S = sim_data$YYt, ebnm_fn = ebnm_point_exponential, K = 2, maxiter = 100, rank_one_tol = 10^(-8), tol = 10^(-8), refit_lam = TRUE)
+```
+
+This is a heatmap of the residual matrix, $S - \sum_{k=1}^{2} \hat{\lambda}_k \hat{\ell}_k \hat{\ell}_k'$:
+```{r}
+R <- sim_data$YYt - tcrossprod(symebcovmf_unbal_refit_rank2_fit$L_pm %*% diag(sqrt(symebcovmf_unbal_refit_rank2_fit$lambda)))
+plot_heatmap(R, colors_range = c('blue','gray96','red'), brks = seq(-max(abs(R)), max(abs(R)), length.out = 50))
+```
+
+Now, we fit the third factor, initialized with the true population effect factor.
+```{r}
+symebcovmf_unbal_true_init_fac3_fit <- sym_ebcovmf_r1_fit(S = sim_data$YYt, symebcovmf_unbal_refit_rank2_fit, ebnm_fn = ebnm::ebnm_point_exponential, maxiter = 100, tol = 10^(-8), v_init = rep(c(0,0,1,0), times = pop_sizes))
+```
+
+This is a plot of the estimate of the third factor.
+```{r}
+plot(symebcovmf_unbal_true_init_fac3_fit$L_pm[,3], ylab = 'Third Factor')
+```
+
+This is a plot of the ELBO during the fit of the third factor.
+```{r}
+fac3.idx <- which(symebcovmf_unbal_true_init_fac3_fit$vec_elbo_full == 3)
+plot(symebcovmf_unbal_true_init_fac3_fit$vec_elbo_full[(fac3.idx+1):length(symebcovmf_unbal_true_init_fac3_fit$vec_elbo_full)], ylab = 'ELBO')
+```
+
+```{r}
+true_fac3 <- rep(c(0,0,1,0), times = pop_sizes)
+true_fac3 <- true_fac3/sqrt(sum(true_fac3^2))
+estimates_list <- list(true_fac3)
+for (i in 1:11){
+  estimates_list[[(i+1)]] <- sym_ebcovmf_r1_fit(sim_data$YYt, symebcovmf_unbal_refit_rank2_fit, ebnm_fn = ebnm::ebnm_point_exponential, maxiter = i, tol = 10^(-8), v_init = rep(c(0,0,1,0), times = pop_sizes))$L_pm[,3]
+}
+```
+
+This is a plot of the progression of the estimate.
+```{r}
+par(mfrow = c(6,2), mar = c(2, 2, 1, 1) + 0.1)
+max_y <- max(sapply(estimates_list, max))
+min_y <- min(sapply(estimates_list, min))
+for (i in 1:12){
+  plot(estimates_list[[i]], main = paste('Iter', (i-1)), ylab = 'L', ylim = c(min_y, max_y))
+}
+par(mfrow = c(1,1))
+```
+
+## Observations
+When initialized with the true factor, the method still yields an estimate that has non-zero loading on the first group. This suggests that the method does prefer this estimate. Perhaps an easier way of getting a representation comprised of four single group effect factors is to backfit. Question I have: why does this method have this issue but EBMFcov-greedy does not?
+
