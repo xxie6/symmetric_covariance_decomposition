@@ -17,6 +17,17 @@ Main takeways thus far:
 symEBcovMF analyses:    
 * Exploration of [symEBcovMF in the balanced nonoverlapping setting](symebcovmf_bal_nonoverlap.html)  
 * Exploration of [symEBcovMF in the tree setting](symebcovmf_tree.html)  
+* Further exploration of [symEBcovMF in the tree setting](symebcovmf_tree_exploration.html)   
+* Exploration of [different binary priors in tree setting](symebcovmf_binary_prior_tree_exploration.html)    
 * Exploration of [symEBcovMF in the sparse, overlapping setting](symebcovmf_overlap.html)   
-* Exploration of [symEBcovMF in the null setting](symebcovmf_null.html)   
-* Exploration of [generalized binary symEBcovMF with point exponential initialization](symebcovmf_point_exp_init.html). 
+* Exploration of [symEBcovMF in the null setting](symebcovmf_null.html)  
+* Exploration of [symEBcovMF in the unbalanced nonoverlapping setting](unbal_nonoverlap.html)  
+* Further exploration of [symEBcovMF in the unbalanced nonoverlapping setting](unbal_nonoverlap_exploration.html)      
+
+Analyses related to point-exponential initialization:  
+* Exploration of [generalized binary symEBcovMF with point exponential initialization](symebcovmf_point_exp_init.html)   
+
+Tree residual matrix example:  
+* Checking [convergence](symebcovmf_gb_tree_exploration.html)  
+* Checking [other binary priors](symebcovmf_binary_tree_resid_exploration.html)  
+* Checking [orthogonality](symebcovmf_binary_tree_resid_orthog_exploration.html)  
