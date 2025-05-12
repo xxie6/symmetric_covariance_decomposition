@@ -1,0 +1,404 @@
+---
+title: "symebcovmf_gb_point_exp_backfit"
+author: "Annie Xie"
+date: "2025-05-07"
+output: 
+  workflowr::wflow_html:
+    code_folding: hide
+editor_options:
+  chunk_output_type: console
+---
+
+# Introduction
+In this analysis, I want to test out initializing symEBcovMF with a binary prior with a point-exponential symEBcovMF fit. 
+
+## Motivation
+In the tree setting, I found that symEBcovMF with the point-exponential prior did a better job at recovering tree structure than symEBcovMF with the generalized binary prior. Matthew and I hypothesized that the point-exponential prior is better at finding sparse solutions. So we want to investigate a two-step procedure which finds a fit with point-exponential prior in the first step, and then refines the fit with the generalized binary (or other binary) prior in the second step. In this analysis, I investigate a backfitting procedure -- first, I generate a fit with a point-exponential prior, and then use that as an initialization for a backfit with a binary prior.
+
+# Packages and Functions
+
+```{r}
+library(ebnm)
+library(pheatmap)
+library(ggplot2)
+```
+
+```{r}
+source('code/visualization_functions.R')
+source('code/symebcovmf_functions.R')
+```
+
+# Backfit Function
+
+```{r}
+optimize_factor <- function(R, ebnm_fn, maxiter, tol, v_init, lambda_k, R2k, n, KL){
+  R2 <- R2k - lambda_k^2
+  resid_s2 <- estimate_resid_s2(n = n, R2 = R2)
+  rank_one_KL <- 0
+  curr_elbo <- -Inf
+  obj_diff <- Inf
+  fitted_g_k <- NULL
+  iter <- 1
+  vec_elbo_full <- NULL
+  v <- v_init
+  
+  while((iter <= maxiter) && (obj_diff > tol)){
+    # update l; power iteration step
+    v.old <- v
+    x <- R %*% v
+    e <- ebnm_fn(x = x, s = sqrt(resid_s2), g_init = fitted_g_k)
+    scaling_factor <- sqrt(sum(e$posterior$mean^2) + sum(e$posterior$sd^2))
+    if (scaling_factor == 0){ # check if scaling factor is zero
+      scaling_factor <- Inf
+      v <- e$posterior$mean/scaling_factor
+      print('Warning: scaling factor is zero')
+      break
+    }
+    v <- e$posterior$mean/scaling_factor
+    
+    # update lambda and R2
+    lambda_k.old <- lambda_k
+    lambda_k <- max(as.numeric(t(v) %*% R %*% v), 0)
+    R2 <- R2k - lambda_k^2
+    
+    #store estimate for g
+    fitted_g_k.old <- fitted_g_k
+    fitted_g_k <- e$fitted_g
+    
+    # store KL
+    rank_one_KL.old <- rank_one_KL
+    rank_one_KL <- as.numeric(e$log_likelihood) +
+      - normal_means_loglik(x, sqrt(resid_s2), e$posterior$mean, e$posterior$mean^2 + e$posterior$sd^2)
+    
+    # update resid_s2
+    resid_s2.old <- resid_s2
+    resid_s2 <- estimate_resid_s2(n = n, R2 = R2) # this goes negative?????
+    
+    # check convergence - maybe change to rank-one obj function
+    curr_elbo.old <- curr_elbo
+    curr_elbo <- compute_elbo(resid_s2 = resid_s2,
+                              n = n,
+                              KL = c(KL, rank_one_KL),
+                              R2 = R2)
+    if (iter > 1){
+      obj_diff <- curr_elbo - curr_elbo.old
+    }
+    if (obj_diff < 0){ # check if convergence_val < 0
+      v <- v.old
+      resid_s2 <- resid_s2.old
+      rank_one_KL <- rank_one_KL.old
+      lambda_k <- lambda_k.old
+      curr_elbo <- curr_elbo.old
+      fitted_g_k <- fitted_g_k.old
+      print(paste('elbo decreased by', abs(obj_diff)))
+      break
+    }
+    vec_elbo_full <- c(vec_elbo_full, curr_elbo)
+    iter <- iter + 1
+  }
+  return(list(v = v, lambda_k = lambda_k, resid_s2 = resid_s2, curr_elbo = curr_elbo, vec_elbo_full = vec_elbo_full, fitted_g_k = fitted_g_k, rank_one_KL = rank_one_KL))
+}
+```
+
+```{r, eval = FALSE, include = FALSE}
+sym_ebcovmf_r1_fit_use_optim_fun <- function(S, sym_ebcovmf_obj, ebnm_fn, maxiter, tol, v_init = NULL){
+  # compute residual matrix (maybe get rid of this step)
+  if (is.null(sym_ebcovmf_obj$L_pm) == FALSE){
+    K <- length(sym_ebcovmf_obj$lambda) + 1
+    R <- S - tcrossprod(sym_ebcovmf_obj$L_pm %*% diag(sqrt(sym_ebcovmf_obj$lambda), ncol = (K-1)))
+    R2k <- compute_R2(S, sym_ebcovmf_obj$L_pm, sym_ebcovmf_obj$lambda, (K-1))
+  } else {
+    K <- 1
+    R <- S
+    R2k <- sum(S^2)
+  }
+  
+  # initialize estimate for l
+  if (is.null(v_init) == TRUE){
+    sym_ebcovmf_v_init <- sym_ebcovmf_r1_init(R)
+    v <- sym_ebcovmf_v_init$v
+    lambda_k <- sym_ebcovmf_v_init$lambda_k
+  } else {
+    v <- v_init
+    v <- v/sqrt(sum(v^2))
+    lambda_k <- drop(t(v) %*% R %*% v)
+  }
+  
+  # optimize factor
+  factor_proposed <- optimize_factor(R, ebnm_fn, maxiter, tol, v, lambda_k, R2k, sym_ebcovmf_obj$n, sym_ebcovmf_obj$KL)
+  lambda_k <- factor_proposed$lambda_k
+  v <- factor_proposed$v
+  
+  # nullcheck
+  if((lambda_k > 0) & (sqrt(sum(v^2)) > 10^(-8))){
+    sym_ebcovmf_obj$L_pm <- cbind(sym_ebcovmf_obj$L_pm, v)
+    sym_ebcovmf_obj$KL[K] <- factor_proposed$rank_one_KL
+    sym_ebcovmf_obj$lambda[K] <- lambda_k
+    sym_ebcovmf_obj$resid_s2 <- factor_proposed$resid_s2
+    sym_ebcovmf_obj$fitted_gs[[K]] <- factor_proposed$fitted_g_k
+    sym_ebcovmf_obj$elbo <- factor_proposed$curr_elbo
+    sym_ebcovmf_obj$vec_elbo_full <- c(sym_ebcovmf_obj$vec_elbo_full, K, factor_proposed$vec_elbo_full)
+    sym_ebcovmf_obj$vec_elbo_K <- c(sym_ebcovmf_obj$vec_elbo_K,  factor_proposed$curr_elbo) # maybe will change this
+  }
+  return(sym_ebcovmf_obj)
+}
+```
+
+```{r}
+#nullcheck function
+nullcheck_factors <- function(sym_ebcovmf_obj, L2_tol = 10^(-8)){
+  null_lambda_idx <- which(sym_ebcovmf_obj$lambda == 0)
+  factor_L2_norms <- apply(sym_ebcovmf_obj$L_pm, 2, function(v){sqrt(sum(v^2))})
+  null_factor_idx <- which(factor_L2_norms < L2_tol)
+  null_idx <- unique(c(null_lambda_idx, null_factor_idx))
+  
+  keep_idx <- setdiff(c(1:length(sym_ebcovmf_obj$lambda)), null_idx)
+  
+  if (length(keep_idx) < length(sym_ebcovmf_obj$lambda)){
+    #remove factors
+    sym_ebcovmf_obj$L_pm <- sym_ebcovmf_obj$L_pm[,keep_idx]
+    sym_ebcovmf_obj$lambda <- sym_ebcovmf_obj$lambda[keep_idx]
+    sym_ebcovmf_obj$KL <- sym_ebcovmf_obj$KL[keep_idx]
+    sym_ebcovmf_obj$fitted_gs <- sym_ebcovmf_obj$fitted_gs[keep_idx]
+  }
+  
+  #shouldn't need to recompute objective function or other things
+  return(sym_ebcovmf_obj)
+}
+```
+
+```{r}
+sym_ebcovmf_backfit <- function(S, sym_ebcovmf_obj, ebnm_fn, backfit_maxiter = 100, backfit_tol = 10^(-8), optim_maxiter= 500, optim_tol = 10^(-8)){
+  K <- length(sym_ebcovmf_obj$lambda)
+  iter <- 1
+  obj_diff <- Inf
+  sym_ebcovmf_obj$backfit_vec_elbo_full <- NULL
+  
+  # refit lambda
+  sym_ebcovmf_obj <- refit_lambda(S, sym_ebcovmf_obj, maxiter = 25)
+  
+  while((iter <= backfit_maxiter) && (obj_diff > backfit_tol)){
+    # print(iter)
+    obj_old <- sym_ebcovmf_obj$elbo
+    # loop through each factor
+    for (k in 1:K){
+      # print(k)
+      # compute residual matrix
+      R <- S - tcrossprod(sym_ebcovmf_obj$L_pm[,-k] %*% diag(sqrt(sym_ebcovmf_obj$lambda[-k]), ncol = (K-1)))
+      R2k <- compute_R2(S, sym_ebcovmf_obj$L_pm[,-k], sym_ebcovmf_obj$lambda[-k], (K-1)) #this is right but I have one instance where the values don't match what I expect
+      
+      # optimize factor
+      factor_proposed <- optimize_factor(R, ebnm_fn, optim_maxiter, optim_tol, sym_ebcovmf_obj$L_pm[,k], sym_ebcovmf_obj$lambda[k], R2k, sym_ebcovmf_obj$n, sym_ebcovmf_obj$KL[-k])
+      
+      # update object
+      sym_ebcovmf_obj$L_pm[,k] <- factor_proposed$v
+      sym_ebcovmf_obj$KL[k] <- factor_proposed$rank_one_KL
+      sym_ebcovmf_obj$lambda[k] <- factor_proposed$lambda_k
+      sym_ebcovmf_obj$resid_s2 <- factor_proposed$resid_s2
+      sym_ebcovmf_obj$fitted_gs[[k]] <- factor_proposed$fitted_g_k
+      sym_ebcovmf_obj$elbo <- factor_proposed$curr_elbo
+      sym_ebcovmf_obj$backfit_vec_elbo_full <- c(sym_ebcovmf_obj$backfit_vec_elbo_full, factor_proposed$vec_elbo_full)
+      
+      #print(sym_ebcovmf_obj$elbo)
+      sym_ebcovmf_obj <- refit_lambda(S, sym_ebcovmf_obj) # add refitting step?
+      #print(sym_ebcovmf_obj$elbo)
+    }
+    
+    iter <- iter + 1
+    obj_diff <- abs(sym_ebcovmf_obj$elbo - obj_old)
+    # need to add check if it is negative?
+  }
+  # nullcheck
+  sym_ebcovmf_obj <- nullcheck_factors(sym_ebcovmf_obj)
+  return(sym_ebcovmf_obj)
+}
+```
+
+# Data Generation
+To test this procedure, I will apply it to the tree-structured dataset. When testing out symEBcovMF, I found that the estimates from the two priors in the tree setting had the largest difference.
+
+```{r}
+sim_4pops <- function(args) {
+  set.seed(args$seed)
+  
+  n <- sum(args$pop_sizes)
+  p <- args$n_genes
+  
+  FF <- matrix(rnorm(7 * p, sd = rep(args$branch_sds, each = p)), ncol = 7)
+  # if (args$constrain_F) {
+  #   FF_svd <- svd(FF)
+  #   FF <- FF_svd$u
+  #   FF <- t(t(FF) * branch_sds * sqrt(p))
+  # }
+  
+  LL <- matrix(0, nrow = n, ncol = 7)
+  LL[, 1] <- 1
+  LL[, 2] <- rep(c(1, 1, 0, 0), times = args$pop_sizes)
+  LL[, 3] <- rep(c(0, 0, 1, 1), times = args$pop_sizes)
+  LL[, 4] <- rep(c(1, 0, 0, 0), times = args$pop_sizes)
+  LL[, 5] <- rep(c(0, 1, 0, 0), times = args$pop_sizes)
+  LL[, 6] <- rep(c(0, 0, 1, 0), times = args$pop_sizes)
+  LL[, 7] <- rep(c(0, 0, 0, 1), times = args$pop_sizes)
+  
+  E <- matrix(rnorm(n * p, sd = args$indiv_sd), nrow = n)
+  Y <- LL %*% t(FF) + E
+  YYt <- (1/p)*tcrossprod(Y)
+  return(list(Y = Y, YYt = YYt, LL = LL, FF = FF, K = ncol(LL)))
+}
+```
+
+```{r}
+sim_args = list(pop_sizes = rep(40, 4), n_genes = 1000, branch_sds = rep(2,7), indiv_sd = 1, seed = 1)
+sim_data <- sim_4pops(sim_args)
+```
+
+This is a heatmap of the scaled Gram matrix:
+```{r}
+plot_heatmap(sim_data$YYt, colors_range = c('blue','gray96','red'), brks = seq(-max(abs(sim_data$YYt)), max(abs(sim_data$YYt)), length.out = 50))
+```
+
+This is a scatter plot of the true loadings matrix:
+```{r}
+pop_vec <- c(rep('A', 40), rep('B', 40), rep('C', 40), rep('D', 40))
+plot_loadings(sim_data$LL, pop_vec)
+```
+
+This is a plot of the eigenvalues of the Gram matrix:
+```{r}
+S_eigen <- eigen(sim_data$YYt)
+plot(S_eigen$values) + abline(a = 0, b = 0, col = 'red')
+```
+
+This is the minimum eigenvalue:
+```{r}
+min(S_eigen$values)
+```
+
+# Generalized binary
+
+## Generalized binary symEBcovMF
+
+For comparison, we first try running greedy symEBcovMF with generalized binary prior.
+```{r}
+symebcovmf_fit <- sym_ebcovmf_fit(S = sim_data$YYt, ebnm_fn = ebnm::ebnm_generalized_binary, K = 7, maxiter = 500, rank_one_tol = 10^(-8), tol = 10^(-8), refit_lam = TRUE)
+```
+
+This is a scatter plot of $\hat{L}$, the estimate from symEBcovMF:
+```{r}
+bal_pops <- c(rep('A', 40), rep('B', 40), rep('C', 40), rep('D', 40))
+plot_loadings(symebcovmf_fit$L_pm %*% diag(sqrt(symebcovmf_fit$lambda)), bal_pops)
+```
+
+This is the objective function value attained:
+```{r}
+symebcovmf_fit$elbo
+```
+
+## Generalized binary symEBcovMF backfit initialized with point-exponential fit
+For this procedure, I start by running symEBcovMF with a point-exponential prior with Kmax set to the inputted Kmax value. From this, I get an estimate for $L$, which I call $\hat{L}_{exp}$. Then, I backfit with a generalized-binary prior.
+
+```{r}
+symebcovmf_pexp_fit <- sym_ebcovmf_fit(S = sim_data$YYt, ebnm_fn = ebnm::ebnm_point_exponential, K = 7, maxiter = 500, rank_one_tol = 10^(-8), tol = 10^(-8), refit_lam = TRUE)
+```
+
+This is a scatter plot of $\hat{L}_{exp}$, the estimate from point-exponential symEBcovMF. This is the initialization for the backfit:
+```{r}
+bal_pops <- c(rep('A', 40), rep('B', 40), rep('C', 40), rep('D', 40))
+plot_loadings(symebcovmf_pexp_fit$L_pm %*% diag(sqrt(symebcovmf_pexp_fit$lambda)), bal_pops)
+```
+
+Now, we run the backfit.
+```{r}
+symebcovmf_gb_fit_backfit <- sym_ebcovmf_backfit(sim_data$YYt, symebcovmf_pexp_fit, ebnm_fn = ebnm_generalized_binary, backfit_maxiter = 100)
+```
+
+This is a scatter plot of $\hat{L}_{gb-backfit}$, the estimate from the generalized binary backfit:
+```{r}
+bal_pops <- c(rep('A', 40), rep('B', 40), rep('C', 40), rep('D', 40))
+plot_loadings(symebcovmf_gb_fit_backfit$L_pm %*% diag(sqrt(symebcovmf_gb_fit_backfit$lambda)), bal_pops)
+```
+
+This is the objective function value attained:
+```{r}
+symebcovmf_gb_fit_backfit$elbo
+```
+
+## Observations
+
+The estimate from the backfit procedure looks closer to the tree-structured loadings matrix than the estimate from greedy generalized binary symEBcovMF. Furthermore, the backfit procedure attains a much higher objective function value. This suggests that the method does prefer the tree-structured loadings matrix, and the greedy generalized binary symEBcovMF method has a convergence issue. The second factor corresponding to a subtype effect could be more binary. This could potentially be fixed by using a more strict binary prior. Similarly, the first factor corresponding to the intercept could be more binary. Another observation is the single group effect factors all have a couple of small, non-zero loading values. I'm not exactly sure why those appear. 
+
+# Binormal
+In this section, I try applying the same method with the binormal prior instead of the generalized binary prior.
+
+```{r}
+dbinormal = function (x,s,s0,lambda,log=TRUE){
+  pi0 = 0.5
+  pi1 = 0.5
+  s2 = s^2
+  s02 = s0^2
+  l0 = dnorm(x,0,sqrt(lambda^2 * s02 + s2),log=TRUE)
+  l1 = dnorm(x,lambda,sqrt(lambda^2 * s02 + s2),log=TRUE)
+  logsum = log(pi0*exp(l0) + pi1*exp(l1))
+ 
+  m = pmax(l0,l1)
+  logsum = m + log(pi0*exp(l0-m) + pi1*exp(l1-m))
+  if (log) return(sum(logsum))
+  else return(exp(sum(logsum)))
+}
+```
+
+```{r}
+ebnm_binormal = function(x,s, g_init = NULL, fix_g = FALSE, output = ebnm_output_default(), control = NULL){
+  # Add g_init to make the method run
+  if(is.null(dim(x)) == FALSE){
+    x <- c(x)
+  }
+  s0 = 0.01
+  lambda = optimize(function(lambda){-dbinormal(x,s,s0,lambda,log=TRUE)},
+              lower = 0, upper = max(x))$minimum
+  g = ashr::normalmix(pi=c(0.5,0.5), mean=c(0,lambda), sd=c(lambda * s0,lambda * s0))
+  postmean = ashr::postmean(g,ashr::set_data(x,s))
+  postsd = ashr::postsd(g,ashr::set_data(x,s))
+  log_likelihood <- ashr::calc_loglik(g, ashr::set_data(x,s))
+  return(list(fitted_g = g, posterior = data.frame(mean=postmean,sd=postsd), log_likelihood = log_likelihood))
+}
+```
+
+## Binormal symEBcovMF
+
+For comparison, I try running regular symEBcovMF with the binormal prior.
+```{r}
+symebcovmf_binormal_fit <- sym_ebcovmf_fit(S = sim_data$YYt, ebnm_fn = ebnm_binormal, K = 7, maxiter = 500, rank_one_tol = 10^(-8), tol = 10^(-8), refit_lam = TRUE)
+```
+
+This is a scatter plot of $\hat{L}_{binormal}$, the estimate from binormal symEBcovMF:
+```{r}
+bal_pops <- c(rep('A', 40), rep('B', 40), rep('C', 40), rep('D', 40))
+plot_loadings(symebcovmf_binormal_fit$L_pm %*% diag(sqrt(symebcovmf_binormal_fit$lambda)), bal_pops)
+```
+
+This is the objective function value attained:
+```{r}
+symebcovmf_binormal_fit$elbo
+```
+
+## Binormal symEBcovMF backfit with point-exponential initialization
+Now we try the backfit procedure with the binormal prior.
+
+```{r}
+symebcovmf_binormal_fit_backfit <- sym_ebcovmf_backfit(sim_data$YYt, symebcovmf_pexp_fit, ebnm_fn = ebnm_binormal, backfit_maxiter = 100)
+```
+
+This is a scatter plot of $\hat{L}_{binormal-backfit}$, the estimate from binormal backfit:
+```{r}
+bal_pops <- c(rep('A', 40), rep('B', 40), rep('C', 40), rep('D', 40))
+plot_loadings(symebcovmf_binormal_fit_backfit$L_pm %*% diag(sqrt(symebcovmf_binormal_fit_backfit$lambda)), bal_pops)
+```
+
+This is the objective function attained:
+```{r}
+symebcovmf_binormal_fit_backfit$elbo
+```
+
+## Observations
+Similar to generalized binary symEBcovMF, the binormal symEBcovMF method fails to find all four single group effect factors. Instead, three of the factors combine two groups. The backfit procedure does a better job at recovering the tree structure in the data. Furthermore, the estimate from the backfit procedure attains a higher objective function value than the estimate from the greedy procedure. Comparing the binormal prior with the generalized binary prior, we see that the factors generated from the latter look more binary. Though this could be due to the settings of the priors. I'm guessing it would be possible to get a more binary estimate from the generalized binary prior by changing the scale parameter.
