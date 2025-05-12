@@ -1,0 +1,1820 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+
+<meta name="author" content="Annie Xie" />
+
+<meta name="date" content="2025-05-07" />
+
+<title>symebcovmf_gb_point_exp_backfit</title>
+
+<script src="site_libs/header-attrs-2.28/header-attrs.js"></script>
+<script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/cosmo.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<style>h1 {font-size: 34px;}
+       h1.title {font-size: 38px;}
+       h2 {font-size: 30px;}
+       h3 {font-size: 24px;}
+       h4 {font-size: 18px;}
+       h5 {font-size: 16px;}
+       h6 {font-size: 12px;}
+       code {color: inherit; background-color: rgba(0, 0, 0, 0.04);}
+       pre:not([class]) { background-color: white }</style>
+<script src="site_libs/jqueryui-1.13.2/jquery-ui.min.js"></script>
+<link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
+<script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<script src="site_libs/navigation-1.1/codefolding.js"></script>
+<link href="site_libs/highlightjs-9.12.0/textmate.css" rel="stylesheet" />
+<script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
+<link href="site_libs/font-awesome-6.4.2/css/all.min.css" rel="stylesheet" />
+<link href="site_libs/font-awesome-6.4.2/css/v4-shims.min.css" rel="stylesheet" />
+
+<link rel="icon" href="https://github.com/workflowr/workflowr-assets/raw/main/img/reproducible.png">
+<!-- Add a small amount of space between sections. -->
+<style type="text/css">
+div.section {
+  padding-top: 12px;
+}
+</style>
+
+
+
+<style type="text/css">
+  code{white-space: pre-wrap;}
+  span.smallcaps{font-variant: small-caps;}
+  span.underline{text-decoration: underline;}
+  div.column{display: inline-block; vertical-align: top; width: 50%;}
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  ul.task-list{list-style: none;}
+    </style>
+
+<style type="text/css">code{white-space: pre;}</style>
+<script type="text/javascript">
+if (window.hljs) {
+  hljs.configure({languages: []});
+  hljs.initHighlightingOnLoad();
+  if (document.readyState && document.readyState === "complete") {
+    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
+  }
+}
+</script>
+
+
+
+
+
+
+
+
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+img {
+  max-width:100%;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+summary {
+  display: list-item;
+}
+details > summary > p:only-child {
+  display: inline;
+}
+pre code {
+  padding: 0;
+}
+</style>
+
+
+<style type="text/css">
+.dropdown-submenu {
+  position: relative;
+}
+.dropdown-submenu>.dropdown-menu {
+  top: 0;
+  left: 100%;
+  margin-top: -6px;
+  margin-left: -1px;
+  border-radius: 0 6px 6px 6px;
+}
+.dropdown-submenu:hover>.dropdown-menu {
+  display: block;
+}
+.dropdown-submenu>a:after {
+  display: block;
+  content: " ";
+  float: right;
+  width: 0;
+  height: 0;
+  border-color: transparent;
+  border-style: solid;
+  border-width: 5px 0 5px 5px;
+  border-left-color: #cccccc;
+  margin-top: 5px;
+  margin-right: -10px;
+}
+.dropdown-submenu:hover>a:after {
+  border-left-color: #adb5bd;
+}
+.dropdown-submenu.pull-left {
+  float: none;
+}
+.dropdown-submenu.pull-left>.dropdown-menu {
+  left: -100%;
+  margin-left: 10px;
+  border-radius: 6px 0 6px 6px;
+}
+</style>
+
+<script type="text/javascript">
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark the anchor link active (and if it's in a dropdown, also mark that active)
+  var dropdown = menuAnchor.closest('li.dropdown');
+  if (window.bootstrap) { // Bootstrap 4+
+    menuAnchor.addClass('active');
+    dropdown.find('> .dropdown-toggle').addClass('active');
+  } else { // Bootstrap 3
+    menuAnchor.parent().addClass('active');
+    dropdown.addClass('active');
+  }
+
+  // Navbar adjustments
+  var navHeight = $(".navbar").first().height() + 15;
+  var style = document.createElement('style');
+  var pt = "padding-top: " + navHeight + "px; ";
+  var mt = "margin-top: -" + navHeight + "px; ";
+  var css = "";
+  // offset scroll position for anchor links (for fixed navbar)
+  for (var i = 1; i <= 6; i++) {
+    css += ".section h" + i + "{ " + pt + mt + "}\n";
+  }
+  style.innerHTML = "body {" + pt + "padding-bottom: 40px; }\n" + css;
+  document.head.appendChild(style);
+});
+</script>
+
+<!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before, .tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "\e259";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "\e258";
+  font-family: 'Glyphicons Halflings';
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+  background-color: transparent;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
+<!-- code folding -->
+<style type="text/css">
+.code-folding-btn { margin-bottom: 4px; }
+</style>
+
+
+
+<style type="text/css">
+
+#TOC {
+  margin: 25px 0px 20px 0px;
+}
+@media (max-width: 768px) {
+#TOC {
+  position: relative;
+  width: 100%;
+}
+}
+
+@media print {
+.toc-content {
+  /* see https://github.com/w3c/csswg-drafts/issues/4434 */
+  float: right;
+}
+}
+
+.toc-content {
+  padding-left: 30px;
+  padding-right: 40px;
+}
+
+div.main-container {
+  max-width: 1200px;
+}
+
+div.tocify {
+  width: 20%;
+  max-width: 260px;
+  max-height: 85%;
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  div.tocify {
+    width: 25%;
+  }
+}
+
+@media (max-width: 767px) {
+  div.tocify {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+.tocify ul, .tocify li {
+  line-height: 20px;
+}
+
+.tocify-subheader .tocify-item {
+  font-size: 0.90em;
+}
+
+.tocify .list-group-item {
+  border-radius: 0px;
+}
+
+
+</style>
+
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
+
+
+<!-- setup 3col/9col grid for toc_float and main content  -->
+<div class="row">
+<div class="col-xs-12 col-sm-4 col-md-3">
+<div id="TOC" class="tocify">
+</div>
+</div>
+
+<div class="toc-content col-xs-12 col-sm-8 col-md-9">
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-bs-toggle="collapse" data-target="#navbar" data-bs-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">symmetric_covariance_decomposition</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li>
+  <a href="index.html">Home</a>
+</li>
+<li>
+  <a href="about.html">About</a>
+</li>
+<li>
+  <a href="license.html">License</a>
+</li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        <li>
+  <a href="https://github.com/xxie6/symmetric_covariance_decomposition">
+    <span class="fab fa-github"></span>
+     
+    Source code
+  </a>
+</li>
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div id="header">
+
+<div class="btn-group pull-right float-right">
+<button type="button" class="btn btn-default btn-xs btn-secondary btn-sm dropdown-toggle" data-toggle="dropdown" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><span>Code</span> <span class="caret"></span></button>
+<ul class="dropdown-menu dropdown-menu-right" style="min-width: 50px;">
+<li><a id="rmd-show-all-code" href="#">Show All Code</a></li>
+<li><a id="rmd-hide-all-code" href="#">Hide All Code</a></li>
+</ul>
+</div>
+
+
+
+<h1 class="title toc-ignore">symebcovmf_gb_point_exp_backfit</h1>
+<h4 class="author">Annie Xie</h4>
+<h4 class="date">2025-05-07</h4>
+
+</div>
+
+
+<p>
+<button type="button" class="btn btn-default btn-workflowr btn-workflowr-report" data-toggle="collapse" data-target="#workflowr-report">
+<span class="glyphicon glyphicon-list" aria-hidden="true"></span>
+workflowr <span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span>
+</button>
+</p>
+<div id="workflowr-report" class="collapse">
+<ul class="nav nav-tabs">
+<li class="active">
+<a data-toggle="tab" href="#summary">Summary</a>
+</li>
+<li>
+<a data-toggle="tab" href="#checks"> Checks <span
+class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span>
+</a>
+</li>
+<li>
+<a data-toggle="tab" href="#versions">Past versions</a>
+</li>
+</ul>
+<div class="tab-content">
+<div id="summary" class="tab-pane fade in active">
+<p>
+<strong>Last updated:</strong> 2025-05-12
+</p>
+<p>
+<strong>Checks:</strong> <span
+class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> 7
+<span class="glyphicon glyphicon-exclamation-sign text-danger"
+aria-hidden="true"></span> 0
+</p>
+<p>
+<strong>Knit directory:</strong>
+<code>symmetric_covariance_decomposition/</code> <span
+class="glyphicon glyphicon-question-sign" aria-hidden="true"
+title="This is the local directory in which the code in this file was executed.">
+</span>
+</p>
+<p>
+This reproducible <a href="https://rmarkdown.rstudio.com">R Markdown</a>
+analysis was created with <a
+  href="https://github.com/workflowr/workflowr">workflowr</a> (version
+1.7.1). The <em>Checks</em> tab describes the reproducibility checks
+that were applied when the results were created. The <em>Past
+versions</em> tab lists the development history.
+</p>
+<hr>
+</div>
+<div id="checks" class="tab-pane fade">
+<div id="workflowr-checks" class="panel-group">
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRMarkdownfilestronguptodate">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>R Markdown file:</strong> up-to-date
+</a>
+</p>
+</div>
+<div id="strongRMarkdownfilestronguptodate"
+class="panel-collapse collapse">
+<div class="panel-body">
+<p>Great! Since the R Markdown file has been committed to the Git
+repository, you know the exact version of the code that produced these
+results.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongEnvironmentstrongempty">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>Environment:</strong> empty </a>
+</p>
+</div>
+<div id="strongEnvironmentstrongempty" class="panel-collapse collapse">
+<div class="panel-body">
+<p>Great job! The global environment was empty. Objects defined in the
+global environment can affect the analysis in your R Markdown file in
+unknown ways. For reproduciblity it’s best to always run the code in an
+empty environment.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongSeedstrongcodesetseed20250408code">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>Seed:</strong>
+<code>set.seed(20250408)</code> </a>
+</p>
+</div>
+<div id="strongSeedstrongcodesetseed20250408code"
+class="panel-collapse collapse">
+<div class="panel-body">
+<p>The command <code>set.seed(20250408)</code> was run prior to running
+the code in the R Markdown file. Setting a seed ensures that any results
+that rely on randomness, e.g. subsampling or permutations, are
+reproducible.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongSessioninformationstrongrecorded">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>Session information:</strong>
+recorded </a>
+</p>
+</div>
+<div id="strongSessioninformationstrongrecorded"
+class="panel-collapse collapse">
+<div class="panel-body">
+<p>Great job! Recording the operating system, R version, and package
+versions is critical for reproducibility.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongCachestrongnone">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>Cache:</strong> none </a>
+</p>
+</div>
+<div id="strongCachestrongnone" class="panel-collapse collapse">
+<div class="panel-body">
+<p>Nice! There were no cached chunks for this analysis, so you can be
+confident that you successfully produced the results during this
+run.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongFilepathsstrongrelative">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>File paths:</strong> relative </a>
+</p>
+</div>
+<div id="strongFilepathsstrongrelative" class="panel-collapse collapse">
+<div class="panel-body">
+<p>Great job! Using relative paths to the files within your workflowr
+project makes it easier to run your code on other machines.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomxxie6symmetriccovariancedecompositiontree58d7eb8bdba01c6cbc9c2a1b67a53921628cf576targetblank58d7eb8a">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>Repository version:</strong>
+<a href="https://github.com/xxie6/symmetric_covariance_decomposition/tree/58d7eb8bdba01c6cbc9c2a1b67a53921628cf576" target="_blank">58d7eb8</a>
+</a>
+</p>
+</div>
+<div
+id="strongRepositoryversionstrongahrefhttpsgithubcomxxie6symmetriccovariancedecompositiontree58d7eb8bdba01c6cbc9c2a1b67a53921628cf576targetblank58d7eb8a"
+class="panel-collapse collapse">
+<div class="panel-body">
+<p>
+Great! You are using Git for version control. Tracking code development
+and connecting the code version to the results is critical for
+reproducibility.
+</p>
+<p>
+The results in this page were generated with repository version
+<a href="https://github.com/xxie6/symmetric_covariance_decomposition/tree/58d7eb8bdba01c6cbc9c2a1b67a53921628cf576" target="_blank">58d7eb8</a>.
+See the <em>Past versions</em> tab to see a history of the changes made
+to the R Markdown and HTML files.
+</p>
+<p>
+Note that you need to be careful to ensure that all relevant files for
+the analysis have been committed to Git prior to generating the results
+(you can use <code>wflow_publish</code> or
+<code>wflow_git_commit</code>). workflowr only checks the R Markdown
+file, but you know if there are other scripts or data files that it
+depends on. Below is the status of the Git repository when the results
+were generated:
+</p>
+<pre><code>
+Ignored files:
+    Ignored:    .DS_Store
+    Ignored:    .Rhistory
+
+</code></pre>
+<p>
+Note that any generated files, e.g. HTML, png, CSS, etc., are not
+included in this status report because it is ok for generated content to
+have uncommitted changes.
+</p>
+</div>
+</div>
+</div>
+</div>
+<hr>
+</div>
+<div id="versions" class="tab-pane fade">
+
+<p>
+These are the previous versions of the repository in which changes were
+made to the R Markdown
+(<code>analysis/symebcovmf_gb_point_exp_backfit.Rmd</code>) and HTML
+(<code>docs/symebcovmf_gb_point_exp_backfit.html</code>) files. If
+you’ve configured a remote Git repository (see
+<code>?wflow_git_remote</code>), click on the hyperlinks in the table
+below to view the files as they were in that past version.
+</p>
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+File
+</th>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+<th>
+Message
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+Rmd
+</td>
+<td>
+<a href="https://github.com/xxie6/symmetric_covariance_decomposition/blob/58d7eb8bdba01c6cbc9c2a1b67a53921628cf576/analysis/symebcovmf_gb_point_exp_backfit.Rmd" target="_blank">58d7eb8</a>
+</td>
+<td>
+Annie Xie
+</td>
+<td>
+2025-05-12
+</td>
+<td>
+Add analysis of gb backfit initialized with point exp
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<hr>
+</div>
+</div>
+</div>
+<div id="introduction" class="section level1">
+<h1>Introduction</h1>
+<p>In this analysis, I want to test out initializing symEBcovMF with a
+binary prior with a point-exponential symEBcovMF fit.</p>
+<div id="motivation" class="section level2">
+<h2>Motivation</h2>
+<p>In the tree setting, I found that symEBcovMF with the
+point-exponential prior did a better job at recovering tree structure
+than symEBcovMF with the generalized binary prior. Matthew and I
+hypothesized that the point-exponential prior is better at finding
+sparse solutions. So we want to investigate a two-step procedure which
+finds a fit with point-exponential prior in the first step, and then
+refines the fit with the generalized binary (or other binary) prior in
+the second step. In this analysis, I investigate a backfitting procedure
+– first, I generate a fit with a point-exponential prior, and then use
+that as an initialization for a backfit with a binary prior.</p>
+</div>
+</div>
+<div id="packages-and-functions" class="section level1">
+<h1>Packages and Functions</h1>
+<pre class="r"><code>library(ebnm)
+library(pheatmap)
+library(ggplot2)</code></pre>
+<pre class="r"><code>source(&#39;code/visualization_functions.R&#39;)
+source(&#39;code/symebcovmf_functions.R&#39;)</code></pre>
+</div>
+<div id="backfit-function" class="section level1">
+<h1>Backfit Function</h1>
+<pre class="r"><code>optimize_factor &lt;- function(R, ebnm_fn, maxiter, tol, v_init, lambda_k, R2k, n, KL){
+  R2 &lt;- R2k - lambda_k^2
+  resid_s2 &lt;- estimate_resid_s2(n = n, R2 = R2)
+  rank_one_KL &lt;- 0
+  curr_elbo &lt;- -Inf
+  obj_diff &lt;- Inf
+  fitted_g_k &lt;- NULL
+  iter &lt;- 1
+  vec_elbo_full &lt;- NULL
+  v &lt;- v_init
+  
+  while((iter &lt;= maxiter) &amp;&amp; (obj_diff &gt; tol)){
+    # update l; power iteration step
+    v.old &lt;- v
+    x &lt;- R %*% v
+    e &lt;- ebnm_fn(x = x, s = sqrt(resid_s2), g_init = fitted_g_k)
+    scaling_factor &lt;- sqrt(sum(e$posterior$mean^2) + sum(e$posterior$sd^2))
+    if (scaling_factor == 0){ # check if scaling factor is zero
+      scaling_factor &lt;- Inf
+      v &lt;- e$posterior$mean/scaling_factor
+      print(&#39;Warning: scaling factor is zero&#39;)
+      break
+    }
+    v &lt;- e$posterior$mean/scaling_factor
+    
+    # update lambda and R2
+    lambda_k.old &lt;- lambda_k
+    lambda_k &lt;- max(as.numeric(t(v) %*% R %*% v), 0)
+    R2 &lt;- R2k - lambda_k^2
+    
+    #store estimate for g
+    fitted_g_k.old &lt;- fitted_g_k
+    fitted_g_k &lt;- e$fitted_g
+    
+    # store KL
+    rank_one_KL.old &lt;- rank_one_KL
+    rank_one_KL &lt;- as.numeric(e$log_likelihood) +
+      - normal_means_loglik(x, sqrt(resid_s2), e$posterior$mean, e$posterior$mean^2 + e$posterior$sd^2)
+    
+    # update resid_s2
+    resid_s2.old &lt;- resid_s2
+    resid_s2 &lt;- estimate_resid_s2(n = n, R2 = R2) # this goes negative?????
+    
+    # check convergence - maybe change to rank-one obj function
+    curr_elbo.old &lt;- curr_elbo
+    curr_elbo &lt;- compute_elbo(resid_s2 = resid_s2,
+                              n = n,
+                              KL = c(KL, rank_one_KL),
+                              R2 = R2)
+    if (iter &gt; 1){
+      obj_diff &lt;- curr_elbo - curr_elbo.old
+    }
+    if (obj_diff &lt; 0){ # check if convergence_val &lt; 0
+      v &lt;- v.old
+      resid_s2 &lt;- resid_s2.old
+      rank_one_KL &lt;- rank_one_KL.old
+      lambda_k &lt;- lambda_k.old
+      curr_elbo &lt;- curr_elbo.old
+      fitted_g_k &lt;- fitted_g_k.old
+      print(paste(&#39;elbo decreased by&#39;, abs(obj_diff)))
+      break
+    }
+    vec_elbo_full &lt;- c(vec_elbo_full, curr_elbo)
+    iter &lt;- iter + 1
+  }
+  return(list(v = v, lambda_k = lambda_k, resid_s2 = resid_s2, curr_elbo = curr_elbo, vec_elbo_full = vec_elbo_full, fitted_g_k = fitted_g_k, rank_one_KL = rank_one_KL))
+}</code></pre>
+<pre class="r"><code>#nullcheck function
+nullcheck_factors &lt;- function(sym_ebcovmf_obj, L2_tol = 10^(-8)){
+  null_lambda_idx &lt;- which(sym_ebcovmf_obj$lambda == 0)
+  factor_L2_norms &lt;- apply(sym_ebcovmf_obj$L_pm, 2, function(v){sqrt(sum(v^2))})
+  null_factor_idx &lt;- which(factor_L2_norms &lt; L2_tol)
+  null_idx &lt;- unique(c(null_lambda_idx, null_factor_idx))
+  
+  keep_idx &lt;- setdiff(c(1:length(sym_ebcovmf_obj$lambda)), null_idx)
+  
+  if (length(keep_idx) &lt; length(sym_ebcovmf_obj$lambda)){
+    #remove factors
+    sym_ebcovmf_obj$L_pm &lt;- sym_ebcovmf_obj$L_pm[,keep_idx]
+    sym_ebcovmf_obj$lambda &lt;- sym_ebcovmf_obj$lambda[keep_idx]
+    sym_ebcovmf_obj$KL &lt;- sym_ebcovmf_obj$KL[keep_idx]
+    sym_ebcovmf_obj$fitted_gs &lt;- sym_ebcovmf_obj$fitted_gs[keep_idx]
+  }
+  
+  #shouldn&#39;t need to recompute objective function or other things
+  return(sym_ebcovmf_obj)
+}</code></pre>
+<pre class="r"><code>sym_ebcovmf_backfit &lt;- function(S, sym_ebcovmf_obj, ebnm_fn, backfit_maxiter = 100, backfit_tol = 10^(-8), optim_maxiter= 500, optim_tol = 10^(-8)){
+  K &lt;- length(sym_ebcovmf_obj$lambda)
+  iter &lt;- 1
+  obj_diff &lt;- Inf
+  sym_ebcovmf_obj$backfit_vec_elbo_full &lt;- NULL
+  
+  # refit lambda
+  sym_ebcovmf_obj &lt;- refit_lambda(S, sym_ebcovmf_obj, maxiter = 25)
+  
+  while((iter &lt;= backfit_maxiter) &amp;&amp; (obj_diff &gt; backfit_tol)){
+    # print(iter)
+    obj_old &lt;- sym_ebcovmf_obj$elbo
+    # loop through each factor
+    for (k in 1:K){
+      # print(k)
+      # compute residual matrix
+      R &lt;- S - tcrossprod(sym_ebcovmf_obj$L_pm[,-k] %*% diag(sqrt(sym_ebcovmf_obj$lambda[-k]), ncol = (K-1)))
+      R2k &lt;- compute_R2(S, sym_ebcovmf_obj$L_pm[,-k], sym_ebcovmf_obj$lambda[-k], (K-1)) #this is right but I have one instance where the values don&#39;t match what I expect
+      
+      # optimize factor
+      factor_proposed &lt;- optimize_factor(R, ebnm_fn, optim_maxiter, optim_tol, sym_ebcovmf_obj$L_pm[,k], sym_ebcovmf_obj$lambda[k], R2k, sym_ebcovmf_obj$n, sym_ebcovmf_obj$KL[-k])
+      
+      # update object
+      sym_ebcovmf_obj$L_pm[,k] &lt;- factor_proposed$v
+      sym_ebcovmf_obj$KL[k] &lt;- factor_proposed$rank_one_KL
+      sym_ebcovmf_obj$lambda[k] &lt;- factor_proposed$lambda_k
+      sym_ebcovmf_obj$resid_s2 &lt;- factor_proposed$resid_s2
+      sym_ebcovmf_obj$fitted_gs[[k]] &lt;- factor_proposed$fitted_g_k
+      sym_ebcovmf_obj$elbo &lt;- factor_proposed$curr_elbo
+      sym_ebcovmf_obj$backfit_vec_elbo_full &lt;- c(sym_ebcovmf_obj$backfit_vec_elbo_full, factor_proposed$vec_elbo_full)
+      
+      #print(sym_ebcovmf_obj$elbo)
+      sym_ebcovmf_obj &lt;- refit_lambda(S, sym_ebcovmf_obj) # add refitting step?
+      #print(sym_ebcovmf_obj$elbo)
+    }
+    
+    iter &lt;- iter + 1
+    obj_diff &lt;- abs(sym_ebcovmf_obj$elbo - obj_old)
+    # need to add check if it is negative?
+  }
+  # nullcheck
+  sym_ebcovmf_obj &lt;- nullcheck_factors(sym_ebcovmf_obj)
+  return(sym_ebcovmf_obj)
+}</code></pre>
+</div>
+<div id="data-generation" class="section level1">
+<h1>Data Generation</h1>
+<p>To test this procedure, I will apply it to the tree-structured
+dataset. When testing out symEBcovMF, I found that the estimates from
+the two priors in the tree setting had the largest difference.</p>
+<pre class="r"><code>sim_4pops &lt;- function(args) {
+  set.seed(args$seed)
+  
+  n &lt;- sum(args$pop_sizes)
+  p &lt;- args$n_genes
+  
+  FF &lt;- matrix(rnorm(7 * p, sd = rep(args$branch_sds, each = p)), ncol = 7)
+  # if (args$constrain_F) {
+  #   FF_svd &lt;- svd(FF)
+  #   FF &lt;- FF_svd$u
+  #   FF &lt;- t(t(FF) * branch_sds * sqrt(p))
+  # }
+  
+  LL &lt;- matrix(0, nrow = n, ncol = 7)
+  LL[, 1] &lt;- 1
+  LL[, 2] &lt;- rep(c(1, 1, 0, 0), times = args$pop_sizes)
+  LL[, 3] &lt;- rep(c(0, 0, 1, 1), times = args$pop_sizes)
+  LL[, 4] &lt;- rep(c(1, 0, 0, 0), times = args$pop_sizes)
+  LL[, 5] &lt;- rep(c(0, 1, 0, 0), times = args$pop_sizes)
+  LL[, 6] &lt;- rep(c(0, 0, 1, 0), times = args$pop_sizes)
+  LL[, 7] &lt;- rep(c(0, 0, 0, 1), times = args$pop_sizes)
+  
+  E &lt;- matrix(rnorm(n * p, sd = args$indiv_sd), nrow = n)
+  Y &lt;- LL %*% t(FF) + E
+  YYt &lt;- (1/p)*tcrossprod(Y)
+  return(list(Y = Y, YYt = YYt, LL = LL, FF = FF, K = ncol(LL)))
+}</code></pre>
+<pre class="r"><code>sim_args = list(pop_sizes = rep(40, 4), n_genes = 1000, branch_sds = rep(2,7), indiv_sd = 1, seed = 1)
+sim_data &lt;- sim_4pops(sim_args)</code></pre>
+<p>This is a heatmap of the scaled Gram matrix:</p>
+<pre class="r"><code>plot_heatmap(sim_data$YYt, colors_range = c(&#39;blue&#39;,&#39;gray96&#39;,&#39;red&#39;), brks = seq(-max(abs(sim_data$YYt)), max(abs(sim_data$YYt)), length.out = 50))</code></pre>
+<p><img src="figure/symebcovmf_gb_point_exp_backfit.Rmd/unnamed-chunk-9-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>This is a scatter plot of the true loadings matrix:</p>
+<pre class="r"><code>pop_vec &lt;- c(rep(&#39;A&#39;, 40), rep(&#39;B&#39;, 40), rep(&#39;C&#39;, 40), rep(&#39;D&#39;, 40))
+plot_loadings(sim_data$LL, pop_vec)</code></pre>
+<p><img src="figure/symebcovmf_gb_point_exp_backfit.Rmd/unnamed-chunk-10-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>This is a plot of the eigenvalues of the Gram matrix:</p>
+<pre class="r"><code>S_eigen &lt;- eigen(sim_data$YYt)
+plot(S_eigen$values) + abline(a = 0, b = 0, col = &#39;red&#39;)</code></pre>
+<p><img src="figure/symebcovmf_gb_point_exp_backfit.Rmd/unnamed-chunk-11-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre><code>integer(0)</code></pre>
+<p>This is the minimum eigenvalue:</p>
+<pre class="r"><code>min(S_eigen$values)</code></pre>
+<pre><code>[1] 0.3724341</code></pre>
+</div>
+<div id="generalized-binary" class="section level1">
+<h1>Generalized binary</h1>
+<div id="generalized-binary-symebcovmf" class="section level2">
+<h2>Generalized binary symEBcovMF</h2>
+<p>For comparison, we first try running greedy symEBcovMF with
+generalized binary prior.</p>
+<pre class="r"><code>symebcovmf_fit &lt;- sym_ebcovmf_fit(S = sim_data$YYt, ebnm_fn = ebnm::ebnm_generalized_binary, K = 7, maxiter = 500, rank_one_tol = 10^(-8), tol = 10^(-8), refit_lam = TRUE)</code></pre>
+<pre><code>[1] &quot;elbo decreased by 0.185693113584421&quot;
+[1] &quot;elbo decreased by 0.0114876429142896&quot;
+[1] &quot;elbo decreased by 1.5825207810849e-10&quot;</code></pre>
+<p>This is a scatter plot of <span
+class="math inline">\(\hat{L}\)</span>, the estimate from
+symEBcovMF:</p>
+<pre class="r"><code>bal_pops &lt;- c(rep(&#39;A&#39;, 40), rep(&#39;B&#39;, 40), rep(&#39;C&#39;, 40), rep(&#39;D&#39;, 40))
+plot_loadings(symebcovmf_fit$L_pm %*% diag(sqrt(symebcovmf_fit$lambda)), bal_pops)</code></pre>
+<p><img src="figure/symebcovmf_gb_point_exp_backfit.Rmd/unnamed-chunk-14-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>This is the objective function value attained:</p>
+<pre class="r"><code>symebcovmf_fit$elbo</code></pre>
+<pre><code>[1] -14979.17</code></pre>
+</div>
+<div
+id="generalized-binary-symebcovmf-backfit-initialized-with-point-exponential-fit"
+class="section level2">
+<h2>Generalized binary symEBcovMF backfit initialized with
+point-exponential fit</h2>
+<p>For this procedure, I start by running symEBcovMF with a
+point-exponential prior with Kmax set to the inputted Kmax value. From
+this, I get an estimate for <span class="math inline">\(L\)</span>,
+which I call <span class="math inline">\(\hat{L}_{exp}\)</span>. Then, I
+backfit with a generalized-binary prior.</p>
+<pre class="r"><code>symebcovmf_pexp_fit &lt;- sym_ebcovmf_fit(S = sim_data$YYt, ebnm_fn = ebnm::ebnm_point_exponential, K = 7, maxiter = 500, rank_one_tol = 10^(-8), tol = 10^(-8), refit_lam = TRUE)</code></pre>
+<p>This is a scatter plot of <span
+class="math inline">\(\hat{L}_{exp}\)</span>, the estimate from
+point-exponential symEBcovMF. This is the initialization for the
+backfit:</p>
+<pre class="r"><code>bal_pops &lt;- c(rep(&#39;A&#39;, 40), rep(&#39;B&#39;, 40), rep(&#39;C&#39;, 40), rep(&#39;D&#39;, 40))
+plot_loadings(symebcovmf_pexp_fit$L_pm %*% diag(sqrt(symebcovmf_pexp_fit$lambda)), bal_pops)</code></pre>
+<p><img src="figure/symebcovmf_gb_point_exp_backfit.Rmd/unnamed-chunk-17-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>Now, we run the backfit.</p>
+<pre class="r"><code>symebcovmf_gb_fit_backfit &lt;- sym_ebcovmf_backfit(sim_data$YYt, symebcovmf_pexp_fit, ebnm_fn = ebnm_generalized_binary, backfit_maxiter = 100)</code></pre>
+<pre><code>[1] &quot;elbo decreased by 3.54702933691442e-11&quot;
+[1] &quot;elbo decreased by 2.91038304567337e-11&quot;
+[1] &quot;elbo decreased by 5.09771780343726e-09&quot;
+[1] &quot;elbo decreased by 2.91674950858578e-09&quot;
+[1] &quot;elbo decreased by 1.01317709777504e-09&quot;
+[1] &quot;elbo decreased by 2.86854628939182e-09&quot;
+[1] &quot;elbo decreased by 6.07542460784316e-10&quot;
+[1] &quot;elbo decreased by 9.02218744158745e-10&quot;
+[1] &quot;elbo decreased by 4.36557456851006e-11&quot;
+[1] &quot;elbo decreased by 2.87400325760245e-10&quot;
+[1] &quot;elbo decreased by 5.45696821063757e-12&quot;
+[1] &quot;elbo decreased by 1.04610080597922e-08&quot;
+[1] &quot;elbo decreased by 5.87533577345312e-10&quot;
+[1] &quot;elbo decreased by 2.85945134237409e-09&quot;
+[1] &quot;elbo decreased by 3.28691385220736e-09&quot;
+[1] &quot;elbo decreased by 3.0740920919925e-09&quot;
+[1] &quot;elbo decreased by 2.45563569478691e-10&quot;
+[1] &quot;elbo decreased by 7.13407644070685e-09&quot;
+[1] &quot;elbo decreased by 3.25781002175063e-09&quot;
+[1] &quot;elbo decreased by 1.28784449771047e-09&quot;
+[1] &quot;elbo decreased by 6.78483047522604e-10&quot;
+[1] &quot;elbo decreased by 2.71029421128333e-10&quot;
+[1] &quot;elbo decreased by 3.03953129332513e-09&quot;
+[1] &quot;elbo decreased by 6.87577994540334e-10&quot;
+[1] &quot;elbo decreased by 4.3473846744746e-10&quot;
+[1] &quot;elbo decreased by 1.67347025126219e-10&quot;
+[1] &quot;elbo decreased by 2.54040060099214e-08&quot;
+[1] &quot;elbo decreased by 3.72892827726901e-10&quot;
+[1] &quot;elbo decreased by 3.71073838323355e-10&quot;
+[1] &quot;elbo decreased by 1.41044438350946e-08&quot;
+[1] &quot;elbo decreased by 2.39015207625926e-09&quot;
+[1] &quot;elbo decreased by 3.8198777474463e-10&quot;
+[1] &quot;elbo decreased by 4.74756234325469e-10&quot;
+[1] &quot;elbo decreased by 5.02041075378656e-09&quot;
+[1] &quot;elbo decreased by 2.7212081477046e-09&quot;
+[1] &quot;elbo decreased by 1.81898940354586e-10&quot;
+[1] &quot;elbo decreased by 5.34782884642482e-10&quot;
+[1] &quot;elbo decreased by 1.05683284346014e-08&quot;
+[1] &quot;elbo decreased by 8.56744009070098e-10&quot;
+[1] &quot;elbo decreased by 1.92812876775861e-09&quot;
+[1] &quot;elbo decreased by 7.53061613067985e-10&quot;
+[1] &quot;elbo decreased by 1.90848368220031e-08&quot;
+[1] &quot;elbo decreased by 8.3418854046613e-09&quot;
+[1] &quot;elbo decreased by 2.58296495303512e-10&quot;
+[1] &quot;elbo decreased by 1.87355908565223e-10&quot;
+[1] &quot;elbo decreased by 1.85536919161677e-10&quot;
+[1] &quot;elbo decreased by 1.65964593179524e-08&quot;
+[1] &quot;elbo decreased by 2.48837750405073e-09&quot;
+[1] &quot;elbo decreased by 1.96268956642598e-09&quot;
+[1] &quot;elbo decreased by 2.09183781407773e-10&quot;
+[1] &quot;elbo decreased by 2.2373569663614e-10&quot;
+[1] &quot;elbo decreased by 1.70621206052601e-09&quot;
+[1] &quot;elbo decreased by 7.09405867382884e-10&quot;
+[1] &quot;elbo decreased by 7.27595761418343e-12&quot;
+[1] &quot;elbo decreased by 1.29148247651756e-10&quot;
+[1] &quot;elbo decreased by 3.64871084457263e-08&quot;
+[1] &quot;elbo decreased by 4.3237378122285e-09&quot;
+[1] &quot;elbo decreased by 5.96628524363041e-10&quot;
+[1] &quot;elbo decreased by 5.82076609134674e-10&quot;
+[1] &quot;elbo decreased by 1.52194843394682e-08&quot;
+[1] &quot;elbo decreased by 1.47701939567924e-09&quot;
+[1] &quot;elbo decreased by 5.82076609134674e-11&quot;
+[1] &quot;elbo decreased by 4.05634636990726e-10&quot;
+[1] &quot;elbo decreased by 3.5106495488435e-10&quot;
+[1] &quot;elbo decreased by 1.35369191411883e-08&quot;
+[1] &quot;elbo decreased by 2.65572452917695e-10&quot;
+[1] &quot;elbo decreased by 1.31876731757075e-09&quot;
+[1] &quot;elbo decreased by 9.00945451576263e-09&quot;
+[1] &quot;elbo decreased by 2.58296495303512e-10&quot;
+[1] &quot;elbo decreased by 2.41925590671599e-10&quot;
+[1] &quot;elbo decreased by 9.20408638194203e-10&quot;
+[1] &quot;elbo decreased by 3.34148353431374e-09&quot;
+[1] &quot;elbo decreased by 1.2969394447282e-09&quot;
+[1] &quot;elbo decreased by 1.45519152283669e-11&quot;
+[1] &quot;elbo decreased by 2.23099050344899e-08&quot;
+[1] &quot;elbo decreased by 2.27373675443232e-09&quot;
+[1] &quot;elbo decreased by 9.91349224932492e-10&quot;
+[1] &quot;elbo decreased by 1.2732925824821e-11&quot;
+[1] &quot;elbo decreased by 4.02542355004698e-09&quot;
+[1] &quot;elbo decreased by 2.33649188885465e-08&quot;
+[1] &quot;elbo decreased by 1.249645720236e-09&quot;
+[1] &quot;elbo decreased by 1.49520928971469e-09&quot;
+[1] &quot;elbo decreased by 2.94548954116181e-08&quot;
+[1] &quot;elbo decreased by 1.66728568729013e-08&quot;
+[1] &quot;elbo decreased by 2.83762346953154e-10&quot;
+[1] &quot;elbo decreased by 2.58205545833334e-08&quot;
+[1] &quot;elbo decreased by 3.23780113831162e-09&quot;
+[1] &quot;elbo decreased by 2.12821760214865e-10&quot;
+[1] &quot;elbo decreased by 8.25821189209819e-09&quot;
+[1] &quot;elbo decreased by 1.37333699967712e-09&quot;
+[1] &quot;elbo decreased by 9.877112461254e-10&quot;
+[1] &quot;elbo decreased by 4.58385329693556e-10&quot;
+[1] &quot;elbo decreased by 1.08229869510978e-09&quot;
+[1] &quot;elbo decreased by 4.05634636990726e-10&quot;
+[1] &quot;elbo decreased by 9.64064383879304e-11&quot;
+[1] &quot;elbo decreased by 7.2868715506047e-09&quot;
+[1] &quot;elbo decreased by 4.4783519115299e-09&quot;
+[1] &quot;elbo decreased by 4.72937244921923e-11&quot;
+[1] &quot;elbo decreased by 3.0921000870876e-08&quot;
+[1] &quot;elbo decreased by 6.12999428994954e-09&quot;
+[1] &quot;elbo decreased by 3.00133251585066e-09&quot;
+[1] &quot;elbo decreased by 6.87577994540334e-10&quot;
+[1] &quot;elbo decreased by 1.01863406598568e-09&quot;
+[1] &quot;elbo decreased by 2.5545887183398e-08&quot;
+[1] &quot;elbo decreased by 4.0381564758718e-10&quot;
+[1] &quot;elbo decreased by 8.91122908797115e-09&quot;
+[1] &quot;elbo decreased by 5.98447513766587e-10&quot;
+[1] &quot;elbo decreased by 5.77347236685455e-09&quot;
+[1] &quot;elbo decreased by 4.00177668780088e-10&quot;
+[1] &quot;elbo decreased by 1.16124283522367e-08&quot;
+[1] &quot;elbo decreased by 2.88855517283082e-09&quot;
+[1] &quot;elbo decreased by 7.40328687243164e-10&quot;
+[1] &quot;elbo decreased by 2.88491719402373e-09&quot;
+[1] &quot;elbo decreased by 7.89441401138902e-10&quot;
+[1] &quot;elbo decreased by 7.00310920365155e-10&quot;
+[1] &quot;elbo decreased by 4.72937244921923e-11&quot;
+[1] &quot;elbo decreased by 2.88491719402373e-09&quot;
+[1] &quot;elbo decreased by 3.16504156216979e-10&quot;
+[1] &quot;elbo decreased by 2.88491719402373e-09&quot;
+[1] &quot;elbo decreased by 3.31110641127452e-08&quot;
+[1] &quot;elbo decreased by 3.55248630512506e-09&quot;
+[1] &quot;elbo decreased by 5.77347236685455e-09&quot;
+[1] &quot;elbo decreased by 3.87444742955267e-10&quot;
+[1] &quot;elbo decreased by 5.91353455092758e-09&quot;
+[1] &quot;elbo decreased by 3.43243300449103e-09&quot;
+[1] &quot;elbo decreased by 3.31056071445346e-10&quot;
+[1] &quot;elbo decreased by 5.49334799870849e-10&quot;
+[1] &quot;elbo decreased by 9.93350113276392e-09&quot;
+[1] &quot;elbo decreased by 2.44835973717272e-09&quot;
+[1] &quot;elbo decreased by 5.76983438804746e-09&quot;
+[1] &quot;elbo decreased by 2.88491719402373e-09&quot;
+[1] &quot;elbo decreased by 1.09175744000822e-08&quot;
+[1] &quot;elbo decreased by 3.10137693304569e-09&quot;
+[1] &quot;elbo decreased by 1.10958353616297e-09&quot;
+[1] &quot;elbo decreased by 2.88127921521664e-09&quot;
+[1] &quot;elbo decreased by 4.27462509833276e-10&quot;
+[1] &quot;elbo decreased by 5.76983438804746e-09&quot;
+[1] &quot;elbo decreased by 2.85399437416345e-09&quot;
+[1] &quot;elbo decreased by 2.95403879135847e-09&quot;
+[1] &quot;elbo decreased by 1.43700162880123e-10&quot;
+[1] &quot;elbo decreased by 5.10954123456031e-09&quot;
+[1] &quot;elbo decreased by 5.54791768081486e-10&quot;
+[1] &quot;elbo decreased by 5.76983438804746e-09&quot;
+[1] &quot;elbo decreased by 2.7885107556358e-09&quot;
+[1] &quot;elbo decreased by 1.16415321826935e-09&quot;
+[1] &quot;elbo decreased by 8.65838956087828e-09&quot;
+[1] &quot;elbo decreased by 9.16588760446757e-09&quot;
+[1] &quot;elbo decreased by 1.00953911896795e-09&quot;
+[1] &quot;elbo decreased by 9.74978320300579e-10&quot;
+[1] &quot;elbo decreased by 3.01952240988612e-10&quot;
+[1] &quot;elbo decreased by 1.22417986858636e-08&quot;
+[1] &quot;elbo decreased by 4.13638190366328e-09&quot;
+[1] &quot;elbo decreased by 4.16548573412001e-10&quot;
+[1] &quot;elbo decreased by 3.47426976077259e-10&quot;
+[1] &quot;elbo decreased by 2.88491719402373e-09&quot;
+[1] &quot;elbo decreased by 4.2564352042973e-09&quot;
+[1] &quot;elbo decreased by 1.60071067512035e-10&quot;
+[1] &quot;elbo decreased by 2.88127921521664e-09&quot;
+[1] &quot;elbo decreased by 7.41601979825646e-09&quot;
+[1] &quot;elbo decreased by 7.14862835593522e-10&quot;
+[1] &quot;elbo decreased by 2.52839527092874e-10&quot;
+[1] &quot;elbo decreased by 7.6397554948926e-10&quot;
+[1] &quot;elbo decreased by 2.88491719402373e-09&quot;
+[1] &quot;elbo decreased by 6.76664058119059e-10&quot;
+[1] &quot;elbo decreased by 5.03678165841848e-09&quot;
+[1] &quot;elbo decreased by 9.36779542826116e-10&quot;
+[1] &quot;elbo decreased by 2.88491719402373e-09&quot;
+[1] &quot;elbo decreased by 4.72937244921923e-11&quot;
+[1] &quot;elbo decreased by 2.27373675443232e-10&quot;
+[1] &quot;elbo decreased by 1.28056854009628e-09&quot;
+[1] &quot;elbo decreased by 5.6206772569567e-10&quot;
+[1] &quot;elbo decreased by 1.78260961547494e-10&quot;
+[1] &quot;elbo decreased by 7.08678271621466e-09&quot;
+[1] &quot;elbo decreased by 1.30785338114947e-09&quot;
+[1] &quot;elbo decreased by 2.63753463514149e-10&quot;
+[1] &quot;elbo decreased by 2.83762346953154e-10&quot;
+[1] &quot;elbo decreased by 4.72937244921923e-11&quot;
+[1] &quot;elbo decreased by 2.88127921521664e-09&quot;
+[1] &quot;elbo decreased by 1.94813765119761e-08&quot;
+[1] &quot;elbo decreased by 2.25190888158977e-09&quot;
+[1] &quot;elbo decreased by 3.13229975290596e-09&quot;
+[1] &quot;elbo decreased by 3.41970007866621e-10&quot;
+[1] &quot;elbo decreased by 4.11091605201364e-10&quot;
+[1] &quot;elbo decreased by 1.66437530424446e-08&quot;
+[1] &quot;elbo decreased by 1.80625647772104e-09&quot;
+[1] &quot;elbo decreased by 6.91215973347425e-11&quot;
+[1] &quot;elbo decreased by 1.47338141687214e-10&quot;
+[1] &quot;elbo decreased by 2.17551132664084e-09&quot;
+[1] &quot;elbo decreased by 2.88855517283082e-09&quot;
+[1] &quot;elbo decreased by 5.14774001203477e-10&quot;
+[1] &quot;elbo decreased by 2.69210431724787e-10&quot;
+[1] &quot;elbo decreased by 2.88855517283082e-09&quot;
+[1] &quot;elbo decreased by 1.11103872768581e-08&quot;
+[1] &quot;elbo decreased by 5.65705704502761e-10&quot;
+[1] &quot;elbo decreased by 2.88491719402373e-09&quot;
+[1] &quot;elbo decreased by 8.66202753968537e-09&quot;
+[1] &quot;elbo decreased by 2.88855517283082e-09&quot;
+[1] &quot;elbo decreased by 2.80761014437303e-08&quot;
+[1] &quot;elbo decreased by 1.40062184073031e-10&quot;
+[1] &quot;elbo decreased by 2.88855517283082e-09&quot;
+[1] &quot;elbo decreased by 1.63709046319127e-10&quot;
+[1] &quot;elbo decreased by 1.96814653463662e-08&quot;
+[1] &quot;elbo decreased by 1.95723259821534e-09&quot;
+[1] &quot;elbo decreased by 2.02453520614654e-09&quot;
+[1] &quot;elbo decreased by 2.88855517283082e-09&quot;
+[1] &quot;elbo decreased by 5.77347236685455e-09&quot;
+[1] &quot;elbo decreased by 3.37058736477047e-09&quot;
+[1] &quot;elbo decreased by 6.89760781824589e-09&quot;
+[1] &quot;elbo decreased by 5.18411980010569e-10&quot;
+[1] &quot;elbo decreased by 1.20053300634027e-10&quot;
+[1] &quot;elbo decreased by 5.76983438804746e-09&quot;
+[1] &quot;elbo decreased by 5.84077497478575e-09&quot;
+[1] &quot;elbo decreased by 1.12049747258425e-09&quot;
+[1] &quot;elbo decreased by 3.09937604470178e-08&quot;
+[1] &quot;elbo decreased by 2.18278728425503e-09&quot;
+[1] &quot;elbo decreased by 6.00266503170133e-11&quot;
+[1] &quot;elbo decreased by 8.42192093841732e-10&quot;
+[1] &quot;elbo decreased by 2.83762346953154e-10&quot;
+[1] &quot;elbo decreased by 7.73252395447344e-09&quot;
+[1] &quot;elbo decreased by 2.57932697422802e-09&quot;
+[1] &quot;elbo decreased by 2.18278728425503e-10&quot;
+[1] &quot;elbo decreased by 1.38243194669485e-10&quot;
+[1] &quot;elbo decreased by 5.77347236685455e-09&quot;
+[1] &quot;elbo decreased by 4.84942574985325e-09&quot;
+[1] &quot;elbo decreased by 5.23868948221207e-10&quot;
+[1] &quot;elbo decreased by 2.88491719402373e-09&quot;
+[1] &quot;elbo decreased by 5.77347236685455e-09&quot;
+[1] &quot;elbo decreased by 1.54159351950511e-08&quot;
+[1] &quot;elbo decreased by 1.52795109897852e-09&quot;
+[1] &quot;elbo decreased by 2.88491719402373e-09&quot;
+[1] &quot;elbo decreased by 2.5465851649642e-11&quot;
+[1] &quot;elbo decreased by 2.88491719402373e-09&quot;
+[1] &quot;elbo decreased by 9.24046617001295e-10&quot;
+[1] &quot;elbo decreased by 2.18278728425503e-10&quot;
+[1] &quot;elbo decreased by 2.88127921521664e-09&quot;
+[1] &quot;elbo decreased by 2.47036950895563e-08&quot;
+[1] &quot;elbo decreased by 2.88491719402373e-09&quot;
+[1] &quot;elbo decreased by 8.65838956087828e-09&quot;
+[1] &quot;elbo decreased by 1.25510268844664e-10&quot;
+[1] &quot;elbo decreased by 1.40062184073031e-09&quot;
+[1] &quot;elbo decreased by 5.67524693906307e-10&quot;
+[1] &quot;elbo decreased by 5.40785549674183e-09&quot;
+[1] &quot;elbo decreased by 2.88491719402373e-09&quot;
+[1] &quot;elbo decreased by 4.89308149553835e-10&quot;
+[1] &quot;elbo decreased by 2.88491719402373e-09&quot;
+[1] &quot;elbo decreased by 2.15186446439475e-09&quot;
+[1] &quot;elbo decreased by 6.45741238258779e-10&quot;
+[1] &quot;elbo decreased by 7.10133463144302e-09&quot;
+[1] &quot;elbo decreased by 3.56521923094988e-09&quot;
+[1] &quot;elbo decreased by 2.88491719402373e-09&quot;
+[1] &quot;elbo decreased by 4.77484718430787e-09&quot;
+[1] &quot;elbo decreased by 1.73895386978984e-09&quot;
+[1] &quot;elbo decreased by 6.00266503170133e-11&quot;
+[1] &quot;elbo decreased by 2.58296495303512e-10&quot;
+[1] &quot;elbo decreased by 3.52883944287896e-10&quot;
+[1] &quot;elbo decreased by 1.50066625792533e-08&quot;
+[1] &quot;elbo decreased by 6.28278939984739e-09&quot;
+[1] &quot;elbo decreased by 2.88491719402373e-09&quot;
+[1] &quot;elbo decreased by 3.32875060848892e-10&quot;
+[1] &quot;elbo decreased by 2.88855517283082e-09&quot;
+[1] &quot;elbo decreased by 1.96250766748562e-08&quot;
+[1] &quot;elbo decreased by 1.15323928184807e-09&quot;
+[1] &quot;elbo decreased by 1.38243194669485e-10&quot;
+[1] &quot;elbo decreased by 5.77347236685455e-09&quot;
+[1] &quot;elbo decreased by 5.76983438804746e-09&quot;
+[1] &quot;elbo decreased by 1.14978320198134e-08&quot;
+[1] &quot;elbo decreased by 2.51020537689328e-09&quot;
+[1] &quot;elbo decreased by 2.88491719402373e-09&quot;
+[1] &quot;elbo decreased by 7.03039404470474e-09&quot;
+[1] &quot;elbo decreased by 4.07271727453917e-09&quot;
+[1] &quot;elbo decreased by 5.77347236685455e-09&quot;
+[1] &quot;elbo decreased by 1.38243194669485e-10&quot;
+[1] &quot;elbo decreased by 2.88855517283082e-09&quot;
+[1] &quot;elbo decreased by 2.97586666420102e-09&quot;
+[1] &quot;elbo decreased by 2.88491719402373e-09&quot;
+[1] &quot;elbo decreased by 2.11002770811319e-10&quot;
+[1] &quot;elbo decreased by 1.2732925824821e-10&quot;
+[1] &quot;elbo decreased by 1.91394065041095e-08&quot;
+[1] &quot;elbo decreased by 1.82626536116004e-09&quot;
+[1] &quot;elbo decreased by 1.83717929758132e-10&quot;
+[1] &quot;elbo decreased by 2.88491719402373e-09&quot;
+[1] &quot;elbo decreased by 5.94809534959495e-10&quot;
+[1] &quot;elbo decreased by 4.38194547314197e-09&quot;
+[1] &quot;elbo decreased by 5.72981662116945e-10&quot;
+[1] &quot;elbo decreased by 4.60204319097102e-10&quot;
+[1] &quot;elbo decreased by 2.66118149738759e-09&quot;
+[1] &quot;elbo decreased by 1.67347025126219e-10&quot;
+[1] &quot;elbo decreased by 8.65838956087828e-09&quot;
+[1] &quot;elbo decreased by 2.88491719402373e-09&quot;
+[1] &quot;elbo decreased by 1.71185092767701e-08&quot;
+[1] &quot;elbo decreased by 3.56340024154633e-09&quot;
+[1] &quot;elbo decreased by 1.23873178381473e-09&quot;
+[1] &quot;elbo decreased by 5.76983438804746e-09&quot;
+[1] &quot;elbo decreased by 2.88491719402373e-09&quot;
+[1] &quot;elbo decreased by 2.11857695830986e-08&quot;
+[1] &quot;elbo decreased by 5.11136022396386e-10&quot;
+[1] &quot;elbo decreased by 5.63886715099216e-11&quot;
+[1] &quot;elbo decreased by 5.77347236685455e-09&quot;
+[1] &quot;elbo decreased by 2.88491719402373e-09&quot;
+[1] &quot;elbo decreased by 1.24073267215863e-08&quot;
+[1] &quot;elbo decreased by 6.35736796539277e-09&quot;
+[1] &quot;elbo decreased by 1.47883838508278e-09&quot;
+[1] &quot;elbo decreased by 1.19689502753317e-09&quot;
+[1] &quot;elbo decreased by 5.76983438804746e-09&quot;
+[1] &quot;elbo decreased by 2.91602191282436e-08&quot;
+[1] &quot;elbo decreased by 9.6588337328285e-10&quot;
+[1] &quot;elbo decreased by 4.34374669566751e-09&quot;
+[1] &quot;elbo decreased by 5.94809534959495e-10&quot;
+[1] &quot;elbo decreased by 2.52839527092874e-10&quot;
+[1] &quot;elbo decreased by 2.6358975446783e-08&quot;
+[1] &quot;elbo decreased by 2.88855517283082e-09&quot;
+[1] &quot;elbo decreased by 1.27693056128919e-09&quot;
+[1] &quot;elbo decreased by 2.2846506908536e-09&quot;
+[1] &quot;elbo decreased by 6.49379217065871e-10&quot;
+[1] &quot;elbo decreased by 2.88491719402373e-09&quot;
+[1] &quot;elbo decreased by 2.88127921521664e-09&quot;
+[1] &quot;elbo decreased by 1.96923792827874e-08&quot;
+[1] &quot;elbo decreased by 1.86628312803805e-09&quot;
+[1] &quot;elbo decreased by 1.56433088704944e-10&quot;
+[1] &quot;elbo decreased by 2.88491719402373e-09&quot;
+[1] &quot;elbo decreased by 3.52883944287896e-10&quot;
+[1] &quot;elbo decreased by 2.89219315163791e-09&quot;
+[1] &quot;elbo decreased by 2.03726813197136e-08&quot;
+[1] &quot;elbo decreased by 1.4715624274686e-09&quot;
+[1] &quot;elbo decreased by 2.88491719402373e-09&quot;
+[1] &quot;elbo decreased by 2.88491719402373e-09&quot;
+[1] &quot;elbo decreased by 8.58562998473644e-09&quot;
+[1] &quot;elbo decreased by 9.35324351303279e-09&quot;
+[1] &quot;elbo decreased by 2.01089278561994e-08&quot;
+[1] &quot;elbo decreased by 1.38606992550194e-09&quot;
+[1] &quot;elbo decreased by 8.66202753968537e-09&quot;
+[1] &quot;elbo decreased by 1.89174897968769e-10&quot;
+[1] &quot;elbo decreased by 1.56232999870554e-08&quot;
+[1] &quot;elbo decreased by 4.33647073805332e-09&quot;
+[1] &quot;elbo decreased by 7.47604644857347e-10&quot;
+[1] &quot;elbo decreased by 5.36601874046028e-10&quot;
+[1] &quot;elbo decreased by 1.55214365804568e-08&quot;
+[1] &quot;elbo decreased by 7.6397554948926e-11&quot;
+[1] &quot;elbo decreased by 2.88491719402373e-09&quot;
+[1] &quot;elbo decreased by 2.88491719402373e-09&quot;
+[1] &quot;elbo decreased by 5.38420863449574e-10&quot;
+[1] &quot;elbo decreased by 3.33220668835565e-08&quot;
+[1] &quot;elbo decreased by 6.46832631900907e-09&quot;
+[1] &quot;elbo decreased by 8.76752892509103e-10&quot;
+[1] &quot;elbo decreased by 2.88127921521664e-09&quot;
+[1] &quot;elbo decreased by 9.1313268058002e-10&quot;
+[1] &quot;elbo decreased by 7.27595761418343e-10&quot;
+[1] &quot;elbo decreased by 2.88491719402373e-09&quot;
+[1] &quot;elbo decreased by 6.53017195872962e-10&quot;
+[1] &quot;elbo decreased by 5.28962118551135e-09&quot;
+[1] &quot;elbo decreased by 3.52338247466832e-09&quot;
+[1] &quot;elbo decreased by 2.88855517283082e-09&quot;
+[1] &quot;elbo decreased by 2.8321665013209e-09&quot;
+[1] &quot;elbo decreased by 1.34605215862393e-10&quot;
+[1] &quot;elbo decreased by 3.0740920919925e-10&quot;
+[1] &quot;elbo decreased by 5.76983438804746e-09&quot;
+[1] &quot;elbo decreased by 6.25914253760129e-09&quot;
+[1] &quot;elbo decreased by 1.23691279441118e-09&quot;
+[1] &quot;elbo decreased by 2.7648638933897e-10&quot;
+[1] &quot;elbo decreased by 5.76619640924037e-09&quot;
+[1] &quot;elbo decreased by 2.88855517283082e-09&quot;
+[1] &quot;elbo decreased by 2.04199750442058e-08&quot;
+[1] &quot;elbo decreased by 3.34694050252438e-10&quot;
+[1] &quot;elbo decreased by 8.65475158207119e-09&quot;</code></pre>
+<p>This is a scatter plot of <span
+class="math inline">\(\hat{L}_{gb-backfit}\)</span>, the estimate from
+the generalized binary backfit:</p>
+<pre class="r"><code>bal_pops &lt;- c(rep(&#39;A&#39;, 40), rep(&#39;B&#39;, 40), rep(&#39;C&#39;, 40), rep(&#39;D&#39;, 40))
+plot_loadings(symebcovmf_gb_fit_backfit$L_pm %*% diag(sqrt(symebcovmf_gb_fit_backfit$lambda)), bal_pops)</code></pre>
+<p><img src="figure/symebcovmf_gb_point_exp_backfit.Rmd/unnamed-chunk-19-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>This is the objective function value attained:</p>
+<pre class="r"><code>symebcovmf_gb_fit_backfit$elbo</code></pre>
+<pre><code>[1] 9092.392</code></pre>
+</div>
+<div id="observations" class="section level2">
+<h2>Observations</h2>
+<p>The estimate from the backfit procedure looks closer to the
+tree-structured loadings matrix than the estimate from greedy
+generalized binary symEBcovMF. Furthermore, the backfit procedure
+attains a much higher objective function value. This suggests that the
+method does prefer the tree-structured loadings matrix, and the greedy
+generalized binary symEBcovMF method has a convergence issue. The second
+factor corresponding to a subtype effect could be more binary. This
+could potentially be fixed by using a more strict binary prior.
+Similarly, the first factor corresponding to the intercept could be more
+binary. Another observation is the single group effect factors all have
+a couple of small, non-zero loading values. I’m not exactly sure why
+those appear.</p>
+</div>
+</div>
+<div id="binormal" class="section level1">
+<h1>Binormal</h1>
+<p>In this section, I try applying the same method with the binormal
+prior instead of the generalized binary prior.</p>
+<pre class="r"><code>dbinormal = function (x,s,s0,lambda,log=TRUE){
+  pi0 = 0.5
+  pi1 = 0.5
+  s2 = s^2
+  s02 = s0^2
+  l0 = dnorm(x,0,sqrt(lambda^2 * s02 + s2),log=TRUE)
+  l1 = dnorm(x,lambda,sqrt(lambda^2 * s02 + s2),log=TRUE)
+  logsum = log(pi0*exp(l0) + pi1*exp(l1))
+ 
+  m = pmax(l0,l1)
+  logsum = m + log(pi0*exp(l0-m) + pi1*exp(l1-m))
+  if (log) return(sum(logsum))
+  else return(exp(sum(logsum)))
+}</code></pre>
+<pre class="r"><code>ebnm_binormal = function(x,s, g_init = NULL, fix_g = FALSE, output = ebnm_output_default(), control = NULL){
+  # Add g_init to make the method run
+  if(is.null(dim(x)) == FALSE){
+    x &lt;- c(x)
+  }
+  s0 = 0.01
+  lambda = optimize(function(lambda){-dbinormal(x,s,s0,lambda,log=TRUE)},
+              lower = 0, upper = max(x))$minimum
+  g = ashr::normalmix(pi=c(0.5,0.5), mean=c(0,lambda), sd=c(lambda * s0,lambda * s0))
+  postmean = ashr::postmean(g,ashr::set_data(x,s))
+  postsd = ashr::postsd(g,ashr::set_data(x,s))
+  log_likelihood &lt;- ashr::calc_loglik(g, ashr::set_data(x,s))
+  return(list(fitted_g = g, posterior = data.frame(mean=postmean,sd=postsd), log_likelihood = log_likelihood))
+}</code></pre>
+<div id="binormal-symebcovmf" class="section level2">
+<h2>Binormal symEBcovMF</h2>
+<p>For comparison, I try running regular symEBcovMF with the binormal
+prior.</p>
+<pre class="r"><code>symebcovmf_binormal_fit &lt;- sym_ebcovmf_fit(S = sim_data$YYt, ebnm_fn = ebnm_binormal, K = 7, maxiter = 500, rank_one_tol = 10^(-8), tol = 10^(-8), refit_lam = TRUE)</code></pre>
+<pre><code>[1] &quot;elbo decreased by 15.6794903684367&quot;</code></pre>
+<p>This is a scatter plot of <span
+class="math inline">\(\hat{L}_{binormal}\)</span>, the estimate from
+binormal symEBcovMF:</p>
+<pre class="r"><code>bal_pops &lt;- c(rep(&#39;A&#39;, 40), rep(&#39;B&#39;, 40), rep(&#39;C&#39;, 40), rep(&#39;D&#39;, 40))
+plot_loadings(symebcovmf_binormal_fit$L_pm %*% diag(sqrt(symebcovmf_binormal_fit$lambda)), bal_pops)</code></pre>
+<p><img src="figure/symebcovmf_gb_point_exp_backfit.Rmd/unnamed-chunk-24-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>This is the objective function value attained:</p>
+<pre class="r"><code>symebcovmf_binormal_fit$elbo</code></pre>
+<pre><code>[1] -14313.79</code></pre>
+</div>
+<div
+id="binormal-symebcovmf-backfit-with-point-exponential-initialization"
+class="section level2">
+<h2>Binormal symEBcovMF backfit with point-exponential
+initialization</h2>
+<p>Now we try the backfit procedure with the binormal prior.</p>
+<pre class="r"><code>symebcovmf_binormal_fit_backfit &lt;- sym_ebcovmf_backfit(sim_data$YYt, symebcovmf_pexp_fit, ebnm_fn = ebnm_binormal, backfit_maxiter = 100)</code></pre>
+<pre><code>[1] &quot;elbo decreased by 2.63753463514149e-11&quot;
+[1] &quot;elbo decreased by 1.10958353616297e-10&quot;
+[1] &quot;elbo decreased by 7.73070496506989e-12&quot;
+[1] &quot;elbo decreased by 4.85852069687098e-09&quot;
+[1] &quot;elbo decreased by 5.95900928601623e-09&quot;
+[1] &quot;elbo decreased by 9.64064383879304e-11&quot;
+[1] &quot;elbo decreased by 1.63709046319127e-11&quot;
+[1] &quot;elbo decreased by 1.73131411429495e-08&quot;
+[1] &quot;elbo decreased by 2.90310708805919e-09&quot;
+[1] &quot;elbo decreased by 4.23096935264766e-09&quot;
+[1] &quot;elbo decreased by 2.64117261394858e-08&quot;
+[1] &quot;elbo decreased by 2.98132363241166e-09&quot;
+[1] &quot;elbo decreased by 1.62071955855936e-09&quot;
+[1] &quot;elbo decreased by 2.49146978603676e-08&quot;
+[1] &quot;elbo decreased by 9.3496055342257e-10&quot;
+[1] &quot;elbo decreased by 1.25619408208877e-08&quot;
+[1] &quot;elbo decreased by 1.57597241923213e-08&quot;
+[1] &quot;elbo decreased by 3.33238858729601e-09&quot;
+[1] &quot;elbo decreased by 6.70115696266294e-09&quot;
+[1] &quot;elbo decreased by 2.9987859306857e-08&quot;
+[1] &quot;elbo decreased by 9.82254277914762e-10&quot;
+[1] &quot;elbo decreased by 3.17704689223319e-08&quot;
+[1] &quot;elbo decreased by 2.3919710656628e-09&quot;
+[1] &quot;elbo decreased by 5.39330358151346e-09&quot;
+[1] &quot;elbo decreased by 1.31149135995656e-09&quot;
+[1] &quot;elbo decreased by 2.50020093517378e-08&quot;
+[1] &quot;elbo decreased by 7.9689925769344e-09&quot;
+[1] &quot;elbo decreased by 3.16358637064695e-08&quot;
+[1] &quot;elbo decreased by 2.69574229605496e-09&quot;
+[1] &quot;elbo decreased by 3.94720700569451e-10&quot;
+[1] &quot;elbo decreased by 2.72848410531878e-10&quot;
+[1] &quot;elbo decreased by 5.63886715099216e-10&quot;
+[1] &quot;elbo decreased by 9.27684595808387e-11&quot;
+[1] &quot;elbo decreased by 2.29192664846778e-09&quot;
+[1] &quot;elbo decreased by 2.38469510804862e-08&quot;
+[1] &quot;elbo decreased by 1.31512933876365e-09&quot;
+[1] &quot;elbo decreased by 2.11002770811319e-10&quot;
+[1] &quot;elbo decreased by 6.22094376012683e-10&quot;
+[1] &quot;elbo decreased by 1.30057742353529e-09&quot;
+[1] &quot;elbo decreased by 1.29148247651756e-10&quot;
+[1] &quot;elbo decreased by 1.00044417195022e-09&quot;
+[1] &quot;elbo decreased by 3.65616870112717e-10&quot;
+[1] &quot;elbo decreased by 2.67809809884056e-08&quot;
+[1] &quot;elbo decreased by 1.95559550775215e-08&quot;
+[1] &quot;elbo decreased by 1.10958353616297e-10&quot;
+[1] &quot;elbo decreased by 5.56974555365741e-09&quot;
+[1] &quot;elbo decreased by 1.14596332423389e-10&quot;
+[1] &quot;elbo decreased by 3.27054294757545e-09&quot;
+[1] &quot;elbo decreased by 1.61890056915581e-10&quot;
+[1] &quot;elbo decreased by 7.24867277313024e-09&quot;
+[1] &quot;elbo decreased by 1.01681507658213e-09&quot;
+[1] &quot;elbo decreased by 1.25510268844664e-10&quot;
+[1] &quot;elbo decreased by 1.17379386210814e-08&quot;
+[1] &quot;elbo decreased by 8.68021743372083e-09&quot;
+[1] &quot;elbo decreased by 1.13504938781261e-09&quot;
+[1] &quot;elbo decreased by 8.62200977280736e-10&quot;
+[1] &quot;elbo decreased by 1.86082615982741e-09&quot;
+[1] &quot;elbo decreased by 6.21366780251265e-09&quot;
+[1] &quot;elbo decreased by 1.5788828022778e-09&quot;
+[1] &quot;elbo decreased by 3.1574018066749e-08&quot;
+[1] &quot;elbo decreased by 1.09139364212751e-09&quot;
+[1] &quot;elbo decreased by 1.09139364212751e-09&quot;
+[1] &quot;elbo decreased by 6.30825525149703e-09&quot;
+[1] &quot;elbo decreased by 3.69254848919809e-10&quot;
+[1] &quot;elbo decreased by 8.65838956087828e-10&quot;
+[1] &quot;elbo decreased by 3.48718458553776e-08&quot;
+[1] &quot;elbo decreased by 6.74663169775158e-09&quot;
+[1] &quot;elbo decreased by 7.87986209616065e-09&quot;
+[1] &quot;elbo decreased by 7.6397554948926e-10&quot;
+[1] &quot;elbo decreased by 2.03908712137491e-09&quot;
+[1] &quot;elbo decreased by 8.67657945491374e-10&quot;
+[1] &quot;elbo decreased by 4.59658622276038e-09&quot;
+[1] &quot;elbo decreased by 3.25599103234708e-10&quot;
+[1] &quot;elbo decreased by 2.86054273601621e-08&quot;
+[1] &quot;elbo decreased by 5.6206772569567e-09&quot;
+[1] &quot;elbo decreased by 1.04046193882823e-09&quot;
+[1] &quot;elbo decreased by 4.44742909166962e-09&quot;
+[1] &quot;elbo decreased by 7.29414750821888e-10&quot;
+[1] &quot;elbo decreased by 8.09450284577906e-10&quot;
+[1] &quot;elbo decreased by 8.96761775948107e-10&quot;
+[1] &quot;elbo decreased by 8.76934791449457e-09&quot;
+[1] &quot;elbo decreased by 4.07453626394272e-09&quot;
+[1] &quot;elbo decreased by 6.62657839711756e-09&quot;
+[1] &quot;elbo decreased by 6.54836185276508e-11&quot;
+[1] &quot;elbo decreased by 1.98269844986498e-09&quot;
+[1] &quot;elbo decreased by 6.31189323030412e-10&quot;
+[1] &quot;elbo decreased by 3.53611540049314e-09&quot;
+[1] &quot;elbo decreased by 7.33780325390399e-09&quot;
+[1] &quot;elbo decreased by 9.94987203739583e-10&quot;
+[1] &quot;elbo decreased by 1.30967237055302e-09&quot;
+[1] &quot;elbo decreased by 3.77331161871552e-08&quot;
+[1] &quot;elbo decreased by 1.18961906991899e-09&quot;
+[1] &quot;elbo decreased by 2.40106601268053e-10&quot;
+[1] &quot;elbo decreased by 4.26916813012213e-09&quot;
+[1] &quot;elbo decreased by 1.40062184073031e-09&quot;
+[1] &quot;elbo decreased by 1.89174897968769e-09&quot;
+[1] &quot;elbo decreased by 3.8198777474463e-10&quot;
+[1] &quot;elbo decreased by 1.04228092823178e-09&quot;
+[1] &quot;elbo decreased by 1.9990693544969e-09&quot;
+[1] &quot;elbo decreased by 5.91571733821183e-08&quot;
+[1] &quot;elbo decreased by 1.60616764333099e-09&quot;
+[1] &quot;elbo decreased by 9.05856722965837e-10&quot;
+[1] &quot;elbo decreased by 1.30785338114947e-09&quot;
+[1] &quot;elbo decreased by 7.78527464717627e-10&quot;
+[1] &quot;elbo decreased by 2.22371454583481e-08&quot;
+[1] &quot;elbo decreased by 2.00270733330399e-09&quot;
+[1] &quot;elbo decreased by 2.49019649345428e-09&quot;
+[1] &quot;elbo decreased by 1.22927303891629e-08&quot;
+[1] &quot;elbo decreased by 2.86672729998827e-09&quot;
+[1] &quot;elbo decreased by 1.41881173476577e-09&quot;
+[1] &quot;elbo decreased by 3.14685166813433e-10&quot;
+[1] &quot;elbo decreased by 4.92946128360927e-10&quot;
+[1] &quot;elbo decreased by 2.5465851649642e-10&quot;
+[1] &quot;elbo decreased by 3.89954948332161e-08&quot;
+[1] &quot;elbo decreased by 1.38970790430903e-09&quot;
+[1] &quot;elbo decreased by 3.99086275137961e-09&quot;
+[1] &quot;elbo decreased by 2.31339072342962e-08&quot;
+[1] &quot;elbo decreased by 4.39467839896679e-09&quot;
+[1] &quot;elbo decreased by 1.80443748831749e-09&quot;
+[1] &quot;elbo decreased by 1.60416675498709e-08&quot;
+[1] &quot;elbo decreased by 3.47608875017613e-09&quot;
+[1] &quot;elbo decreased by 7.88713805377483e-09&quot;
+[1] &quot;elbo decreased by 2.78305378742516e-09&quot;
+[1] &quot;elbo decreased by 6.25732354819775e-10&quot;
+[1] &quot;elbo decreased by 2.40106601268053e-09&quot;
+[1] &quot;elbo decreased by 3.09228198602796e-10&quot;
+[1] &quot;elbo decreased by 1.23145582620054e-08&quot;
+[1] &quot;elbo decreased by 4.37830749433488e-09&quot;
+[1] &quot;elbo decreased by 5.63886715099216e-11&quot;
+[1] &quot;elbo decreased by 1.36606104206294e-09&quot;
+[1] &quot;elbo decreased by 1.54414010467008e-08&quot;
+[1] &quot;elbo decreased by 7.76708475314081e-10&quot;
+[1] &quot;elbo decreased by 1.32786226458848e-10&quot;
+[1] &quot;elbo decreased by 3.83624865207821e-09&quot;
+[1] &quot;elbo decreased by 2.36468622460961e-09&quot;
+[1] &quot;elbo decreased by 1.16160663310438e-08&quot;
+[1] &quot;elbo decreased by 1.83717929758132e-10&quot;
+[1] &quot;elbo decreased by 4.05634636990726e-10&quot;
+[1] &quot;elbo decreased by 5.25687937624753e-10&quot;
+[1] &quot;elbo decreased by 4.86761564388871e-09&quot;
+[1] &quot;elbo decreased by 1.16415321826935e-09&quot;
+[1] &quot;elbo decreased by 1.43700162880123e-10&quot;
+[1] &quot;elbo decreased by 6.93034962750971e-10&quot;
+[1] &quot;elbo decreased by 1.53886503539979e-09&quot;
+[1] &quot;elbo decreased by 2.89219315163791e-10&quot;
+[1] &quot;elbo decreased by 4.97857399750501e-09&quot;
+[1] &quot;elbo decreased by 6.33008312433958e-10&quot;
+[1] &quot;elbo decreased by 3.35057848133147e-09&quot;
+[1] &quot;elbo decreased by 4.53837856184691e-09&quot;
+[1] &quot;elbo decreased by 2.8521753847599e-09&quot;
+[1] &quot;elbo decreased by 1.00226316135377e-09&quot;
+[1] &quot;elbo decreased by 2.83398549072444e-09&quot;
+[1] &quot;elbo decreased by 5.60248736292124e-10&quot;
+[1] &quot;elbo decreased by 1.33877620100975e-09&quot;
+[1] &quot;elbo decreased by 1.48975232150406e-09&quot;
+[1] &quot;elbo decreased by 7.52697815187275e-09&quot;
+[1] &quot;elbo decreased by 4.63478500023484e-09&quot;
+[1] &quot;elbo decreased by 8.64019966684282e-10&quot;
+[1] &quot;elbo decreased by 7.74889485910535e-10&quot;
+[1] &quot;elbo decreased by 7.45785655453801e-11&quot;
+[1] &quot;elbo decreased by 1.28893589135259e-08&quot;
+[1] &quot;elbo decreased by 8.44011083245277e-10&quot;
+[1] &quot;elbo decreased by 2.87218426819891e-09&quot;
+[1] &quot;elbo decreased by 9.90621629171073e-09&quot;
+[1] &quot;elbo decreased by 1.00953911896795e-09&quot;
+[1] &quot;elbo decreased by 8.44011083245277e-10&quot;
+[1] &quot;elbo decreased by 2.41925590671599e-09&quot;
+[1] &quot;elbo decreased by 2.95221980195493e-09&quot;
+[1] &quot;elbo decreased by 2.94676283374429e-10&quot;
+[1] &quot;elbo decreased by 3.67981556337327e-09&quot;
+[1] &quot;elbo decreased by 1.83536030817777e-09&quot;
+[1] &quot;elbo decreased by 7.6397554948926e-10&quot;
+[1] &quot;elbo decreased by 2.72848410531878e-10&quot;
+[1] &quot;elbo decreased by 4.00359567720443e-09&quot;
+[1] &quot;elbo decreased by 6.93580659572035e-09&quot;
+[1] &quot;elbo decreased by 1.40244083013386e-09&quot;
+[1] &quot;elbo decreased by 7.73979991208762e-09&quot;
+[1] &quot;elbo decreased by 1.50612322613597e-09&quot;
+[1] &quot;elbo decreased by 6.23913365416229e-10&quot;
+[1] &quot;elbo decreased by 4.3473846744746e-10&quot;
+[1] &quot;elbo decreased by 2.60843080468476e-09&quot;
+[1] &quot;elbo decreased by 3.96539689972997e-10&quot;
+[1] &quot;elbo decreased by 3.07954906020314e-09&quot;
+[1] &quot;elbo decreased by 4.56948328064755e-08&quot;
+[1] &quot;elbo decreased by 2.53749021794647e-09&quot;
+[1] &quot;elbo decreased by 4.14729584008455e-10&quot;
+[1] &quot;elbo decreased by 8.80390871316195e-10&quot;
+[1] &quot;elbo decreased by 1.53704604599625e-08&quot;
+[1] &quot;elbo decreased by 2.99405655823648e-09&quot;
+[1] &quot;elbo decreased by 3.45607986673713e-10&quot;
+[1] &quot;elbo decreased by 6.41557562630624e-09&quot;
+[1] &quot;elbo decreased by 2.58842192124575e-09&quot;
+[1] &quot;elbo decreased by 6.65750121697783e-10&quot;
+[1] &quot;elbo decreased by 3.24507709592581e-09&quot;
+[1] &quot;elbo decreased by 3.40151018463075e-10&quot;
+[1] &quot;elbo decreased by 2.60115484707057e-10&quot;
+[1] &quot;elbo decreased by 2.20097717829049e-10&quot;
+[1] &quot;elbo decreased by 3.99995769839734e-09&quot;
+[1] &quot;elbo decreased by 3.83806764148176e-10&quot;
+[1] &quot;elbo decreased by 3.63979779649526e-09&quot;
+[1] &quot;elbo decreased by 8.30186763778329e-09&quot;
+[1] &quot;elbo decreased by 9.20408638194203e-10&quot;
+[1] &quot;elbo decreased by 6.33008312433958e-10&quot;
+[1] &quot;elbo decreased by 5.14592102263123e-09&quot;
+[1] &quot;elbo decreased by 2.71029421128333e-10&quot;
+[1] &quot;elbo decreased by 2.08819983527064e-09&quot;
+[1] &quot;elbo decreased by 4.00177668780088e-11&quot;
+[1] &quot;elbo decreased by 3.61451384378597e-08&quot;
+[1] &quot;elbo decreased by 3.37422534357756e-09&quot;
+[1] &quot;elbo decreased by 1.41153577715158e-08&quot;
+[1] &quot;elbo decreased by 2.7648638933897e-10&quot;
+[1] &quot;elbo decreased by 1.46119418786839e-08&quot;
+[1] &quot;elbo decreased by 4.76757122669369e-09&quot;
+[1] &quot;elbo decreased by 1.1623342288658e-09&quot;
+[1] &quot;elbo decreased by 4.46379999630153e-09&quot;
+[1] &quot;elbo decreased by 1.96814653463662e-09&quot;
+[1] &quot;elbo decreased by 6.55927578918636e-09&quot;
+[1] &quot;elbo decreased by 1.23691279441118e-10&quot;
+[1] &quot;elbo decreased by 2.2810127120465e-09&quot;
+[1] &quot;elbo decreased by 2.78305378742516e-10&quot;
+[1] &quot;elbo decreased by 1.46683305501938e-08&quot;
+[1] &quot;elbo decreased by 9.27684595808387e-11&quot;
+[1] &quot;elbo decreased by 9.39871824812144e-09&quot;
+[1] &quot;elbo decreased by 2.5465851649642e-10&quot;
+[1] &quot;elbo decreased by 9.71886038314551e-09&quot;
+[1] &quot;elbo decreased by 5.64250512979925e-09&quot;
+[1] &quot;elbo decreased by 1.75896275322884e-09&quot;
+[1] &quot;elbo decreased by 1.71294232131913e-08&quot;
+[1] &quot;elbo decreased by 2.37923813983798e-09&quot;
+[1] &quot;elbo decreased by 4.501998773776e-09&quot;
+[1] &quot;elbo decreased by 6.73026079311967e-11&quot;
+[1] &quot;elbo decreased by 3.08500602841377e-09&quot;
+[1] &quot;elbo decreased by 1.81898940354586e-11&quot;
+[1] &quot;elbo decreased by 4.40068106399849e-08&quot;
+[1] &quot;elbo decreased by 1.52431312017143e-09&quot;
+[1] &quot;elbo decreased by 2.45745468419045e-09&quot;
+[1] &quot;elbo decreased by 1.67347025126219e-10&quot;
+[1] &quot;elbo decreased by 5.56610757485032e-10&quot;
+[1] &quot;elbo decreased by 2.68119038082659e-09&quot;
+[1] &quot;elbo decreased by 2.56477505899966e-09&quot;
+[1] &quot;elbo decreased by 5.39694156032056e-09&quot;
+[1] &quot;elbo decreased by 8.83665052242577e-09&quot;
+[1] &quot;elbo decreased by 4.65661287307739e-10&quot;
+[1] &quot;elbo decreased by 3.99813870899379e-09&quot;
+[1] &quot;elbo decreased by 8.94942786544561e-10&quot;
+[1] &quot;elbo decreased by 4.40377334598452e-09&quot;
+[1] &quot;elbo decreased by 3.47063178196549e-09&quot;
+[1] &quot;elbo decreased by 7.80346454121172e-10&quot;
+[1] &quot;elbo decreased by 1.94995664060116e-09&quot;
+[1] &quot;elbo decreased by 3.76894604414701e-09&quot;
+[1] &quot;elbo decreased by 4.83851181343198e-10&quot;
+[1] &quot;elbo decreased by 1.05392246041447e-08&quot;
+[1] &quot;elbo decreased by 5.71162672713399e-10&quot;
+[1] &quot;elbo decreased by 1.98870111489668e-08&quot;
+[1] &quot;elbo decreased by 7.97081156633794e-09&quot;
+[1] &quot;elbo decreased by 8.73114913702011e-11&quot;
+[1] &quot;elbo decreased by 1.86792021850124e-08&quot;
+[1] &quot;elbo decreased by 3.26508597936481e-09&quot;
+[1] &quot;elbo decreased by 3.13957571052015e-09&quot;
+[1] &quot;elbo decreased by 5.42058842256665e-10&quot;
+[1] &quot;elbo decreased by 5.02041075378656e-10&quot;
+[1] &quot;elbo decreased by 6.6880602389574e-08&quot;
+[1] &quot;elbo decreased by 3.10174073092639e-08&quot;
+[1] &quot;elbo decreased by 5.0931703299284e-10&quot;
+[1] &quot;elbo decreased by 2.12985469261184e-08&quot;
+[1] &quot;elbo decreased by 2.65208655036986e-09&quot;
+[1] &quot;elbo decreased by 6.54836185276508e-10&quot;
+[1] &quot;elbo decreased by 3.51337803294882e-08&quot;
+[1] &quot;elbo decreased by 6.70479494147003e-09&quot;
+[1] &quot;elbo decreased by 3.01588443107903e-09&quot;
+[1] &quot;elbo decreased by 3.36513039655983e-10&quot;
+[1] &quot;elbo decreased by 1.39698386192322e-08&quot;
+[1] &quot;elbo decreased by 1.2116288417019e-08&quot;
+[1] &quot;elbo decreased by 4.65661287307739e-10&quot;
+[1] &quot;elbo decreased by 1.93940650206059e-08&quot;
+[1] &quot;elbo decreased by 2.93402990791947e-09&quot;
+[1] &quot;elbo decreased by 5.20230969414115e-10&quot;
+[1] &quot;elbo decreased by 1.54068402480334e-09&quot;
+[1] &quot;elbo decreased by 1.8444552551955e-09&quot;
+[1] &quot;elbo decreased by 1.10594555735588e-09&quot;
+[1] &quot;elbo decreased by 2.19733919948339e-09&quot;
+[1] &quot;elbo decreased by 3.93101800000295e-08&quot;
+[1] &quot;elbo decreased by 1.68438418768346e-09&quot;
+[1] &quot;elbo decreased by 1.8484570318833e-08&quot;
+[1] &quot;elbo decreased by 2.25554686039686e-10&quot;
+[1] &quot;elbo decreased by 5.61522028874606e-09&quot;
+[1] &quot;elbo decreased by 5.85714587941766e-10&quot;
+[1] &quot;elbo decreased by 3.18323145620525e-10&quot;
+[1] &quot;elbo decreased by 2.91875039692968e-08&quot;
+[1] &quot;elbo decreased by 1.81898940354586e-10&quot;
+[1] &quot;elbo decreased by 1.52485881699249e-08&quot;
+[1] &quot;elbo decreased by 1.65164237841964e-09&quot;
+[1] &quot;elbo decreased by 6.22094376012683e-09&quot;
+[1] &quot;elbo decreased by 3.96539689972997e-10&quot;
+[1] &quot;elbo decreased by 6.584741640836e-10&quot;
+[1] &quot;elbo decreased by 8.24002199806273e-10&quot;
+[1] &quot;elbo decreased by 2.05964170163497e-08&quot;
+[1] &quot;elbo decreased by 4.01996658183634e-10&quot;
+[1] &quot;elbo decreased by 2.76813807431608e-08&quot;
+[1] &quot;elbo decreased by 1.14941940410063e-08&quot;
+[1] &quot;elbo decreased by 9.62245394475758e-10&quot;
+[1] &quot;elbo decreased by 4.94765117764473e-10&quot;
+[1] &quot;elbo decreased by 7.22138793207705e-10&quot;
+[1] &quot;elbo decreased by 5.07025106344372e-08&quot;
+[1] &quot;elbo decreased by 2.20461515709758e-09&quot;
+[1] &quot;elbo decreased by 2.83762346953154e-09&quot;
+[1] &quot;elbo decreased by 1.18780008051544e-09&quot;
+[1] &quot;elbo decreased by 5.89352566748857e-10&quot;
+[1] &quot;elbo decreased by 1.40244083013386e-09&quot;
+[1] &quot;elbo decreased by 1.58706825459376e-08&quot;
+[1] &quot;elbo decreased by 8.21819412522018e-09&quot;
+[1] &quot;elbo decreased by 7.67613528296351e-10&quot;</code></pre>
+<p>This is a scatter plot of <span
+class="math inline">\(\hat{L}_{binormal-backfit}\)</span>, the estimate
+from binormal backfit:</p>
+<pre class="r"><code>bal_pops &lt;- c(rep(&#39;A&#39;, 40), rep(&#39;B&#39;, 40), rep(&#39;C&#39;, 40), rep(&#39;D&#39;, 40))
+plot_loadings(symebcovmf_binormal_fit_backfit$L_pm %*% diag(sqrt(symebcovmf_binormal_fit_backfit$lambda)), bal_pops)</code></pre>
+<p><img src="figure/symebcovmf_gb_point_exp_backfit.Rmd/unnamed-chunk-27-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>This is the objective function attained:</p>
+<pre class="r"><code>symebcovmf_binormal_fit_backfit$elbo</code></pre>
+<pre><code>[1] 9763.532</code></pre>
+</div>
+<div id="observations-1" class="section level2">
+<h2>Observations</h2>
+<p>Similar to generalized binary symEBcovMF, the binormal symEBcovMF
+method fails to find all four single group effect factors. Instead,
+three of the factors combine two groups. The backfit procedure does a
+better job at recovering the tree structure in the data. Furthermore,
+the estimate from the backfit procedure attains a higher objective
+function value than the estimate from the greedy procedure. Comparing
+the binormal prior with the generalized binary prior, we see that the
+factors generated from the latter look more binary. Though this could be
+due to the settings of the priors. I’m guessing it would be possible to
+get a more binary estimate from the generalized binary prior by changing
+the scale parameter.</p>
+<br>
+<p>
+<button type="button" class="btn btn-default btn-workflowr btn-workflowr-sessioninfo" data-toggle="collapse" data-target="#workflowr-sessioninfo" style="display: block;">
+<span class="glyphicon glyphicon-wrench" aria-hidden="true"></span>
+Session information
+</button>
+</p>
+<div id="workflowr-sessioninfo" class="collapse">
+<pre class="r"><code>sessionInfo()</code></pre>
+<pre><code>R version 4.3.2 (2023-10-31)
+Platform: aarch64-apple-darwin20 (64-bit)
+Running under: macOS 15.4.1
+
+Matrix products: default
+BLAS:   /Library/Frameworks/R.framework/Versions/4.3-arm64/Resources/lib/libRblas.0.dylib 
+LAPACK: /Library/Frameworks/R.framework/Versions/4.3-arm64/Resources/lib/libRlapack.dylib;  LAPACK version 3.11.0
+
+locale:
+[1] en_US.UTF-8/en_US.UTF-8/en_US.UTF-8/C/en_US.UTF-8/en_US.UTF-8
+
+time zone: America/Chicago
+tzcode source: internal
+
+attached base packages:
+[1] stats     graphics  grDevices utils     datasets  methods   base     
+
+other attached packages:
+[1] ggplot2_3.5.1   pheatmap_1.0.12 ebnm_1.1-34     workflowr_1.7.1
+
+loaded via a namespace (and not attached):
+ [1] gtable_0.3.5       xfun_0.48          bslib_0.8.0        processx_3.8.4    
+ [5] lattice_0.22-6     callr_3.7.6        vctrs_0.6.5        tools_4.3.2       
+ [9] ps_1.7.7           generics_0.1.3     tibble_3.2.1       fansi_1.0.6       
+[13] highr_0.11         pkgconfig_2.0.3    Matrix_1.6-5       SQUAREM_2021.1    
+[17] RColorBrewer_1.1-3 lifecycle_1.0.4    truncnorm_1.0-9    farver_2.1.2      
+[21] compiler_4.3.2     stringr_1.5.1      git2r_0.33.0       munsell_0.5.1     
+[25] getPass_0.2-4      httpuv_1.6.15      htmltools_0.5.8.1  sass_0.4.9        
+[29] yaml_2.3.10        later_1.3.2        pillar_1.9.0       jquerylib_0.1.4   
+[33] whisker_0.4.1      cachem_1.1.0       trust_0.1-8        RSpectra_0.16-2   
+[37] tidyselect_1.2.1   digest_0.6.37      stringi_1.8.4      dplyr_1.1.4       
+[41] ashr_2.2-66        labeling_0.4.3     splines_4.3.2      rprojroot_2.0.4   
+[45] fastmap_1.2.0      grid_4.3.2         colorspace_2.1-1   cli_3.6.3         
+[49] invgamma_1.1       magrittr_2.0.3     utf8_1.2.4         withr_3.0.1       
+[53] scales_1.3.0       promises_1.3.0     horseshoe_0.2.0    rmarkdown_2.28    
+[57] httr_1.4.7         deconvolveR_1.2-1  evaluate_1.0.0     knitr_1.48        
+[61] irlba_2.3.5.1      rlang_1.1.4        Rcpp_1.0.13        mixsqp_0.3-54     
+[65] glue_1.8.0         rstudioapi_0.16.0  jsonlite_1.8.9     R6_2.5.1          
+[69] fs_1.6.4          </code></pre>
+</div>
+</div>
+</div>
+
+
+<!-- Adjust MathJax settings so that all math formulae are shown using
+TeX fonts only; see
+https://docs.mathjax.org/en/latest/web/configuration.html. This will make
+the presentation more consistent at the cost of the webpage sometimes
+taking slightly longer to load. Note that this only works because the
+footer is added to webpages before the MathJax javascript. -->
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    "HTML-CSS": { availableFonts: ["TeX"] }
+  });
+</script>
+
+
+
+
+</div>
+</div>
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.odd').parent('tbody').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open');
+  });
+});
+</script>
+
+<!-- code folding -->
+<script>
+$(document).ready(function () {
+  window.initializeCodeFolding("hide" === "show");
+});
+</script>
+
+<script>
+$(document).ready(function ()  {
+
+    // temporarily add toc-ignore selector to headers for the consistency with Pandoc
+    $('.unlisted.unnumbered').addClass('toc-ignore')
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1,h2,h3",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_');
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = true;
+    options.smoothScroll = true;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
