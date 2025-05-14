@@ -22,10 +22,12 @@ symEBcovMF analyses:
 * Exploration of [symEBcovMF in the sparse, overlapping setting](symebcovmf_overlap.html)   
 * Exploration of [symEBcovMF in the null setting](symebcovmf_null.html)  
 * Exploration of [symEBcovMF in the unbalanced nonoverlapping setting](unbal_nonoverlap.html)  
-* Further exploration of [symEBcovMF in the unbalanced nonoverlapping setting](unbal_nonoverlap_exploration.html)      
+* Further exploration of [symEBcovMF in the unbalanced nonoverlapping setting](unbal_nonoverlap_exploration.html)  
+* Exploration of [symEBcovMF backfit in the unbalanced nonoverlapping setting](unbal_nonoverlap_backfit.html)  
 
 Analyses related to point-exponential initialization:  
-* Exploration of [generalized binary symEBcovMF with point exponential initialization](symebcovmf_point_exp_init.html)   
+* Exploration of [generalized binary symEBcovMF with point exponential initialization](symebcovmf_point_exp_init.html)  
+* Exploration of [generalized binary symEBcovMF backfit initialized with point exponential](symebcovmf_gb_point_exp_backfit.html)   
 
 Tree residual matrix example:  
 * Checking [convergence](symebcovmf_gb_tree_exploration.html)  
