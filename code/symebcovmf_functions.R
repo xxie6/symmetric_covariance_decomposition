@@ -120,7 +120,7 @@ refit_lambda <- function(S, sym_ebcovmf_obj, maxiter = 100, tol = 10^(-6)){
   return(sym_ebcovmf_obj)
 }
 
-sym_ebcovmf_fit <- function(S, ebnm_fn, Kmax, maxiter, rank_one_tol, tol, refit_lam = FALSE){
+sym_ebcovmf_fit <- function(S, ebnm_fn, Kmax, maxiter, rank_one_tol, tol, sign_constraint = 'nonnegative', refit_lam = FALSE){
   #initialize object
   sym_ebcovmf_obj <- sym_ebcovmf_init(S)
   
@@ -128,7 +128,7 @@ sym_ebcovmf_fit <- function(S, ebnm_fn, Kmax, maxiter, rank_one_tol, tol, refit_
   obj_diff <- Inf
   while ((curr_rank < Kmax) & (obj_diff > tol)){
     # add factor
-    sym_ebcovmf_obj <- sym_ebcovmf_r1_fit(S, sym_ebcovmf_obj, ebnm_fn, maxiter, rank_one_tol)
+    sym_ebcovmf_obj <- sym_ebcovmf_r1_fit(S, sym_ebcovmf_obj, ebnm_fn, maxiter, rank_one_tol, sign_constraint = sign_constraint)
     
     # check if new factor was added
     if (length(sym_ebcovmf_obj$vec_elbo_K) == curr_rank){
@@ -162,7 +162,7 @@ sym_ebcovmf_init <- function(S){
 }
 
 
-sym_ebcovmf_r1_fit <- function(S, sym_ebcovmf_obj, ebnm_fn, maxiter, tol, v_init = NULL){
+sym_ebcovmf_r1_fit <- function(S, sym_ebcovmf_obj, ebnm_fn, maxiter, tol, v_init = NULL, sign_constraint = NULL){
   if (is.null(sym_ebcovmf_obj$L_pm) == FALSE){
     K <- length(sym_ebcovmf_obj$lambda) + 1
     R <- S - tcrossprod(sym_ebcovmf_obj$L_pm %*% diag(sqrt(sym_ebcovmf_obj$lambda), ncol = (K-1)))
@@ -176,8 +176,13 @@ sym_ebcovmf_r1_fit <- function(S, sym_ebcovmf_obj, ebnm_fn, maxiter, tol, v_init
   
   # initialize estimate for l
   if (is.null(v_init) == TRUE){
-    # need to add something that checks non-negativity of prior
-    sym_ebcovmf_v_init <- sym_ebcovmf_r1_init(R)
+    # checks non-negativity constraint
+    if (is.null(sign_constraint) == TRUE){
+      nonnegative_constraint <- FALSE
+    } else {
+      nonnegative_constraint <- TRUE
+    }
+    sym_ebcovmf_v_init <- sym_ebcovmf_r1_init(R, nonnegative = nonnegative_constraint)
     v <- sym_ebcovmf_v_init$v
     lambda_k <- sym_ebcovmf_v_init$lambda_k
   } else {
@@ -270,9 +275,6 @@ sym_ebcovmf_r1_fit <- function(S, sym_ebcovmf_obj, ebnm_fn, maxiter, tol, v_init
 sym_ebcovmf_r1_init <- function(R, nonnegative = TRUE){
   svd1 <- RSpectra::eigs_sym(R, k = 1)
   v <- svd1$vectors # scaled such that v'v = 1
-  # if (abs(min(v)) > abs(max(v))){
-  #   v <- -1*v
-  # }
   lambda_k <- svd1$values
   if(nonnegative == TRUE){
     svd_v <- v
