@@ -1,0 +1,482 @@
+---
+title: "symebcovmf_overlap_backfit"
+author: "Annie Xie"
+date: "2025-05-15"
+output: 
+  workflowr::wflow_html:
+    code_folding: hide
+editor_options:
+  chunk_output_type: console
+---
+
+# Introduction
+In this example, we test out symEBcovMF with backfit on overlapping (but not necessarily hierarchical)-structured data.
+
+## Motivation
+I am interested in testing whether backfitting helps symEBcovMF in the overlapping setting (particularly in the setting where we set `Kmax` to be the true number of factors). Our high level goal is to develop a method that does well in both the tree setting and the overlapping setting.
+
+# Packages and Functions
+
+```{r}
+library(ebnm)
+library(pheatmap)
+library(ggplot2)
+library(lpSolve)
+```
+
+```{r}
+source('code/symebcovmf_functions.R')
+source('code/visualization_functions.R')
+```
+
+```{r}
+compute_crossprod_similarity <- function(est, truth){
+  K_est <- ncol(est)
+  K_truth <- ncol(truth)
+  n <- nrow(est)
+  
+  #if estimates don't have same number of columns, try padding the estimate with zeros and make cosine similarity zero
+  if (K_est < K_truth){
+    est <- cbind(est, matrix(rep(0, n*(K_truth-K_est)), nrow = n))
+  }
+  
+  if (K_est > K_truth){
+    truth <- cbind(truth, matrix(rep(0, n*(K_est - K_truth)), nrow = n))
+  }
+  
+  #normalize est and truth
+  norms_est <- apply(est, 2, function(x){sqrt(sum(x^2))})
+  norms_est[norms_est == 0] <- Inf
+  
+  norms_truth <- apply(truth, 2, function(x){sqrt(sum(x^2))})
+  norms_truth[norms_truth == 0] <- Inf
+  
+  est_normalized <- t(t(est)/norms_est)
+  truth_normalized <- t(t(truth)/norms_truth)
+  
+  #compute matrix of cosine similarities
+  cosine_sim_matrix <- abs(crossprod(est_normalized, truth_normalized))
+  
+  assignment_problem <- lp.assign(t(cosine_sim_matrix), direction = "max")
+  return((1/K_truth)*assignment_problem$objval)
+}
+```
+
+```{r}
+permute_L <- function(est, truth){
+  K_est <- ncol(est)
+  K_truth <- ncol(truth)
+  n <- nrow(est)
+
+  #if estimates don't have same number of columns, try padding the estimate with zeros and make cosine similarity zero
+  if (K_est < K_truth){
+    est <- cbind(est, matrix(rep(0, n*(K_truth-K_est)), nrow = n))
+  }
+
+  if (K_est > K_truth){
+    truth <- cbind(truth, matrix(rep(0, n*(K_est - K_truth)), nrow = n))
+  }
+
+  #normalize est and truth
+  norms_est <- apply(est, 2, function(x){sqrt(sum(x^2))})
+  norms_est[norms_est == 0] <- Inf
+
+  norms_truth <- apply(truth, 2, function(x){sqrt(sum(x^2))})
+  norms_truth[norms_truth == 0] <- Inf
+
+  est_normalized <- t(t(est)/norms_est)
+  truth_normalized <- t(t(truth)/norms_truth)
+
+  #compute matrix of cosine similarities
+  cosine_sim_matrix <- abs(crossprod(est_normalized, truth_normalized))
+  assignment_problem <- lp.assign(t(cosine_sim_matrix), direction = "max")
+
+  perm <- apply(assignment_problem$solution, 1, which.max)
+  return(est[,perm])
+}
+```
+
+# Backfit Function
+
+```{r}
+optimize_factor <- function(R, ebnm_fn, maxiter, tol, v_init, lambda_k, R2k, n, KL){
+  R2 <- R2k - lambda_k^2
+  resid_s2 <- estimate_resid_s2(n = n, R2 = R2)
+  rank_one_KL <- 0
+  curr_elbo <- -Inf
+  obj_diff <- Inf
+  fitted_g_k <- NULL
+  iter <- 1
+  vec_elbo_full <- NULL
+  v <- v_init
+  
+  while((iter <= maxiter) && (obj_diff > tol)){
+    # update l; power iteration step
+    v.old <- v
+    x <- R %*% v
+    e <- ebnm_fn(x = x, s = sqrt(resid_s2), g_init = fitted_g_k)
+    scaling_factor <- sqrt(sum(e$posterior$mean^2) + sum(e$posterior$sd^2))
+    if (scaling_factor == 0){ # check if scaling factor is zero
+      scaling_factor <- Inf
+      v <- e$posterior$mean/scaling_factor
+      print('Warning: scaling factor is zero')
+      break
+    }
+    v <- e$posterior$mean/scaling_factor
+    
+    # update lambda and R2
+    lambda_k.old <- lambda_k
+    lambda_k <- max(as.numeric(t(v) %*% R %*% v), 0)
+    R2 <- R2k - lambda_k^2
+    
+    #store estimate for g
+    fitted_g_k.old <- fitted_g_k
+    fitted_g_k <- e$fitted_g
+    
+    # store KL
+    rank_one_KL.old <- rank_one_KL
+    rank_one_KL <- as.numeric(e$log_likelihood) +
+      - normal_means_loglik(x, sqrt(resid_s2), e$posterior$mean, e$posterior$mean^2 + e$posterior$sd^2)
+    
+    # update resid_s2
+    resid_s2.old <- resid_s2
+    resid_s2 <- estimate_resid_s2(n = n, R2 = R2) # this goes negative?????
+    
+    # check convergence - maybe change to rank-one obj function
+    curr_elbo.old <- curr_elbo
+    curr_elbo <- compute_elbo(resid_s2 = resid_s2,
+                              n = n,
+                              KL = c(KL, rank_one_KL),
+                              R2 = R2)
+    if (iter > 1){
+      obj_diff <- curr_elbo - curr_elbo.old
+    }
+    if (obj_diff < 0){ # check if convergence_val < 0
+      v <- v.old
+      resid_s2 <- resid_s2.old
+      rank_one_KL <- rank_one_KL.old
+      lambda_k <- lambda_k.old
+      curr_elbo <- curr_elbo.old
+      fitted_g_k <- fitted_g_k.old
+      print(paste('elbo decreased by', abs(obj_diff)))
+      break
+    }
+    vec_elbo_full <- c(vec_elbo_full, curr_elbo)
+    iter <- iter + 1
+  }
+  return(list(v = v, lambda_k = lambda_k, resid_s2 = resid_s2, curr_elbo = curr_elbo, vec_elbo_full = vec_elbo_full, fitted_g_k = fitted_g_k, rank_one_KL = rank_one_KL))
+}
+```
+
+```{r, eval = FALSE, include = FALSE}
+sym_ebcovmf_r1_fit_use_optim_fun <- function(S, sym_ebcovmf_obj, ebnm_fn, maxiter, tol, v_init = NULL){
+  # compute residual matrix (maybe get rid of this step)
+  if (is.null(sym_ebcovmf_obj$L_pm) == FALSE){
+    K <- length(sym_ebcovmf_obj$lambda) + 1
+    R <- S - tcrossprod(sym_ebcovmf_obj$L_pm %*% diag(sqrt(sym_ebcovmf_obj$lambda), ncol = (K-1)))
+    R2k <- compute_R2(S, sym_ebcovmf_obj$L_pm, sym_ebcovmf_obj$lambda, (K-1))
+  } else {
+    K <- 1
+    R <- S
+    R2k <- sum(S^2)
+  }
+  
+  # initialize estimate for l
+  if (is.null(v_init) == TRUE){
+    sym_ebcovmf_v_init <- sym_ebcovmf_r1_init(R)
+    v <- sym_ebcovmf_v_init$v
+    lambda_k <- sym_ebcovmf_v_init$lambda_k
+  } else {
+    v <- v_init
+    v <- v/sqrt(sum(v^2))
+    lambda_k <- drop(t(v) %*% R %*% v)
+  }
+  
+  # optimize factor
+  factor_proposed <- optimize_factor(R, ebnm_fn, maxiter, tol, v, lambda_k, R2k, sym_ebcovmf_obj$n, sym_ebcovmf_obj$KL)
+  lambda_k <- factor_proposed$lambda_k
+  v <- factor_proposed$v
+  
+  # nullcheck
+  if((lambda_k > 0) & (sqrt(sum(v^2)) > 10^(-8))){
+    sym_ebcovmf_obj$L_pm <- cbind(sym_ebcovmf_obj$L_pm, v)
+    sym_ebcovmf_obj$KL[K] <- factor_proposed$rank_one_KL
+    sym_ebcovmf_obj$lambda[K] <- lambda_k
+    sym_ebcovmf_obj$resid_s2 <- factor_proposed$resid_s2
+    sym_ebcovmf_obj$fitted_gs[[K]] <- factor_proposed$fitted_g_k
+    sym_ebcovmf_obj$elbo <- factor_proposed$curr_elbo
+    sym_ebcovmf_obj$vec_elbo_full <- c(sym_ebcovmf_obj$vec_elbo_full, K, factor_proposed$vec_elbo_full)
+    sym_ebcovmf_obj$vec_elbo_K <- c(sym_ebcovmf_obj$vec_elbo_K,  factor_proposed$curr_elbo) # maybe will change this
+  }
+  return(sym_ebcovmf_obj)
+}
+```
+
+```{r}
+#nullcheck function
+nullcheck_factors <- function(sym_ebcovmf_obj, L2_tol = 10^(-8)){
+  null_lambda_idx <- which(sym_ebcovmf_obj$lambda == 0)
+  factor_L2_norms <- apply(sym_ebcovmf_obj$L_pm, 2, function(v){sqrt(sum(v^2))})
+  null_factor_idx <- which(factor_L2_norms < L2_tol)
+  null_idx <- unique(c(null_lambda_idx, null_factor_idx))
+  
+  keep_idx <- setdiff(c(1:length(sym_ebcovmf_obj$lambda)), null_idx)
+  
+  if (length(keep_idx) < length(sym_ebcovmf_obj$lambda)){
+    #remove factors
+    sym_ebcovmf_obj$L_pm <- sym_ebcovmf_obj$L_pm[,keep_idx]
+    sym_ebcovmf_obj$lambda <- sym_ebcovmf_obj$lambda[keep_idx]
+    sym_ebcovmf_obj$KL <- sym_ebcovmf_obj$KL[keep_idx]
+    sym_ebcovmf_obj$fitted_gs <- sym_ebcovmf_obj$fitted_gs[keep_idx]
+  }
+  
+  #shouldn't need to recompute objective function or other things
+  return(sym_ebcovmf_obj)
+}
+```
+
+```{r}
+sym_ebcovmf_backfit <- function(S, sym_ebcovmf_obj, ebnm_fn, backfit_maxiter = 100, backfit_tol = 10^(-8), optim_maxiter= 500, optim_tol = 10^(-8)){
+  K <- length(sym_ebcovmf_obj$lambda)
+  iter <- 1
+  obj_diff <- Inf
+  sym_ebcovmf_obj$backfit_vec_elbo_full <- NULL
+  
+  # refit lambda
+  sym_ebcovmf_obj <- refit_lambda(S, sym_ebcovmf_obj, maxiter = 25)
+  
+  while((iter <= backfit_maxiter) && (obj_diff > backfit_tol)){
+    #print(iter)
+    obj_old <- sym_ebcovmf_obj$elbo
+    # loop through each factor
+    for (k in 1:K){
+      #print(k)
+      # compute residual matrix
+      R <- S - tcrossprod(sym_ebcovmf_obj$L_pm[,-k] %*% diag(sqrt(sym_ebcovmf_obj$lambda[-k]), ncol = (K-1)))
+      R2k <- compute_R2(S, sym_ebcovmf_obj$L_pm[,-k], sym_ebcovmf_obj$lambda[-k], (K-1)) #this is right but I have one instance where the values don't match what I expect
+      
+      # optimize factor
+      factor_proposed <- optimize_factor(R, ebnm_fn, optim_maxiter, optim_tol, sym_ebcovmf_obj$L_pm[,k], sym_ebcovmf_obj$lambda[k], R2k, sym_ebcovmf_obj$n, sym_ebcovmf_obj$KL[-k])
+      
+      # update object
+      sym_ebcovmf_obj$L_pm[,k] <- factor_proposed$v
+      sym_ebcovmf_obj$KL[k] <- factor_proposed$rank_one_KL
+      sym_ebcovmf_obj$lambda[k] <- factor_proposed$lambda_k
+      sym_ebcovmf_obj$resid_s2 <- factor_proposed$resid_s2
+      sym_ebcovmf_obj$fitted_gs[[k]] <- factor_proposed$fitted_g_k
+      sym_ebcovmf_obj$elbo <- factor_proposed$curr_elbo
+      sym_ebcovmf_obj$backfit_vec_elbo_full <- c(sym_ebcovmf_obj$backfit_vec_elbo_full, factor_proposed$vec_elbo_full)
+      
+      #print(sym_ebcovmf_obj$elbo)
+      sym_ebcovmf_obj <- refit_lambda(S, sym_ebcovmf_obj) # add refitting step?
+      #print(sym_ebcovmf_obj$elbo)
+    }
+    
+    iter <- iter + 1
+    obj_diff <- abs(sym_ebcovmf_obj$elbo - obj_old)
+    # need to add check if it is negative?
+  }
+  # nullcheck
+  sym_ebcovmf_obj <- nullcheck_factors(sym_ebcovmf_obj)
+  return(sym_ebcovmf_obj)
+}
+```
+
+# Data Generation
+
+```{r}
+# args is a list containing n, p, k, indiv_sd, pi1, and seed
+sim_binary_loadings_data <- function(args) {
+  set.seed(args$seed)
+  
+  FF <- matrix(rnorm(args$k * args$p, sd = args$group_sd), ncol = args$k)
+  if (args$constrain_F) {
+    FF_svd <- svd(FF)
+    FF <- FF_svd$u
+    FF <- t(t(FF) * rep(args$group_sd, args$k) * sqrt(p))
+  }
+  LL <- matrix(rbinom(args$n*args$k, 1, args$pi1), nrow = args$n, ncol = args$k)
+  E <- matrix(rnorm(args$n * args$p, sd = args$indiv_sd), nrow = args$n)
+  
+  Y <- LL %*% t(FF) + E
+  YYt <- (1/args$p)*tcrossprod(Y)
+  
+  return(list(Y = Y, YYt = YYt, LL = LL, FF = FF, K = ncol(LL)))
+}
+```
+
+```{r}
+n <- 100
+p <- 1000
+k <- 10
+pi1 <- 0.1
+indiv_sd <- 1
+group_sd <- 1
+seed <- 1
+sim_args = list(n = n, p = p, k = k, pi1 = pi1, indiv_sd = indiv_sd, group_sd = group_sd, seed = seed, constrain_F = FALSE)
+sim_data <- sim_binary_loadings_data(sim_args)
+```
+
+This is a heatmap of the scaled Gram matrix:
+```{r}
+plot_heatmap(sim_data$YYt, colors_range = c('blue','gray96','red'), brks = seq(-max(abs(sim_data$YYt)), max(abs(sim_data$YYt)), length.out = 50))
+```
+
+This is a scatter plot of the true loadings matrix:
+```{r}
+pop_vec <- rep('A', n)
+plot_loadings(sim_data$LL, pop_vec, legendYN = FALSE)
+```
+
+This is a heatmap of the true loadings matrix:
+```{r}
+plot_heatmap(sim_data$LL)
+```
+
+# Regular symEBcovMF
+
+```{r}
+symebcovmf_overlap_refit_fit <- sym_ebcovmf_fit(S = sim_data$YYt, ebnm_fn = ebnm::ebnm_point_exponential, K = 10, maxiter = 100, rank_one_tol = 10^(-8), tol = 10^(-8), refit_lam = TRUE)
+```
+
+This is a scatter plot of $\hat{L}_{refit}$, the estimate from symEBcovMF:
+```{r}
+plot_loadings(symebcovmf_overlap_refit_fit$L_pm %*% diag(sqrt(symebcovmf_overlap_refit_fit$lambda)), pop_vec, legendYN = FALSE)
+```
+
+This is a heatmap of the true loadings matrix:
+```{r}
+plot_heatmap(sim_data$LL)
+```
+
+This is a heatmap of $\hat{L}_{refit}$. The columns have been permuted to match the true loadings matrix:
+```{r}
+symebcovmf_overlap_refit_fit_L_permuted <- permute_L(symebcovmf_overlap_refit_fit$L_pm, sim_data$LL)
+plot_heatmap(symebcovmf_overlap_refit_fit_L_permuted, brks = seq(0, max(symebcovmf_overlap_refit_fit_L_permuted), length.out = 50))
+```
+
+This is a heatmap of $\hat{L}_{refit}$ where the columns have not been permuted. The order corresponds to the order in which the factors were added.
+```{r}
+plot_heatmap(symebcovmf_overlap_refit_fit$L_pm %*% diag(sqrt(symebcovmf_overlap_refit_fit$lambda)), brks = seq(0, max(symebcovmf_overlap_refit_fit$L_pm %*% diag(sqrt(symebcovmf_overlap_refit_fit$lambda))), length.out = 50))
+```
+
+This is the objective function value attained:
+```{r}
+symebcovmf_overlap_refit_fit$elbo
+```
+
+This is the crossproduct similarity of $\hat{L}_{refit}$:
+```{r}
+compute_crossprod_similarity(symebcovmf_overlap_refit_fit$L_pm, sim_data$LL)
+```
+
+## Observations
+Greedy symEBcovMF does an okay job at recovering the overlapping structure. Some of estimates match the corresponding true factors very well, e.g. factors 1, 2, and 4. However, some estimates are more dense than their corresponding true factors, e.g. factors 5, 6, 9, and 10. There are also a couple of estimates which differ from their corresponding true factors by a couple of samples, e.g. factors 3, 7, and 8.
+
+Looking at the heatmap where the columns are ordered by the order they were added, we see that the earlier factors are more dense, while the later factors are more sparse. The factors added later are the factors which more closely match their corresponding true factors. 
+
+## For comparison, EBCD
+
+For comparison, I try running greedy EBCD on the data.
+```{r}
+library(ebcd)
+```
+
+```{r}
+ebcd_init_obj <- ebcd_init(X = t(sim_data$Y))
+greedy_ebcd_fit <- ebcd_greedy(ebcd_init_obj, Kmax = 10, ebnm_fn = ebnm::ebnm_point_exponential)
+```
+
+This is a heatmap of the estimate from greedy EBCD, $\hat{L}_{ebcd-greedy}$:
+```{r}
+plot_heatmap(greedy_ebcd_fit$EL, brks = seq(0, max(greedy_ebcd_fit$EL), length.out = 50))
+```
+
+This is the crossproduct similarity of $\hat{L}_{ebcd-greedy}$:
+```{r}
+compute_crossprod_similarity(greedy_ebcd_fit$EL, sim_data$LL)
+```
+
+Now, we run EBCD's backfit method.
+```{r}
+ebcd_backfit_fit <- ebcd_backfit(greedy_ebcd_fit)
+```
+
+This is a heatmap of the estimate from EBCD with backfit, $\hat{L}_{ebcd-backfit}$:
+```{r}
+plot_heatmap(ebcd_backfit_fit$EL, brks = seq(0, max(ebcd_backfit_fit$EL), length.out = 50))
+```
+
+This is a heatmap of the true loadings matrix:
+```{r}
+plot_heatmap(sim_data$LL)
+```
+
+This is a heatmap of $\hat{L}_{ebcd-backfit}$. The columns have been permuted to best match the true loadings matrix.
+```{r}
+ebcd_backfit_fit_L_permuted <- permute_L(ebcd_backfit_fit$EL, sim_data$LL)
+plot_heatmap(ebcd_backfit_fit_L_permuted, brks = seq(0, max(ebcd_backfit_fit_L_permuted), length.out = 50))
+```
+
+This is the crossproduct similarity of $\hat{L}_{ebcd-backfit}$:
+```{r}
+compute_crossprod_similarity(ebcd_backfit_fit$EL, sim_data$LL)
+```
+
+We see that the greedy EBCD method performs comparably to greedy symEBcovMF. Therefore, part of the reason EBCD performs so well in this setting is its backfitting. So I suspect that backfitting will help us obtain a better estimate.
+
+# symEBcovMF with Backfit
+
+Now, we try backfitting (also with a point-exponential prior):
+```{r}
+symebcovmf_fit_backfit <- sym_ebcovmf_backfit(sim_data$YYt, symebcovmf_overlap_refit_fit, ebnm_fn = ebnm::ebnm_point_exponential, backfit_maxiter = 100)
+```
+
+This is a scatter plot of $\hat{L}_{backfit}$, the estimate from symEBcovMF:
+```{r}
+plot_loadings(symebcovmf_fit_backfit$L_pm %*% diag(sqrt(symebcovmf_fit_backfit$lambda)), pop_vec, legendYN = FALSE)
+```
+
+This is a heatmap of the true loadings matrix:
+```{r}
+plot_heatmap(sim_data$LL)
+```
+
+This is a heatmap of $\hat{L}_{backfit}$. The columns have been permuted to match the true loadings matrix:
+```{r}
+symebcovmf_fit_backfit_L_permuted <- permute_L(symebcovmf_fit_backfit$L_pm, sim_data$LL)
+plot_heatmap(symebcovmf_fit_backfit_L_permuted, brks = seq(0, max(symebcovmf_fit_backfit_L_permuted), length.out = 50))
+```
+
+This is the objective function value attained:
+```{r}
+symebcovmf_fit_backfit$elbo
+```
+
+This is the crossproduct similarity of $\hat{L}_{backfit}$:
+```{r}
+compute_crossprod_similarity(symebcovmf_fit_backfit$L_pm, sim_data$LL)
+```
+
+## Observations
+Visually, the estimate after the backfitting appears to better match the true loadings matrix. This is corroborated by the increased cross-product similarity. For many of the factors, the estimates are very close to the true values. However, the estimate for factor 5 is noticeably off. After further inspection, we see that the best estimate for factor 3 captures the shared effects from the true factor 5 along with the shared effects from the true factor 3.
+
+Here, I look at the residual matrix minus the estimate for factor 5 (the two-individual factor):
+```{r}
+R <- sim_data$YYt - tcrossprod(symebcovmf_fit_backfit$L_pm[,c(2:10)] %*% diag(sqrt(symebcovmf_fit_backfit$lambda[2:10])))
+```
+
+```{r}
+plot_heatmap(R, colors_range = c('blue','gray96','red'), brks = seq(-max(abs(R)), max(abs(R)), length.out = 50))
+```
+
+This is the component generated from the estimate of factor 5:
+```{r}
+component_fac5 <- tcrossprod(sqrt(symebcovmf_fit_backfit$lambda[1])*symebcovmf_fit_backfit$L_pm[,1])
+```
+
+```{r}
+plot_heatmap(component_fac5, colors_range = c('blue','gray96','red'), brks = seq(-max(abs(component_fac5)), max(abs(component_fac5)), length.out = 50))
+```
+
+It doesn't make sense to me why this component would be chosen given the residual matrix.
