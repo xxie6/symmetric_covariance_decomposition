@@ -402,7 +402,7 @@ class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span>
 <div class="tab-content">
 <div id="summary" class="tab-pane fade in active">
 <p>
-<strong>Last updated:</strong> 2025-06-03
+<strong>Last updated:</strong> 2025-06-06
 </p>
 <p>
 <strong>Checks:</strong> <span
@@ -534,15 +534,15 @@ project makes it easier to run your code on other machines.</p>
 <div class="panel panel-default">
 <div class="panel-heading">
 <p class="panel-title">
-<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomxxie6symmetriccovariancedecompositiontree14cbb81f97066fd7bad4e093d2c8e80c3c333b65targetblank14cbb81a">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomxxie6symmetriccovariancedecompositiontree7f4f0cfe6ff221bbbfb9f63e8865abb1b04b5300targetblank7f4f0cfa">
 <span class="glyphicon glyphicon-ok text-success"
 aria-hidden="true"></span> <strong>Repository version:</strong>
-<a href="https://github.com/xxie6/symmetric_covariance_decomposition/tree/14cbb81f97066fd7bad4e093d2c8e80c3c333b65" target="_blank">14cbb81</a>
+<a href="https://github.com/xxie6/symmetric_covariance_decomposition/tree/7f4f0cfe6ff221bbbfb9f63e8865abb1b04b5300" target="_blank">7f4f0cf</a>
 </a>
 </p>
 </div>
 <div
-id="strongRepositoryversionstrongahrefhttpsgithubcomxxie6symmetriccovariancedecompositiontree14cbb81f97066fd7bad4e093d2c8e80c3c333b65targetblank14cbb81a"
+id="strongRepositoryversionstrongahrefhttpsgithubcomxxie6symmetriccovariancedecompositiontree7f4f0cfe6ff221bbbfb9f63e8865abb1b04b5300targetblank7f4f0cfa"
 class="panel-collapse collapse">
 <div class="panel-body">
 <p>
@@ -552,7 +552,7 @@ reproducibility.
 </p>
 <p>
 The results in this page were generated with repository version
-<a href="https://github.com/xxie6/symmetric_covariance_decomposition/tree/14cbb81f97066fd7bad4e093d2c8e80c3c333b65" target="_blank">14cbb81</a>.
+<a href="https://github.com/xxie6/symmetric_covariance_decomposition/tree/7f4f0cfe6ff221bbbfb9f63e8865abb1b04b5300" target="_blank">7f4f0cf</a>.
 See the <em>Past versions</em> tab to see a history of the changes made
 to the R Markdown and HTML files.
 </p>
@@ -569,9 +569,6 @@ were generated:
 Ignored files:
     Ignored:    .DS_Store
     Ignored:    .Rhistory
-
-Untracked files:
-    Untracked:  analysis/symebcovmf_overlap_backfit.Rmd
 
 </code></pre>
 <p>
@@ -618,6 +615,40 @@ Message
 </tr>
 </thead>
 <tbody>
+<tr>
+<td>
+Rmd
+</td>
+<td>
+<a href="https://github.com/xxie6/symmetric_covariance_decomposition/blob/7f4f0cfe6ff221bbbfb9f63e8865abb1b04b5300/analysis/symebcovmf_laplace_split_init_tree.Rmd" target="_blank">7f4f0cf</a>
+</td>
+<td>
+Annie Xie
+</td>
+<td>
+2025-06-06
+</td>
+<td>
+Add to point laplace split analysis
+</td>
+</tr>
+<tr>
+<td>
+html
+</td>
+<td>
+<a href="https://rawcdn.githack.com/xxie6/symmetric_covariance_decomposition/e557427972ee3c2e673b325c06ce7a8016a2e6ad/docs/symebcovmf_laplace_split_init_tree.html" target="_blank">e557427</a>
+</td>
+<td>
+Annie Xie
+</td>
+<td>
+2025-06-03
+</td>
+<td>
+Build site.
+</td>
+</tr>
 <tr>
 <td>
 Rmd
@@ -835,14 +866,125 @@ sim_data &lt;- sim_4pops(sim_args)</code></pre>
 <p>This is a heatmap of the scaled Gram matrix:</p>
 <pre class="r"><code>plot_heatmap(sim_data$YYt, colors_range = c(&#39;blue&#39;,&#39;gray96&#39;,&#39;red&#39;), brks = seq(-max(abs(sim_data$YYt)), max(abs(sim_data$YYt)), length.out = 50))</code></pre>
 <p><img src="figure/symebcovmf_laplace_split_init_tree.Rmd/unnamed-chunk-9-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-9-1">
+Past versions of unnamed-chunk-9-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-9-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/xxie6/symmetric_covariance_decomposition/blob/e557427972ee3c2e673b325c06ce7a8016a2e6ad/docs/figure/symebcovmf_laplace_split_init_tree.Rmd/unnamed-chunk-9-1.png" target="_blank">e557427</a>
+</td>
+<td>
+Annie Xie
+</td>
+<td>
+2025-06-03
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <p>This is a scatter plot of the true loadings matrix:</p>
 <pre class="r"><code>pop_vec &lt;- c(rep(&#39;A&#39;, 40), rep(&#39;B&#39;, 40), rep(&#39;C&#39;, 40), rep(&#39;D&#39;, 40))
 plot_loadings(sim_data$LL, pop_vec)</code></pre>
 <p><img src="figure/symebcovmf_laplace_split_init_tree.Rmd/unnamed-chunk-10-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-10-1">
+Past versions of unnamed-chunk-10-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-10-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/xxie6/symmetric_covariance_decomposition/blob/e557427972ee3c2e673b325c06ce7a8016a2e6ad/docs/figure/symebcovmf_laplace_split_init_tree.Rmd/unnamed-chunk-10-1.png" target="_blank">e557427</a>
+</td>
+<td>
+Annie Xie
+</td>
+<td>
+2025-06-03
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <p>This is a plot of the eigenvalues of the Gram matrix:</p>
 <pre class="r"><code>S_eigen &lt;- eigen(sim_data$YYt)
 plot(S_eigen$values) + abline(a = 0, b = 0, col = &#39;red&#39;)</code></pre>
 <p><img src="figure/symebcovmf_laplace_split_init_tree.Rmd/unnamed-chunk-11-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-11-1">
+Past versions of unnamed-chunk-11-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-11-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/xxie6/symmetric_covariance_decomposition/blob/e557427972ee3c2e673b325c06ce7a8016a2e6ad/docs/figure/symebcovmf_laplace_split_init_tree.Rmd/unnamed-chunk-11-1.png" target="_blank">e557427</a>
+</td>
+<td>
+Annie Xie
+</td>
+<td>
+2025-06-03
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <pre><code>integer(0)</code></pre>
 <p>This is the minimum eigenvalue:</p>
 <pre class="r"><code>min(S_eigen$values)</code></pre>
@@ -860,6 +1002,43 @@ symEBcovMF:</p>
 <pre class="r"><code>bal_pops &lt;- c(rep(&#39;A&#39;, 40), rep(&#39;B&#39;, 40), rep(&#39;C&#39;, 40), rep(&#39;D&#39;, 40))
 plot_loadings(symebcovmf_fit$L_pm %*% diag(sqrt(symebcovmf_fit$lambda)), bal_pops)</code></pre>
 <p><img src="figure/symebcovmf_laplace_split_init_tree.Rmd/unnamed-chunk-14-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-14-1">
+Past versions of unnamed-chunk-14-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-14-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/xxie6/symmetric_covariance_decomposition/blob/e557427972ee3c2e673b325c06ce7a8016a2e6ad/docs/figure/symebcovmf_laplace_split_init_tree.Rmd/unnamed-chunk-14-1.png" target="_blank">e557427</a>
+</td>
+<td>
+Annie Xie
+</td>
+<td>
+2025-06-03
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <p>This is the objective function value attained:</p>
 <pre class="r"><code>symebcovmf_fit$elbo</code></pre>
 <pre><code>[1] -10362.6</code></pre>
@@ -2499,6 +2678,43 @@ estimate from symEBcovMF with backfit:</p>
 <pre class="r"><code>bal_pops &lt;- c(rep(&#39;A&#39;, 40), rep(&#39;B&#39;, 40), rep(&#39;C&#39;, 40), rep(&#39;D&#39;, 40))
 plot_loadings(symebcovmf_fit_backfit$L_pm %*% diag(sqrt(symebcovmf_fit_backfit$lambda)), bal_pops)</code></pre>
 <p><img src="figure/symebcovmf_laplace_split_init_tree.Rmd/unnamed-chunk-17-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-17-1">
+Past versions of unnamed-chunk-17-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-17-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/xxie6/symmetric_covariance_decomposition/blob/e557427972ee3c2e673b325c06ce7a8016a2e6ad/docs/figure/symebcovmf_laplace_split_init_tree.Rmd/unnamed-chunk-17-1.png" target="_blank">e557427</a>
+</td>
+<td>
+Annie Xie
+</td>
+<td>
+2025-06-03
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <p>This is the objective function value attained:</p>
 <pre class="r"><code>symebcovmf_fit_backfit$elbo</code></pre>
 <pre><code>[1] 9399.49</code></pre>
@@ -2516,6 +2732,43 @@ parts split into different factors, <span
 class="math inline">\(\hat{L}_{split}\)</span>.</p>
 <pre class="r"><code>plot_heatmap(LL_split_init)</code></pre>
 <p><img src="figure/symebcovmf_laplace_split_init_tree.Rmd/unnamed-chunk-20-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-20-1">
+Past versions of unnamed-chunk-20-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-20-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/xxie6/symmetric_covariance_decomposition/blob/e557427972ee3c2e673b325c06ce7a8016a2e6ad/docs/figure/symebcovmf_laplace_split_init_tree.Rmd/unnamed-chunk-20-1.png" target="_blank">e557427</a>
+</td>
+<td>
+Annie Xie
+</td>
+<td>
+2025-06-03
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 </div>
 <div id="backfit-with-split-initialization" class="section level1">
 <h1>Backfit with Split Initialization</h1>
@@ -4160,11 +4413,85 @@ class="math inline">\(\hat{L}_{split-backfit}\)</span>.</p>
 <pre class="r"><code>bal_pops &lt;- c(rep(&#39;A&#39;, 40), rep(&#39;B&#39;, 40), rep(&#39;C&#39;, 40), rep(&#39;D&#39;, 40))
 plot_loadings(symebcovmf_laplace_split_init_backfit$L_pm %*% diag(sqrt(symebcovmf_laplace_split_init_backfit$lambda)), bal_pops)</code></pre>
 <p><img src="figure/symebcovmf_laplace_split_init_tree.Rmd/unnamed-chunk-26-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-26-1">
+Past versions of unnamed-chunk-26-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-26-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/xxie6/symmetric_covariance_decomposition/blob/e557427972ee3c2e673b325c06ce7a8016a2e6ad/docs/figure/symebcovmf_laplace_split_init_tree.Rmd/unnamed-chunk-26-1.png" target="_blank">e557427</a>
+</td>
+<td>
+Annie Xie
+</td>
+<td>
+2025-06-03
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <p>This is a heatmap of the estimated Gram matrix, <span
 class="math inline">\(\hat{L}_{split-backfit}\hat{\Lambda}\hat{L}_{split-backfit}&#39;\)</span>.</p>
 <pre class="r"><code>gram_est &lt;- tcrossprod(symebcovmf_laplace_split_init_backfit$L_pm %*% diag(sqrt(symebcovmf_laplace_split_init_backfit$lambda)))
 plot_heatmap(gram_est, brks = seq(0, max(abs(gram_est)), length.out = 50))</code></pre>
 <p><img src="figure/symebcovmf_laplace_split_init_tree.Rmd/unnamed-chunk-27-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-27-1">
+Past versions of unnamed-chunk-27-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-27-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/xxie6/symmetric_covariance_decomposition/blob/e557427972ee3c2e673b325c06ce7a8016a2e6ad/docs/figure/symebcovmf_laplace_split_init_tree.Rmd/unnamed-chunk-27-1.png" target="_blank">e557427</a>
+</td>
+<td>
+Annie Xie
+</td>
+<td>
+2025-06-03
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <p>This is the L2 norm of the difference, excluding diagonal
 entries.</p>
 <pre class="r"><code>compute_L2_fit &lt;- function(est, dat){
@@ -4177,6 +4504,43 @@ compute_L2_fit(gram_est, sim_data$YYt)</code></pre>
 <p>This is a plot of fitted vs. observed values:</p>
 <pre class="r"><code>ggplot(data = NULL, aes(x = as.vector(sim_data$YYt), y = as.vector(gram_est))) + geom_point() + geom_abline(slope = 1, intercept = 0, color = &#39;red&#39;) + xlab(&#39;Observed Values&#39;) + ylab(&#39;Fitted Values&#39;)</code></pre>
 <p><img src="figure/symebcovmf_laplace_split_init_tree.Rmd/unnamed-chunk-29-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-29-1">
+Past versions of unnamed-chunk-29-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-29-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/xxie6/symmetric_covariance_decomposition/blob/e557427972ee3c2e673b325c06ce7a8016a2e6ad/docs/figure/symebcovmf_laplace_split_init_tree.Rmd/unnamed-chunk-29-1.png" target="_blank">e557427</a>
+</td>
+<td>
+Annie Xie
+</td>
+<td>
+2025-06-03
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 </div>
 <div id="observations" class="section level1">
 <h1>Observations</h1>
@@ -4190,9 +4554,9 @@ factorization, it is not surprising to me that the method did not
 recover a tree. For the GBCD method, the point-Laplace fit after
 backfitting is able to recover the divergence factorization (the greedy
 point-Laplace fit alone does not recover the factorization).</p>
-<div id="point-laplace-fit-initialized-from-true-values"
+<div id="point-laplace-backfit-initialized-from-true-values"
 class="section level2">
-<h2>point-Laplace fit initialized from true values</h2>
+<h2>point-Laplace backfit initialized from true values</h2>
 <p>To test if there is a convergence issue in the point-Laplace fit, I
 try running symEBcovMF backfit with point-Laplace prior initialized with
 the true factorization.</p>
@@ -6016,6 +6380,43 @@ symebcovmf_true_init_obj &lt;- refit_lambda(S = sim_data$YYt, symebcovmf_true_in
 <pre class="r"><code>bal_pops &lt;- c(rep(&#39;A&#39;, 40), rep(&#39;B&#39;, 40), rep(&#39;C&#39;, 40), rep(&#39;D&#39;, 40))
 plot_loadings(symebcovmf_true_init_backfit$L_pm %*% diag(sqrt(symebcovmf_true_init_backfit$lambda)), bal_pops)</code></pre>
 <p><img src="figure/symebcovmf_laplace_split_init_tree.Rmd/unnamed-chunk-34-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-34-1">
+Past versions of unnamed-chunk-34-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-34-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/xxie6/symmetric_covariance_decomposition/blob/e557427972ee3c2e673b325c06ce7a8016a2e6ad/docs/figure/symebcovmf_laplace_split_init_tree.Rmd/unnamed-chunk-34-1.png" target="_blank">e557427</a>
+</td>
+<td>
+Annie Xie
+</td>
+<td>
+2025-06-03
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <p>This is the objective function value:</p>
 <pre class="r"><code>symebcovmf_true_init_backfit$elbo</code></pre>
 <pre><code>[1] 9567.384</code></pre>
@@ -6023,6 +6424,43 @@ plot_loadings(symebcovmf_true_init_backfit$L_pm %*% diag(sqrt(symebcovmf_true_in
 <pre class="r"><code>true_init_gram_est &lt;- tcrossprod(symebcovmf_true_init_backfit$L_pm %*% diag(sqrt(symebcovmf_true_init_backfit$lambda)))
 plot_heatmap(true_init_gram_est, brks = seq(0, max(abs(true_init_gram_est)), length.out = 50))</code></pre>
 <p><img src="figure/symebcovmf_laplace_split_init_tree.Rmd/unnamed-chunk-36-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-36-1">
+Past versions of unnamed-chunk-36-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-36-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/xxie6/symmetric_covariance_decomposition/blob/e557427972ee3c2e673b325c06ce7a8016a2e6ad/docs/figure/symebcovmf_laplace_split_init_tree.Rmd/unnamed-chunk-36-1.png" target="_blank">e557427</a>
+</td>
+<td>
+Annie Xie
+</td>
+<td>
+2025-06-03
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <p>This is the L2 norm of the difference, excluding diagonal
 entries.</p>
 <pre class="r"><code>compute_L2_fit(true_init_gram_est, sim_data$YYt)</code></pre>
@@ -6030,9 +6468,89 @@ entries.</p>
 <p>This is a plot of fitted vs. observed values:</p>
 <pre class="r"><code>ggplot(data = NULL, aes(x = as.vector(sim_data$YYt), y = as.vector(true_init_gram_est))) + geom_point() + geom_abline(slope = 1, intercept = 0, color = &#39;red&#39;) + xlab(&#39;Observed Values&#39;) + ylab(&#39;Fitted Values&#39;)</code></pre>
 <p><img src="figure/symebcovmf_laplace_split_init_tree.Rmd/unnamed-chunk-38-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-38-1">
+Past versions of unnamed-chunk-38-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-38-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/xxie6/symmetric_covariance_decomposition/blob/e557427972ee3c2e673b325c06ce7a8016a2e6ad/docs/figure/symebcovmf_laplace_split_init_tree.Rmd/unnamed-chunk-38-1.png" target="_blank">e557427</a>
+</td>
+<td>
+Annie Xie
+</td>
+<td>
+2025-06-03
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <p>This obtains a higher objective function value than the fit found by
 greedy symEBcovMF with backfit. So perhaps this is a convergence issue?
 Is GBCD/EBcovMF better at finding sparse solutions?</p>
+</div>
+<div id="greedy-fit-of-third-factor-initialized-with-true-factor"
+class="section level2">
+<h2>Greedy fit of third factor initialized with true factor</h2>
+<p>First, we apply symEBcovMF with <code>Kmax = 2</code> and compute the
+residual matrix.</p>
+<pre class="r"><code>symebcovmf_rank2_fit &lt;- sym_ebcovmf_fit(S = sim_data$YYt, ebnm_fn = ebnm::ebnm_point_laplace, K = 2, maxiter = 500, rank_one_tol = 10^(-8), tol = 10^(-8), sign_constraint = NULL, refit_lam = TRUE)</code></pre>
+<pre class="r"><code>rank2_resid_matrix &lt;- sim_data$YYt - tcrossprod(symebcovmf_rank2_fit$L_pm %*% diag(sqrt(symebcovmf_rank2_fit$lambda)))</code></pre>
+<p>This is a plot of the loadings estimate.</p>
+<pre class="r"><code>plot_loadings(symebcovmf_rank2_fit$L_pm %*% diag(sqrt(symebcovmf_rank2_fit$lambda)), pop_vec)</code></pre>
+<p><img src="figure/symebcovmf_laplace_split_init_tree.Rmd/unnamed-chunk-41-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>This is a heatmap of the residual matrix.</p>
+<pre class="r"><code>plot_heatmap(rank2_resid_matrix, colors_range = c(&#39;blue&#39;,&#39;gray96&#39;,&#39;red&#39;), brks = seq(-max(abs(rank2_resid_matrix)), max(abs(rank2_resid_matrix)), length.out = 50))</code></pre>
+<p><img src="figure/symebcovmf_laplace_split_init_tree.Rmd/unnamed-chunk-42-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>Now, we try greedily fitting the third factor initialized with the
+true factor.</p>
+<pre class="r"><code>n &lt;- ncol(sim_data$YYt)
+true_fac3 &lt;- rep(c(1, -1, 0), times = c(n/4, n/4, n/2))
+symebcovmf_fac3_fit &lt;- sym_ebcovmf_r1_fit(sim_data$YYt, symebcovmf_rank2_fit, ebnm_fn = ebnm_point_laplace, maxiter = 100, tol = 10^(-8), v_init = true_fac3, sign_constraint = NULL)</code></pre>
+<p>This is a plot of the third factor estimate.</p>
+<pre class="r"><code>plot(symebcovmf_fac3_fit$L_pm[,3], ylab = &#39;Third Factor&#39;)</code></pre>
+<p><img src="figure/symebcovmf_laplace_split_init_tree.Rmd/unnamed-chunk-44-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>This is a plot of the ELBO when optimizing the fourth factor.</p>
+<pre class="r"><code>fac3_idx &lt;- which(symebcovmf_fac3_fit$vec_elbo_full == 3)
+plot(symebcovmf_fac3_fit$vec_elbo_full[(fac3_idx+1): length(symebcovmf_fac3_fit$vec_elbo_full)], xlab = &#39;Iter&#39;, ylab = &#39;ELBO&#39;)</code></pre>
+<p><img src="figure/symebcovmf_laplace_split_init_tree.Rmd/unnamed-chunk-45-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>This is the objective function value:</p>
+<pre class="r"><code>symebcovmf_fac3_fit$elbo</code></pre>
+<pre><code>[1] -21477.93</code></pre>
+<p>This is the fit of the third factor if the default initialization
+procedure is used.</p>
+<pre class="r"><code>symebcovmf_fac3_default_init_fit &lt;- sym_ebcovmf_r1_fit(sim_data$YYt, symebcovmf_rank2_fit, ebnm_fn = ebnm_point_laplace, maxiter = 100, tol = 10^(-8), sign_constraint = NULL)</code></pre>
+<p>This is a plot of the third factor estimate.</p>
+<pre class="r"><code>plot(symebcovmf_fac3_default_init_fit$L_pm[,3], ylab = &#39;Third Factor&#39;)</code></pre>
+<p><img src="figure/symebcovmf_laplace_split_init_tree.Rmd/unnamed-chunk-48-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>This is a plot of the ELBO when optimizing the third factor.</p>
+<pre class="r"><code>fac3_idx &lt;- which(symebcovmf_fac3_default_init_fit$vec_elbo_full == 3)
+plot(symebcovmf_fac3_default_init_fit$vec_elbo_full[(fac3_idx+1): length(symebcovmf_fac3_default_init_fit$vec_elbo_full)], xlab = &#39;Iter&#39;, ylab = &#39;ELBO&#39;)</code></pre>
+<p><img src="figure/symebcovmf_laplace_split_init_tree.Rmd/unnamed-chunk-49-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>This is the objective function value:</p>
+<pre class="r"><code>symebcovmf_fac3_default_init_fit$elbo</code></pre>
+<pre><code>[1] -21150.65</code></pre>
+<p>This has a higher objective function value.</p>
 <br>
 <p>
 <button type="button" class="btn btn-default btn-workflowr btn-workflowr-sessioninfo" data-toggle="collapse" data-target="#workflowr-sessioninfo" style="display: block;">
