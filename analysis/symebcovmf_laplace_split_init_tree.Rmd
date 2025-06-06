@@ -402,7 +402,7 @@ ggplot(data = NULL, aes(x = as.vector(sim_data$YYt), y = as.vector(gram_est))) +
 # Observations
 We see that this procedure does not yield a tree-structured estimate. Instead of four single population effect factors, we have four factors each containing two population effects. The estimated Gram matrix looks close to the observed Gram matrix, suggesting an identifiability issue. This is a well-known issue with the tree setting. Given that the point-Laplace initialization did not recover the divergence factorization, it is not surprising to me that the method did not recover a tree. For the GBCD method, the point-Laplace fit after backfitting is able to recover the divergence factorization (the greedy point-Laplace fit alone does not recover the factorization).
 
-## point-Laplace fit initialized from true values
+## point-Laplace backfit initialized from true values
 To test if there is a convergence issue in the point-Laplace fit, I try running symEBcovMF backfit with point-Laplace prior initialized with the true factorization.
 
 ```{r}
@@ -476,3 +476,70 @@ ggplot(data = NULL, aes(x = as.vector(sim_data$YYt), y = as.vector(true_init_gra
 ```
 
 This obtains a higher objective function value than the fit found by greedy symEBcovMF with backfit. So perhaps this is a convergence issue? Is GBCD/EBcovMF better at finding sparse solutions?
+
+## Greedy fit of third factor initialized with true factor
+
+First, we apply symEBcovMF with `Kmax = 2` and compute the residual matrix.
+```{r}
+symebcovmf_rank2_fit <- sym_ebcovmf_fit(S = sim_data$YYt, ebnm_fn = ebnm::ebnm_point_laplace, K = 2, maxiter = 500, rank_one_tol = 10^(-8), tol = 10^(-8), sign_constraint = NULL, refit_lam = TRUE)
+```
+
+```{r}
+rank2_resid_matrix <- sim_data$YYt - tcrossprod(symebcovmf_rank2_fit$L_pm %*% diag(sqrt(symebcovmf_rank2_fit$lambda)))
+```
+
+This is a plot of the loadings estimate.
+```{r}
+plot_loadings(symebcovmf_rank2_fit$L_pm %*% diag(sqrt(symebcovmf_rank2_fit$lambda)), pop_vec)
+```
+
+This is a heatmap of the residual matrix.
+```{r}
+plot_heatmap(rank2_resid_matrix, colors_range = c('blue','gray96','red'), brks = seq(-max(abs(rank2_resid_matrix)), max(abs(rank2_resid_matrix)), length.out = 50))
+```
+
+Now, we try greedily fitting the third factor initialized with the true factor.
+```{r}
+n <- ncol(sim_data$YYt)
+true_fac3 <- rep(c(1, -1, 0), times = c(n/4, n/4, n/2))
+symebcovmf_fac3_fit <- sym_ebcovmf_r1_fit(sim_data$YYt, symebcovmf_rank2_fit, ebnm_fn = ebnm_point_laplace, maxiter = 100, tol = 10^(-8), v_init = true_fac3, sign_constraint = NULL)
+```
+
+This is a plot of the third factor estimate.
+```{r}
+plot(symebcovmf_fac3_fit$L_pm[,3], ylab = 'Third Factor')
+```
+
+This is a plot of the ELBO when optimizing the fourth factor.
+```{r}
+fac3_idx <- which(symebcovmf_fac3_fit$vec_elbo_full == 3)
+plot(symebcovmf_fac3_fit$vec_elbo_full[(fac3_idx+1): length(symebcovmf_fac3_fit$vec_elbo_full)], xlab = 'Iter', ylab = 'ELBO')
+```
+
+This is the objective function value:
+```{r}
+symebcovmf_fac3_fit$elbo
+```
+
+This is the fit of the third factor if the default initialization procedure is used.
+```{r}
+symebcovmf_fac3_default_init_fit <- sym_ebcovmf_r1_fit(sim_data$YYt, symebcovmf_rank2_fit, ebnm_fn = ebnm_point_laplace, maxiter = 100, tol = 10^(-8), sign_constraint = NULL)
+```
+
+This is a plot of the third factor estimate.
+```{r}
+plot(symebcovmf_fac3_default_init_fit$L_pm[,3], ylab = 'Third Factor')
+```
+
+This is a plot of the ELBO when optimizing the third factor.
+```{r}
+fac3_idx <- which(symebcovmf_fac3_default_init_fit$vec_elbo_full == 3)
+plot(symebcovmf_fac3_default_init_fit$vec_elbo_full[(fac3_idx+1): length(symebcovmf_fac3_default_init_fit$vec_elbo_full)], xlab = 'Iter', ylab = 'ELBO')
+```
+
+This is the objective function value:
+```{r}
+symebcovmf_fac3_default_init_fit$elbo
+```
+
+This has a higher objective function value.
