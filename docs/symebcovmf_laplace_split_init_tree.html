@@ -402,7 +402,7 @@ class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span>
 <div class="tab-content">
 <div id="summary" class="tab-pane fade in active">
 <p>
-<strong>Last updated:</strong> 2025-06-06
+<strong>Last updated:</strong> 2025-06-10
 </p>
 <p>
 <strong>Checks:</strong> <span
@@ -534,15 +534,15 @@ project makes it easier to run your code on other machines.</p>
 <div class="panel panel-default">
 <div class="panel-heading">
 <p class="panel-title">
-<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomxxie6symmetriccovariancedecompositiontree7f4f0cfe6ff221bbbfb9f63e8865abb1b04b5300targetblank7f4f0cfa">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomxxie6symmetriccovariancedecompositiontreec9e74f51c31c4865e541531b151c2bf8e00c47f4targetblankc9e74f5a">
 <span class="glyphicon glyphicon-ok text-success"
 aria-hidden="true"></span> <strong>Repository version:</strong>
-<a href="https://github.com/xxie6/symmetric_covariance_decomposition/tree/7f4f0cfe6ff221bbbfb9f63e8865abb1b04b5300" target="_blank">7f4f0cf</a>
+<a href="https://github.com/xxie6/symmetric_covariance_decomposition/tree/c9e74f51c31c4865e541531b151c2bf8e00c47f4" target="_blank">c9e74f5</a>
 </a>
 </p>
 </div>
 <div
-id="strongRepositoryversionstrongahrefhttpsgithubcomxxie6symmetriccovariancedecompositiontree7f4f0cfe6ff221bbbfb9f63e8865abb1b04b5300targetblank7f4f0cfa"
+id="strongRepositoryversionstrongahrefhttpsgithubcomxxie6symmetriccovariancedecompositiontreec9e74f51c31c4865e541531b151c2bf8e00c47f4targetblankc9e74f5a"
 class="panel-collapse collapse">
 <div class="panel-body">
 <p>
@@ -552,7 +552,7 @@ reproducibility.
 </p>
 <p>
 The results in this page were generated with repository version
-<a href="https://github.com/xxie6/symmetric_covariance_decomposition/tree/7f4f0cfe6ff221bbbfb9f63e8865abb1b04b5300" target="_blank">7f4f0cf</a>.
+<a href="https://github.com/xxie6/symmetric_covariance_decomposition/tree/c9e74f51c31c4865e541531b151c2bf8e00c47f4" target="_blank">c9e74f5</a>.
 See the <em>Past versions</em> tab to see a history of the changes made
 to the R Markdown and HTML files.
 </p>
@@ -569,6 +569,9 @@ were generated:
 Ignored files:
     Ignored:    .DS_Store
     Ignored:    .Rhistory
+
+Untracked files:
+    Untracked:  analysis/symebcovmf_laplace_exploration.Rmd
 
 </code></pre>
 <p>
@@ -615,6 +618,40 @@ Message
 </tr>
 </thead>
 <tbody>
+<tr>
+<td>
+Rmd
+</td>
+<td>
+<a href="https://github.com/xxie6/symmetric_covariance_decomposition/blob/c9e74f51c31c4865e541531b151c2bf8e00c47f4/analysis/symebcovmf_laplace_split_init_tree.Rmd" target="_blank">c9e74f5</a>
+</td>
+<td>
+Annie Xie
+</td>
+<td>
+2025-06-10
+</td>
+<td>
+Add comments to point laplace analysis
+</td>
+</tr>
+<tr>
+<td>
+html
+</td>
+<td>
+<a href="https://rawcdn.githack.com/xxie6/symmetric_covariance_decomposition/f885e9730bcb07ac7e25153546b1673fb60a1394/docs/symebcovmf_laplace_split_init_tree.html" target="_blank">f885e97</a>
+</td>
+<td>
+Annie Xie
+</td>
+<td>
+2025-06-06
+</td>
+<td>
+Build site.
+</td>
+</tr>
 <tr>
 <td>
 Rmd
@@ -4554,6 +4591,9 @@ factorization, it is not surprising to me that the method did not
 recover a tree. For the GBCD method, the point-Laplace fit after
 backfitting is able to recover the divergence factorization (the greedy
 point-Laplace fit alone does not recover the factorization).</p>
+</div>
+<div id="further-exploration" class="section level1">
+<h1>Further Exploration</h1>
 <div id="point-laplace-backfit-initialized-from-true-values"
 class="section level2">
 <h2>point-Laplace backfit initialized from true values</h2>
@@ -4591,7 +4631,7 @@ symebcovmf_true_init_obj$elbo &lt;- compute_elbo(S = sim_data$YYt,
 <pre class="r"><code># need to check this
 symebcovmf_true_init_obj &lt;- refit_lambda(S = sim_data$YYt, symebcovmf_true_init_obj, maxiter = 500)</code></pre>
 <p>Now, we run the backfit with point-Laplace prior.</p>
-<pre class="r"><code>symebcovmf_true_init_backfit &lt;- sym_ebcovmf_backfit(sim_data$YYt, symebcovmf_true_init_obj, ebnm_fn = ebnm::ebnm_point_laplace, backfit_maxiter = 500)</code></pre>
+<pre class="r"><code>symebcovmf_true_init_backfit &lt;- sym_ebcovmf_backfit(sim_data$YYt, symebcovmf_true_init_obj, ebnm_fn = ebnm::ebnm_point_laplace, backfit_maxiter = 100)</code></pre>
 <pre><code>[1] &quot;elbo decreased by 7.83984432928264e-10&quot;
 [1] &quot;elbo decreased by 1.98378984350711e-08&quot;
 [1] &quot;elbo decreased by 7.74161890149117e-09&quot;
@@ -4927,1455 +4967,7 @@ symebcovmf_true_init_obj &lt;- refit_lambda(S = sim_data$YYt, symebcovmf_true_in
 [1] &quot;elbo decreased by 1.57233444042504e-08&quot;
 [1] &quot;elbo decreased by 1.23636709759012e-08&quot;
 [1] &quot;elbo decreased by 7.86167220212519e-09&quot;
-[1] &quot;elbo decreased by 1.8208083929494e-09&quot;
-[1] &quot;elbo decreased by 5.56065060663968e-08&quot;
-[1] &quot;elbo decreased by 4.22005541622639e-10&quot;
-[1] &quot;elbo decreased by 3.20142135024071e-10&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 7.6241121860221e-08&quot;
-[1] &quot;elbo decreased by 1.57306203618646e-08&quot;
-[1] &quot;elbo decreased by 2.71029421128333e-10&quot;
-[1] &quot;elbo decreased by 1.40616975841112e-07&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 1.07265805127099e-08&quot;
-[1] &quot;elbo decreased by 2.18824425246567e-09&quot;
-[1] &quot;elbo decreased by 3.30546754412353e-08&quot;
-[1] &quot;elbo decreased by 1.71530700754374e-09&quot;
-[1] &quot;elbo decreased by 7.86894815973938e-09&quot;
-[1] &quot;elbo decreased by 5.20776666235179e-09&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 7.37290974939242e-08&quot;
-[1] &quot;elbo decreased by 2.57205101661384e-09&quot;
-[1] &quot;elbo decreased by 8.76025296747684e-08&quot;
-[1] &quot;elbo decreased by 7.02857505530119e-09&quot;
-[1] &quot;elbo decreased by 1.57269823830575e-08&quot;
-[1] &quot;elbo decreased by 3.76530806533992e-08&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 1.90630089491606e-09&quot;
-[1] &quot;elbo decreased by 3.54375515598804e-08&quot;
-[1] &quot;elbo decreased by 1.67365215020254e-08&quot;
-[1] &quot;elbo decreased by 1.20053300634027e-09&quot;
-[1] &quot;elbo decreased by 1.86773831956089e-08&quot;
-[1] &quot;elbo decreased by 1.35369191411883e-08&quot;
-[1] &quot;elbo decreased by 1.96268956642598e-09&quot;
-[1] &quot;elbo decreased by 8.45830072648823e-10&quot;
-[1] &quot;elbo decreased by 1.57269823830575e-08&quot;
-[1] &quot;elbo decreased by 1.04955688584596e-08&quot;
-[1] &quot;elbo decreased by 6.28278939984739e-09&quot;
-[1] &quot;elbo decreased by 1.56069290824234e-09&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 4.0381564758718e-10&quot;
-[1] &quot;elbo decreased by 2.09511199500412e-08&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 1.19380274554715e-08&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 1.88372723641805e-07&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 6.604750524275e-09&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 9.88566171145067e-08&quot;
-[1] &quot;elbo decreased by 1.57306203618646e-08&quot;
-[1] &quot;elbo decreased by 4.4783519115299e-09&quot;
-[1] &quot;elbo decreased by 1.85718818102032e-09&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 7.51242623664439e-10&quot;
-[1] &quot;elbo decreased by 1.44014848046936e-07&quot;
-[1] &quot;elbo decreased by 7.20501702744514e-09&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 1.53340806718916e-09&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 9.24683263292536e-08&quot;
-[1] &quot;elbo decreased by 1.04228092823178e-09&quot;
-[1] &quot;elbo decreased by 1.57306203618646e-08&quot;
-[1] &quot;elbo decreased by 1.5323530533351e-07&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 1.14050635602325e-09&quot;
-[1] &quot;elbo decreased by 1.57269823830575e-08&quot;
-[1] &quot;elbo decreased by 7.43966666050255e-10&quot;
-[1] &quot;elbo decreased by 8.62000888446346e-08&quot;
-[1] &quot;elbo decreased by 2.19079083763063e-08&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 1.94995664060116e-09&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 1.08047970570624e-09&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 9.51877154875547e-09&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 1.48065737448633e-09&quot;
-[1] &quot;elbo decreased by 3.58340912498534e-10&quot;
-[1] &quot;elbo decreased by 6.26059772912413e-08&quot;
-[1] &quot;elbo decreased by 1.01863406598568e-10&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 1.11504050437361e-09&quot;
-[1] &quot;elbo decreased by 6.55563781037927e-09&quot;
-[1] &quot;elbo decreased by 7.8580342233181e-09&quot;
-[1] &quot;elbo decreased by 7.99263943918049e-08&quot;
-[1] &quot;elbo decreased by 1.05865183286369e-09&quot;
-[1] &quot;elbo decreased by 7.86167220212519e-09&quot;
-[1] &quot;elbo decreased by 3.21961124427617e-10&quot;
-[1] &quot;elbo decreased by 8.00355337560177e-11&quot;
-[1] &quot;elbo decreased by 6.00266503170133e-10&quot;
-[1] &quot;elbo decreased by 7.34871719032526e-10&quot;
-[1] &quot;elbo decreased by 7.88713805377483e-09&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 2.19552021007985e-09&quot;
-[1] &quot;elbo decreased by 1.73295120475814e-08&quot;
-[1] &quot;elbo decreased by 9.51513356994838e-09&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 5.24669303558767e-08&quot;
-[1] &quot;elbo decreased by 9.38962330110371e-09&quot;
-[1] &quot;elbo decreased by 9.11313691176474e-10&quot;
-[1] &quot;elbo decreased by 7.86894815973938e-09&quot;
-[1] &quot;elbo decreased by 9.01873136172071e-08&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 1.09703250927851e-08&quot;
-[1] &quot;elbo decreased by 3.95266397390515e-09&quot;
-[1] &quot;elbo decreased by 1.98269844986498e-10&quot;
-[1] &quot;elbo decreased by 1.72953150467947e-07&quot;
-[1] &quot;elbo decreased by 3.63070284947753e-09&quot;
-[1] &quot;elbo decreased by 3.60068952431902e-08&quot;
-[1] &quot;elbo decreased by 6.02085492573678e-09&quot;
-[1] &quot;elbo decreased by 6.62366801407188e-08&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 1.52340362546965e-08&quot;
-[1] &quot;elbo decreased by 1.80807546712458e-09&quot;
-[1] &quot;elbo decreased by 7.86167220212519e-09&quot;
-[1] &quot;elbo decreased by 1.0233634384349e-08&quot;
-[1] &quot;elbo decreased by 1.06050720205531e-07&quot;
-[1] &quot;elbo decreased by 6.96672941558063e-09&quot;
-[1] &quot;elbo decreased by 2.68119038082659e-09&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 8.9330569608137e-09&quot;
-[1] &quot;elbo decreased by 3.25599103234708e-10&quot;
-[1] &quot;elbo decreased by 1.57269823830575e-08&quot;
-[1] &quot;elbo decreased by 1.86155375558883e-08&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 6.23913365416229e-10&quot;
-[1] &quot;elbo decreased by 3.67435859516263e-10&quot;
-[1] &quot;elbo decreased by 8.34970705909654e-08&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 8.86211637407541e-09&quot;
-[1] &quot;elbo decreased by 2.49201548285782e-10&quot;
-[1] &quot;elbo decreased by 7.39109964342788e-08&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 1.25510268844664e-10&quot;
-[1] &quot;elbo decreased by 8.72569216880947e-09&quot;
-[1] &quot;elbo decreased by 1.81898940354586e-09&quot;
-[1] &quot;elbo decreased by 1.1483280104585e-07&quot;
-[1] &quot;elbo decreased by 1.64982338901609e-09&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 1.98451743926853e-09&quot;
-[1] &quot;elbo decreased by 1.31420165416785e-07&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 7.86167220212519e-09&quot;
-[1] &quot;elbo decreased by 1.57342583406717e-08&quot;
-[1] &quot;elbo decreased by 1.64654920808971e-08&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 1.40244083013386e-09&quot;
-[1] &quot;elbo decreased by 8.60818545334041e-08&quot;
-[1] &quot;elbo decreased by 1.132684701588e-08&quot;
-[1] &quot;elbo decreased by 1.4915713109076e-09&quot;
-[1] &quot;elbo decreased by 1.57269823830575e-08&quot;
-[1] &quot;elbo decreased by 1.21837729238905e-07&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 8.91850504558533e-09&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 1.81862560566515e-08&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 1.44427758641541e-08&quot;
-[1] &quot;elbo decreased by 2.39942892221734e-08&quot;
-[1] &quot;elbo decreased by 1.68620317708701e-09&quot;
-[1] &quot;elbo decreased by 2.78305378742516e-10&quot;
-[1] &quot;elbo decreased by 1.21102857519872e-07&quot;
-[1] &quot;elbo decreased by 1.57306203618646e-08&quot;
-[1] &quot;elbo decreased by 4.29281499236822e-10&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 5.82076609134674e-11&quot;
-[1] &quot;elbo decreased by 1.69347913470119e-09&quot;
-[1] &quot;elbo decreased by 5.00167516293004e-08&quot;
-[1] &quot;elbo decreased by 1.01317709777504e-09&quot;
-[1] &quot;elbo decreased by 1.02772901300341e-09&quot;
-[1] &quot;elbo decreased by 1.29075488075614e-08&quot;
-[1] &quot;elbo decreased by 2.2846506908536e-09&quot;
-[1] &quot;elbo decreased by 1.6698322724551e-09&quot;
-[1] &quot;elbo decreased by 7.25012796465307e-08&quot;
-[1] &quot;elbo decreased by 3.80168785341084e-10&quot;
-[1] &quot;elbo decreased by 1.16779119707644e-08&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 1.87355908565223e-08&quot;
-[1] &quot;elbo decreased by 2.91402102448046e-09&quot;
-[1] &quot;elbo decreased by 1.86082615982741e-09&quot;
-[1] &quot;elbo decreased by 1.32131390273571e-08&quot;
-[1] &quot;elbo decreased by 6.91215973347425e-11&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 1.57306203618646e-08&quot;
-[1] &quot;elbo decreased by 7.27468432160094e-08&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 3.8198777474463e-09&quot;
-[1] &quot;elbo decreased by 7.86894815973938e-09&quot;
-[1] &quot;elbo decreased by 1.42608769237995e-09&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 1.11795088741928e-08&quot;
-[1] &quot;elbo decreased by 2.08092387765646e-09&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 8.60236468724906e-08&quot;
-[1] &quot;elbo decreased by 2.48837750405073e-09&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 3.63797880709171e-11&quot;
-[1] &quot;elbo decreased by 3.45953594660386e-08&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 8.69476934894919e-09&quot;
-[1] &quot;elbo decreased by 2.57568899542093e-09&quot;
-[1] &quot;elbo decreased by 7.86167220212519e-09&quot;
-[1] &quot;elbo decreased by 6.02267391514033e-09&quot;
-[1] &quot;elbo decreased by 9.35142452362925e-09&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 5.60248736292124e-10&quot;
-[1] &quot;elbo decreased by 5.02550392411649e-08&quot;
-[1] &quot;elbo decreased by 4.71118255518377e-09&quot;
-[1] &quot;elbo decreased by 9.82254277914762e-10&quot;
-[1] &quot;elbo decreased by 7.86167220212519e-09&quot;
-[1] &quot;elbo decreased by 2.09001882467419e-09&quot;
-[1] &quot;elbo decreased by 1.67146936291829e-08&quot;
-[1] &quot;elbo decreased by 8.68203642312437e-09&quot;
-[1] &quot;elbo decreased by 6.87577994540334e-10&quot;
-[1] &quot;elbo decreased by 1.52980646817014e-07&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 2.74303602054715e-09&quot;
-[1] &quot;elbo decreased by 1.57269823830575e-08&quot;
-[1] &quot;elbo decreased by 1.40098563861102e-08&quot;
-[1] &quot;elbo decreased by 7.86167220212519e-09&quot;
-[1] &quot;elbo decreased by 2.51020537689328e-09&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 8.74952092999592e-08&quot;
-[1] &quot;elbo decreased by 3.84716258849949e-09&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 7.17609509592876e-08&quot;
-[1] &quot;elbo decreased by 1.12777343019843e-10&quot;
-[1] &quot;elbo decreased by 7.13771441951394e-09&quot;
-[1] &quot;elbo decreased by 7.8580342233181e-09&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 8.78571881912649e-10&quot;
-[1] &quot;elbo decreased by 1.57306203618646e-08&quot;
-[1] &quot;elbo decreased by 2.11002770811319e-10&quot;
-[1] &quot;elbo decreased by 5.54191501578316e-08&quot;
-[1] &quot;elbo decreased by 1.21872290037572e-09&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 5.2717950893566e-08&quot;
-[1] &quot;elbo decreased by 7.86167220212519e-09&quot;
-[1] &quot;elbo decreased by 1.64254743140191e-08&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 3.89263732358813e-10&quot;
-[1] &quot;elbo decreased by 1.13741407403722e-08&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 3.12866177409887e-10&quot;
-[1] &quot;elbo decreased by 1.57269823830575e-08&quot;
-[1] &quot;elbo decreased by 1.96614564629272e-08&quot;
-[1] &quot;elbo decreased by 9.30049282032996e-09&quot;
-[1] &quot;elbo decreased by 6.60293153487146e-10&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 3.51483322447166e-08&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 3.52520146407187e-09&quot;
-[1] &quot;elbo decreased by 9.00145096238703e-08&quot;
-[1] &quot;elbo decreased by 1.14687281893566e-08&quot;
-[1] &quot;elbo decreased by 2.19552021007985e-09&quot;
-[1] &quot;elbo decreased by 1.12777343019843e-10&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 3.34912328980863e-08&quot;
-[1] &quot;elbo decreased by 2.35959305427969e-08&quot;
-[1] &quot;elbo decreased by 9.58607415668666e-10&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 8.82955646375194e-08&quot;
-[1] &quot;elbo decreased by 8.85847839526832e-10&quot;
-[1] &quot;elbo decreased by 1.57306203618646e-08&quot;
-[1] &quot;elbo decreased by 1.63890945259482e-09&quot;
-[1] &quot;elbo decreased by 1.18634488899261e-08&quot;
-[1] &quot;elbo decreased by 1.57269823830575e-08&quot;
-[1] &quot;elbo decreased by 2.31921148952097e-09&quot;
-[1] &quot;elbo decreased by 1.52249413076788e-09&quot;
-[1] &quot;elbo decreased by 1.13050191430375e-08&quot;
-[1] &quot;elbo decreased by 1.84991222340614e-08&quot;
-[1] &quot;elbo decreased by 7.86167220212519e-09&quot;
-[1] &quot;elbo decreased by 6.81357050780207e-08&quot;
-[1] &quot;elbo decreased by 6.38283381704241e-09&quot;
-[1] &quot;elbo decreased by 3.83806764148176e-10&quot;
-[1] &quot;elbo decreased by 6.39629433862865e-08&quot;
-[1] &quot;elbo decreased by 1.51703716255724e-09&quot;
-[1] &quot;elbo decreased by 7.86167220212519e-09&quot;
-[1] &quot;elbo decreased by 3.63797880709171e-10&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 1.57306203618646e-08&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 7.78527464717627e-10&quot;
-[1] &quot;elbo decreased by 7.86894815973938e-09&quot;
-[1] &quot;elbo decreased by 2.48819560511038e-08&quot;
-[1] &quot;elbo decreased by 5.68070390727371e-09&quot;
-[1] &quot;elbo decreased by 5.9042577049695e-08&quot;
-[1] &quot;elbo decreased by 3.16504156216979e-10&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 7.12134351488203e-08&quot;
-[1] &quot;elbo decreased by 7.21283868188038e-08&quot;
-[1] &quot;elbo decreased by 1.57306203618646e-08&quot;
-[1] &quot;elbo decreased by 1.42972567118704e-07&quot;
-[1] &quot;elbo decreased by 7.86894815973938e-09&quot;
-[1] &quot;elbo decreased by 8.39645508676767e-09&quot;
-[1] &quot;elbo decreased by 1.6698322724551e-09&quot;
-[1] &quot;elbo decreased by 9.40417521633208e-10&quot;
-[1] &quot;elbo decreased by 2.46946001425385e-08&quot;
-[1] &quot;elbo decreased by 6.54836185276508e-11&quot;
-[1] &quot;elbo decreased by 1.06043444247916e-07&quot;
-[1] &quot;elbo decreased by 7.86167220212519e-09&quot;
-[1] &quot;elbo decreased by 1.57233444042504e-08&quot;
-[1] &quot;elbo decreased by 1.05677827377804e-07&quot;
-[1] &quot;elbo decreased by 1.85718818102032e-09&quot;
-[1] &quot;elbo decreased by 3.272361936979e-09&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 1.57306203618646e-08&quot;
-[1] &quot;elbo decreased by 2.44108377955854e-09&quot;
-[1] &quot;elbo decreased by 7.86167220212519e-09&quot;
-[1] &quot;elbo decreased by 1.10958353616297e-10&quot;
-[1] &quot;elbo decreased by 1.07520463643596e-07&quot;
-[1] &quot;elbo decreased by 7.38873495720327e-09&quot;
-[1] &quot;elbo decreased by 2.10275175049901e-09&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 1.50776031659916e-08&quot;
-[1] &quot;elbo decreased by 7.86167220212519e-09&quot;
-[1] &quot;elbo decreased by 7.86167220212519e-09&quot;
-[1] &quot;elbo decreased by 3.77240212401375e-08&quot;
-[1] &quot;elbo decreased by 1.36933522298932e-08&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 1.30767148220912e-08&quot;
-[1] &quot;elbo decreased by 1.61344360094517e-09&quot;
-[1] &quot;elbo decreased by 2.91038304567337e-11&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 7.74780346546322e-08&quot;
-[1] &quot;elbo decreased by 1.2732925824821e-10&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 3.45607986673713e-11&quot;
-[1] &quot;elbo decreased by 1.83717929758132e-08&quot;
-[1] &quot;elbo decreased by 1.40789779834449e-09&quot;
-[1] &quot;elbo decreased by 1.32786226458848e-10&quot;
-[1] &quot;elbo decreased by 8.33151716506109e-08&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 7.86167220212519e-09&quot;
-[1] &quot;elbo decreased by 6.87577994540334e-10&quot;
-[1] &quot;elbo decreased by 6.37173798168078e-08&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 7.8580342233181e-09&quot;
-[1] &quot;elbo decreased by 1.57342583406717e-08&quot;
-[1] &quot;elbo decreased by 3.25690052704886e-08&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 1.57269823830575e-08&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 5.44350768905133e-08&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 2.88855517283082e-09&quot;
-[1] &quot;elbo decreased by 1.53340806718916e-09&quot;
-[1] &quot;elbo decreased by 6.16892066318542e-08&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 2.47382558882236e-10&quot;
-[1] &quot;elbo decreased by 1.11322151497006e-09&quot;
-[1] &quot;elbo decreased by 3.71110218111426e-08&quot;
-[1] &quot;elbo decreased by 6.981281330809e-09&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 5.81294443691149e-08&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 2.97968654194847e-08&quot;
-[1] &quot;elbo decreased by 9.59698809310794e-09&quot;
-[1] &quot;elbo decreased by 1.57306203618646e-08&quot;
-[1] &quot;elbo decreased by 1.68161932379007e-07&quot;
-[1] &quot;elbo decreased by 7.86167220212519e-09&quot;
-[1] &quot;elbo decreased by 1.12959241960198e-09&quot;
-[1] &quot;elbo decreased by 1.04144419310614e-07&quot;
-[1] &quot;elbo decreased by 1.94449967239052e-09&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 3.292370820418e-10&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 4.09236236009747e-08&quot;
-[1] &quot;elbo decreased by 7.86167220212519e-09&quot;
-[1] &quot;elbo decreased by 5.61340129934251e-09&quot;
-[1] &quot;elbo decreased by 8.09450284577906e-10&quot;
-[1] &quot;elbo decreased by 1.31149135995656e-09&quot;
-[1] &quot;elbo decreased by 1.30252374219708e-07&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 4.92946128360927e-10&quot;
-[1] &quot;elbo decreased by 1.45519152283669e-09&quot;
-[1] &quot;elbo decreased by 3.49245965480804e-10&quot;
-[1] &quot;elbo decreased by 7.86167220212519e-09&quot;
-[1] &quot;elbo decreased by 1.75805325852707e-08&quot;
-[1] &quot;elbo decreased by 7.86167220212519e-09&quot;
-[1] &quot;elbo decreased by 4.72391548100859e-09&quot;
-[1] &quot;elbo decreased by 1.03500497061759e-09&quot;
-[1] &quot;elbo decreased by 9.42236511036754e-10&quot;
-[1] &quot;elbo decreased by 5.87333488510922e-08&quot;
-[1] &quot;elbo decreased by 1.57306203618646e-08&quot;
-[1] &quot;elbo decreased by 5.48425305169076e-09&quot;
-[1] &quot;elbo decreased by 6.60293153487146e-10&quot;
-[1] &quot;elbo decreased by 1.03103957371786e-07&quot;
-[1] &quot;elbo decreased by 2.03017407329753e-08&quot;
-[1] &quot;elbo decreased by 1.75350578501821e-09&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 7.89514160715044e-08&quot;
-[1] &quot;elbo decreased by 7.86167220212519e-09&quot;
-[1] &quot;elbo decreased by 1.42135831993073e-08&quot;
-[1] &quot;elbo decreased by 7.86167220212519e-09&quot;
-[1] &quot;elbo decreased by 3.43461579177529e-08&quot;
-[1] &quot;elbo decreased by 1.50685082189739e-08&quot;
-[1] &quot;elbo decreased by 1.51158019434661e-09&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 4.5656634029001e-10&quot;
-[1] &quot;elbo decreased by 4.41214069724083e-08&quot;
-[1] &quot;elbo decreased by 6.67569111101329e-10&quot;
-[1] &quot;elbo decreased by 8.94597178557888e-08&quot;
-[1] &quot;elbo decreased by 4.43833414465189e-10&quot;
-[1] &quot;elbo decreased by 4.97057044412941e-08&quot;
-[1] &quot;elbo decreased by 3.43970896210521e-09&quot;
-[1] &quot;elbo decreased by 5.46788214705884e-08&quot;
-[1] &quot;elbo decreased by 1.21144694276154e-09&quot;
-[1] &quot;elbo decreased by 2.56477505899966e-10&quot;
-[1] &quot;elbo decreased by 1.60398485604674e-08&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 7.27595761418343e-12&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 3.74820956494659e-08&quot;
-[1] &quot;elbo decreased by 2.51020537689328e-10&quot;
-[1] &quot;elbo decreased by 6.94853952154517e-10&quot;
-[1] &quot;elbo decreased by 8.8220986071974e-10&quot;
-[1] &quot;elbo decreased by 6.18165358901024e-08&quot;
-[1] &quot;elbo decreased by 7.73252395447344e-09&quot;
-[1] &quot;elbo decreased by 1.94631866179407e-10&quot;
-[1] &quot;elbo decreased by 1.12500856630504e-07&quot;
-[1] &quot;elbo decreased by 1.81935320142657e-08&quot;
-[1] &quot;elbo decreased by 1.41128111863509e-07&quot;
-[1] &quot;elbo decreased by 6.74044713377953e-08&quot;
-[1] &quot;elbo decreased by 5.50062395632267e-09&quot;
-[1] &quot;elbo decreased by 3.69072949979454e-09&quot;
-[1] &quot;elbo decreased by 1.84629243449308e-07&quot;
-[1] &quot;elbo decreased by 1.04955688584596e-09&quot;
-[1] &quot;elbo decreased by 6.40284270048141e-10&quot;
-[1] &quot;elbo decreased by 8.49122443469241e-08&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 4.66206984128803e-09&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 2.72848410531878e-10&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 8.2882252172567e-08&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 1.57306203618646e-08&quot;
-[1] &quot;elbo decreased by 1.57306203618646e-08&quot;
-[1] &quot;elbo decreased by 4.91127138957381e-10&quot;
-[1] &quot;elbo decreased by 2.06564436666667e-08&quot;
-[1] &quot;elbo decreased by 3.99086275137961e-09&quot;
-[1] &quot;elbo decreased by 7.71069608163089e-09&quot;
-[1] &quot;elbo decreased by 5.27506927028298e-10&quot;
-[1] &quot;elbo decreased by 7.86167220212519e-09&quot;
-[1] &quot;elbo decreased by 1.37151801027358e-09&quot;
-[1] &quot;elbo decreased by 4.62096068076789e-08&quot;
-[1] &quot;elbo decreased by 9.21136233955622e-09&quot;
-[1] &quot;elbo decreased by 1.64436642080545e-09&quot;
-[1] &quot;elbo decreased by 7.86167220212519e-09&quot;
-[1] &quot;elbo decreased by 3.64998413715512e-08&quot;
-[1] &quot;elbo decreased by 1.36988091981038e-08&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 1.52977008838207e-09&quot;
-[1] &quot;elbo decreased by 4.11091605201364e-10&quot;
-[1] &quot;elbo decreased by 8.10414348961785e-08&quot;
-[1] &quot;elbo decreased by 1.86264514923096e-09&quot;
-[1] &quot;elbo decreased by 3.09228198602796e-10&quot;
-[1] &quot;elbo decreased by 9.87347448244691e-08&quot;
-[1] &quot;elbo decreased by 5.87988324696198e-08&quot;
-[1] &quot;elbo decreased by 1.69475242728367e-08&quot;
-[1] &quot;elbo decreased by 2.2409949451685e-09&quot;
-[1] &quot;elbo decreased by 7.86167220212519e-09&quot;
-[1] &quot;elbo decreased by 8.9130480773747e-10&quot;
-[1] &quot;elbo decreased by 7.86167220212519e-09&quot;
-[1] &quot;elbo decreased by 4.72500687465072e-08&quot;
-[1] &quot;elbo decreased by 1.57269823830575e-08&quot;
-[1] &quot;elbo decreased by 5.74800651520491e-09&quot;
-[1] &quot;elbo decreased by 1.57233444042504e-08&quot;
-[1] &quot;elbo decreased by 7.16681824997067e-10&quot;
-[1] &quot;elbo decreased by 2.30393197853118e-08&quot;
-[1] &quot;elbo decreased by 3.49245965480804e-10&quot;
-[1] &quot;elbo decreased by 8.45830072648823e-10&quot;
-[1] &quot;elbo decreased by 6.08633854426444e-09&quot;
-[1] &quot;elbo decreased by 7.86167220212519e-09&quot;
-[1] &quot;elbo decreased by 3.37240635417402e-09&quot;
-[1] &quot;elbo decreased by 1.41335476655513e-09&quot;
-[1] &quot;elbo decreased by 5.47515810467303e-09&quot;
-[1] &quot;elbo decreased by 3.43788997270167e-10&quot;
-[1] &quot;elbo decreased by 3.31056071445346e-10&quot;
-[1] &quot;elbo decreased by 1.57306203618646e-08&quot;
-[1] &quot;elbo decreased by 7.86167220212519e-09&quot;
-[1] &quot;elbo decreased by 1.51048880070448e-08&quot;
-[1] &quot;elbo decreased by 1.57306203618646e-08&quot;
-[1] &quot;elbo decreased by 2.48292053584009e-09&quot;
-[1] &quot;elbo decreased by 7.86167220212519e-09&quot;
-[1] &quot;elbo decreased by 7.86167220212519e-09&quot;
-[1] &quot;elbo decreased by 2.63935362454504e-09&quot;
-[1] &quot;elbo decreased by 7.53061613067985e-10&quot;
-[1] &quot;elbo decreased by 7.37290974939242e-08&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 7.36690708436072e-10&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 6.65750121697783e-10&quot;
-[1] &quot;elbo decreased by 9.6768417279236e-08&quot;
-[1] &quot;elbo decreased by 1.00953911896795e-09&quot;
-[1] &quot;elbo decreased by 2.18751665670425e-08&quot;
-[1] &quot;elbo decreased by 4.07453626394272e-10&quot;
-[1] &quot;elbo decreased by 7.86167220212519e-09&quot;
-[1] &quot;elbo decreased by 8.44011083245277e-10&quot;
-[1] &quot;elbo decreased by 1.26565282698721e-08&quot;
-[1] &quot;elbo decreased by 9.05856722965837e-10&quot;
-[1] &quot;elbo decreased by 1.51339918375015e-09&quot;
-[1] &quot;elbo decreased by 7.86167220212519e-09&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 5.26524672750384e-08&quot;
-[1] &quot;elbo decreased by 1.27620296552777e-08&quot;
-[1] &quot;elbo decreased by 7.86167220212519e-09&quot;
-[1] &quot;elbo decreased by 1.08175299828872e-08&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 1.36788003146648e-09&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 1.346597855445e-08&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 1.06956576928496e-09&quot;
-[1] &quot;elbo decreased by 4.27662598667666e-08&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 1.62199285114184e-08&quot;
-[1] &quot;elbo decreased by 1.07320374809206e-10&quot;
-[1] &quot;elbo decreased by 5.91717252973467e-08&quot;
-[1] &quot;elbo decreased by 2.04454408958554e-09&quot;
-[1] &quot;elbo decreased by 4.85451892018318e-08&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 2.40270310314372e-08&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 3.76530806533992e-10&quot;
-[1] &quot;elbo decreased by 7.86167220212519e-09&quot;
-[1] &quot;elbo decreased by 4.36830305261537e-08&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 6.17546902503818e-09&quot;
-[1] &quot;elbo decreased by 1.57233444042504e-08&quot;
-[1] &quot;elbo decreased by 2.01544025912881e-09&quot;
-[1] &quot;elbo decreased by 7.86167220212519e-09&quot;
-[1] &quot;elbo decreased by 9.15479176910594e-08&quot;
-[1] &quot;elbo decreased by 1.57269823830575e-08&quot;
-[1] &quot;elbo decreased by 2.10111466003582e-08&quot;
-[1] &quot;elbo decreased by 3.50519258063287e-09&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 7.82165443524718e-10&quot;
-[1] &quot;elbo decreased by 7.03475961927325e-08&quot;
-[1] &quot;elbo decreased by 1.57269823830575e-08&quot;
-[1] &quot;elbo decreased by 7.86167220212519e-09&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 3.0740920919925e-10&quot;
-[1] &quot;elbo decreased by 9.97715687844902e-09&quot;
-[1] &quot;elbo decreased by 1.36424205265939e-09&quot;
-[1] &quot;elbo decreased by 9.70721885096282e-08&quot;
-[1] &quot;elbo decreased by 1.64800439961255e-09&quot;
-[1] &quot;elbo decreased by 1.57306203618646e-08&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 1.59561750479043e-07&quot;
-[1] &quot;elbo decreased by 2.72448232863098e-08&quot;
-[1] &quot;elbo decreased by 3.26253939419985e-08&quot;
-[1] &quot;elbo decreased by 5.62795321457088e-09&quot;
-[1] &quot;elbo decreased by 3.01952240988612e-10&quot;
-[1] &quot;elbo decreased by 1.74622982740402e-10&quot;
-[1] &quot;elbo decreased by 7.86167220212519e-09&quot;
-[1] &quot;elbo decreased by 5.29089447809383e-08&quot;
-[1] &quot;elbo decreased by 1.57306203618646e-08&quot;
-[1] &quot;elbo decreased by 4.26443875767291e-08&quot;
-[1] &quot;elbo decreased by 9.80799086391926e-09&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 5.56046870769933e-08&quot;
-[1] &quot;elbo decreased by 1.05683284346014e-09&quot;
-[1] &quot;elbo decreased by 7.1122485678643e-10&quot;
-[1] &quot;elbo decreased by 1.0284929885529e-07&quot;
-[1] &quot;elbo decreased by 1.4641773304902e-07&quot;
-[1] &quot;elbo decreased by 8.77116690389812e-09&quot;
-[1] &quot;elbo decreased by 1.54832378029823e-08&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 1.38843461172655e-08&quot;
-[1] &quot;elbo decreased by 1.39880285132676e-09&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 1.70239218277857e-08&quot;
-[1] &quot;elbo decreased by 1.57269823830575e-08&quot;
-[1] &quot;elbo decreased by 1.10048858914524e-09&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 3.36676748702303e-08&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 6.18456397205591e-10&quot;
-[1] &quot;elbo decreased by 1.47883838508278e-09&quot;
-[1] &quot;elbo decreased by 1.01750629255548e-07&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 9.36779542826116e-10&quot;
-[1] &quot;elbo decreased by 2.56113708019257e-09&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 1.24782673083246e-09&quot;
-[1] &quot;elbo decreased by 9.46783984545618e-08&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 1.21872290037572e-09&quot;
-[1] &quot;elbo decreased by 4.92746039526537e-08&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 8.00355337560177e-10&quot;
-[1] &quot;elbo decreased by 2.63644324149936e-08&quot;
-[1] &quot;elbo decreased by 7.86167220212519e-09&quot;
-[1] &quot;elbo decreased by 1.69529812410474e-09&quot;
-[1] &quot;elbo decreased by 5.78438630327582e-10&quot;
-[1] &quot;elbo decreased by 6.34208845440298e-08&quot;
-[1] &quot;elbo decreased by 3.07773007079959e-09&quot;
-[1] &quot;elbo decreased by 3.47426976077259e-10&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 1.22799974633381e-08&quot;
-[1] &quot;elbo decreased by 3.85443854611367e-09&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 3.39805410476401e-08&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 7.31233740225434e-10&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 1.18234311230481e-10&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 8.76570993568748e-09&quot;
-[1] &quot;elbo decreased by 7.86167220212519e-09&quot;
-[1] &quot;elbo decreased by 1.09492248157039e-07&quot;
-[1] &quot;elbo decreased by 7.31597538106143e-09&quot;
-[1] &quot;elbo decreased by 5.63886715099216e-10&quot;
-[1] &quot;elbo decreased by 2.03726813197136e-09&quot;
-[1] &quot;elbo decreased by 1.51812855619937e-08&quot;
-[1] &quot;elbo decreased by 2.61206878349185e-09&quot;
-[1] &quot;elbo decreased by 7.8580342233181e-09&quot;
-[1] &quot;elbo decreased by 5.11172402184457e-08&quot;
-[1] &quot;elbo decreased by 7.86167220212519e-09&quot;
-[1] &quot;elbo decreased by 3.74711817130446e-10&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 9.64028004091233e-08&quot;
-[1] &quot;elbo decreased by 5.38966560270637e-09&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 9.22227627597749e-10&quot;
-[1] &quot;elbo decreased by 7.86167220212519e-09&quot;
-[1] &quot;elbo decreased by 1.52431312017143e-09&quot;
-[1] &quot;elbo decreased by 4.80213202536106e-10&quot;
-[1] &quot;elbo decreased by 1.57342583406717e-08&quot;
-[1] &quot;elbo decreased by 1.00226316135377e-09&quot;
-[1] &quot;elbo decreased by 9.47420630836859e-08&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 2.17187334783375e-09&quot;
-[1] &quot;elbo decreased by 1.58506736624986e-08&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 7.86167220212519e-09&quot;
-[1] &quot;elbo decreased by 2.39379005506635e-09&quot;
-[1] &quot;elbo decreased by 3.11047188006341e-10&quot;
-[1] &quot;elbo decreased by 4.25789039582014e-08&quot;
-[1] &quot;elbo decreased by 2.87036527879536e-09&quot;
-[1] &quot;elbo decreased by 1.19234755402431e-08&quot;
-[1] &quot;elbo decreased by 3.85625753551722e-09&quot;
-[1] &quot;elbo decreased by 5.67742972634733e-08&quot;
-[1] &quot;elbo decreased by 1.92630977835506e-09&quot;
-[1] &quot;elbo decreased by 1.57269823830575e-08&quot;
-[1] &quot;elbo decreased by 2.5465851649642e-11&quot;
-[1] &quot;elbo decreased by 4.81704773847014e-08&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 4.82395989820361e-09&quot;
-[1] &quot;elbo decreased by 1.86628312803805e-09&quot;
-[1] &quot;elbo decreased by 7.6001015258953e-08&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 5.36419975105673e-09&quot;
-[1] &quot;elbo decreased by 7.86167220212519e-09&quot;
-[1] &quot;elbo decreased by 1.25874066725373e-09&quot;
-[1] &quot;elbo decreased by 9.29503585211933e-10&quot;
-[1] &quot;elbo decreased by 4.14092937717214e-08&quot;
-[1] &quot;elbo decreased by 2.11657606996596e-08&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 5.31508703716099e-09&quot;
-[1] &quot;elbo decreased by 7.86167220212519e-09&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 1.84354576049373e-08&quot;
-[1] &quot;elbo decreased by 1.08084350358695e-08&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 7.86167220212519e-09&quot;
-[1] &quot;elbo decreased by 4.52782842330635e-08&quot;
-[1] &quot;elbo decreased by 7.86167220212519e-09&quot;
-[1] &quot;elbo decreased by 1.87719706445932e-09&quot;
-[1] &quot;elbo decreased by 9.58607415668666e-10&quot;
-[1] &quot;elbo decreased by 3.07827576762065e-08&quot;
-[1] &quot;elbo decreased by 1.57306203618646e-08&quot;
-[1] &quot;elbo decreased by 1.50066625792533e-09&quot;
-[1] &quot;elbo decreased by 4.66952769784257e-08&quot;
-[1] &quot;elbo decreased by 5.58611645828933e-09&quot;
-[1] &quot;elbo decreased by 2.09729478228837e-09&quot;
-[1] &quot;elbo decreased by 7.74889485910535e-10&quot;
-[1] &quot;elbo decreased by 1.62646756507456e-07&quot;
-[1] &quot;elbo decreased by 1.57306203618646e-08&quot;
-[1] &quot;elbo decreased by 2.65044945990667e-08&quot;
-[1] &quot;elbo decreased by 7.86167220212519e-09&quot;
-[1] &quot;elbo decreased by 5.07534423377365e-08&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 6.49379217065871e-10&quot;
-[1] &quot;elbo decreased by 1.88083504326642e-09&quot;
-[1] &quot;elbo decreased by 7.86167220212519e-09&quot;
-[1] &quot;elbo decreased by 4.91127138957381e-10&quot;
-[1] &quot;elbo decreased by 4.23824531026185e-10&quot;
-[1] &quot;elbo decreased by 1.83717929758132e-10&quot;
-[1] &quot;elbo decreased by 5.27506927028298e-10&quot;
-[1] &quot;elbo decreased by 1.57306203618646e-08&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 6.2755134422332e-10&quot;
-[1] &quot;elbo decreased by 8.51578079164028e-08&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 2.68482835963368e-09&quot;
-[1] &quot;elbo decreased by 7.89441401138902e-10&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 1.09372194856405e-07&quot;
-[1] &quot;elbo decreased by 3.96175892092288e-09&quot;
-[1] &quot;elbo decreased by 2.20097717829049e-09&quot;
-[1] &quot;elbo decreased by 7.49423634260893e-10&quot;
-[1] &quot;elbo decreased by 1.39649273478426e-07&quot;
-[1] &quot;elbo decreased by 1.07665982795879e-08&quot;
-[1] &quot;elbo decreased by 1.33513822220266e-09&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 4.90363163407892e-08&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 6.71207089908421e-10&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 2.18278728425503e-10&quot;
-[1] &quot;elbo decreased by 6.61711965221912e-08&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 1.22381607070565e-08&quot;
-[1] &quot;elbo decreased by 9.27684595808387e-11&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 3.38586687576026e-08&quot;
-[1] &quot;elbo decreased by 9.25501808524132e-09&quot;
-[1] &quot;elbo decreased by 4.91127138957381e-10&quot;
-[1] &quot;elbo decreased by 1.63345248438418e-09&quot;
-[1] &quot;elbo decreased by 1.56864189193584e-07&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 4.46379999630153e-09&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 7.83984432928264e-10&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 7.10242602508515e-08&quot;
-[1] &quot;elbo decreased by 1.97360350284725e-09&quot;
-[1] &quot;elbo decreased by 1.82808435056359e-09&quot;
-[1] &quot;elbo decreased by 9.56788426265121e-10&quot;
-[1] &quot;elbo decreased by 4.04961610911414e-08&quot;
-[1] &quot;elbo decreased by 1.57306203618646e-08&quot;
-[1] &quot;elbo decreased by 1.62617652677e-09&quot;
-[1] &quot;elbo decreased by 3.16485966322944e-08&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 9.07675712369382e-10&quot;
-[1] &quot;elbo decreased by 7.86167220212519e-09&quot;
-[1] &quot;elbo decreased by 1.32711647893302e-07&quot;
-[1] &quot;elbo decreased by 1.03245838545263e-08&quot;
-[1] &quot;elbo decreased by 1.57306203618646e-08&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 3.72365320799872e-08&quot;
-[1] &quot;elbo decreased by 9.43327904678881e-09&quot;
-[1] &quot;elbo decreased by 9.78106982074678e-08&quot;
-[1] &quot;elbo decreased by 7.86167220212519e-09&quot;
-[1] &quot;elbo decreased by 1.62872311193496e-08&quot;
-[1] &quot;elbo decreased by 2.71575117949396e-09&quot;
-[1] &quot;elbo decreased by 2.63025867752731e-09&quot;
-[1] &quot;elbo decreased by 1.53168002725579e-07&quot;
-[1] &quot;elbo decreased by 9.16770659387112e-10&quot;
-[1] &quot;elbo decreased by 2.16459739021957e-10&quot;
-[1] &quot;elbo decreased by 2.78942025033757e-08&quot;
-[1] &quot;elbo decreased by 4.49290382675827e-10&quot;
-[1] &quot;elbo decreased by 2.21189111471176e-09&quot;
-[1] &quot;elbo decreased by 1.38308678288013e-07&quot;
-[1] &quot;elbo decreased by 1.24673533719033e-08&quot;
-[1] &quot;elbo decreased by 2.2373569663614e-10&quot;
-[1] &quot;elbo decreased by 1.41373675432988e-07&quot;
-[1] &quot;elbo decreased by 6.00994098931551e-09&quot;
-[1] &quot;elbo decreased by 3.48882167600095e-09&quot;
-[1] &quot;elbo decreased by 9.40235622692853e-09&quot;
-[1] &quot;elbo decreased by 8.18545231595635e-11&quot;
-[1] &quot;elbo decreased by 7.86167220212519e-09&quot;
-[1] &quot;elbo decreased by 1.46792444866151e-09&quot;
-[1] &quot;elbo decreased by 1.41517375595868e-09&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 6.584741640836e-10&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 8.31896613817662e-08&quot;
-[1] &quot;elbo decreased by 7.86167220212519e-09&quot;
-[1] &quot;elbo decreased by 1.37388269649819e-08&quot;
-[1] &quot;elbo decreased by 3.51974449586123e-09&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 5.25324139744043e-08&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 1.64072844199836e-09&quot;
-[1] &quot;elbo decreased by 1.57306203618646e-08&quot;
-[1] &quot;elbo decreased by 8.44192982185632e-08&quot;
-[1] &quot;elbo decreased by 6.55927578918636e-09&quot;
-[1] &quot;elbo decreased by 1.81535142473876e-09&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 5.31526893610135e-08&quot;
-[1] &quot;elbo decreased by 1.9734216039069e-08&quot;
-[1] &quot;elbo decreased by 7.86167220212519e-09&quot;
-[1] &quot;elbo decreased by 7.86167220212519e-09&quot;
-[1] &quot;elbo decreased by 8.65838956087828e-10&quot;
-[1] &quot;elbo decreased by 1.56796886585653e-09&quot;
-[1] &quot;elbo decreased by 1.02954800240695e-09&quot;
-[1] &quot;elbo decreased by 3.71037458535284e-08&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 1.18707248475403e-08&quot;
-[1] &quot;elbo decreased by 9.47693479247391e-10&quot;
-[1] &quot;elbo decreased by 3.93247319152579e-08&quot;
-[1] &quot;elbo decreased by 1.14596332423389e-09&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 3.06681613437831e-09&quot;
-[1] &quot;elbo decreased by 4.08072082791477e-08&quot;
-[1] &quot;elbo decreased by 6.16273609921336e-09&quot;
-[1] &quot;elbo decreased by 7.86167220212519e-09&quot;
-[1] &quot;elbo decreased by 1.67347025126219e-10&quot;
-[1] &quot;elbo decreased by 2.88164301309735e-08&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 4.24006429966539e-09&quot;
-[1] &quot;elbo decreased by 2.54476617556065e-09&quot;
-[1] &quot;elbo decreased by 7.86167220212519e-09&quot;
-[1] &quot;elbo decreased by 1.80625647772104e-09&quot;
-[1] &quot;elbo decreased by 9.93550202110782e-08&quot;
-[1] &quot;elbo decreased by 7.5924617704004e-09&quot;
-[1] &quot;elbo decreased by 2.35959305427969e-08&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 9.40035533858463e-08&quot;
-[1] &quot;elbo decreased by 6.78846845403314e-09&quot;
-[1] &quot;elbo decreased by 1.57269823830575e-08&quot;
-[1] &quot;elbo decreased by 2.35922925639898e-08&quot;
-[1] &quot;elbo decreased by 1.18125171866268e-08&quot;
-[1] &quot;elbo decreased by 2.35959305427969e-08&quot;
-[1] &quot;elbo decreased by 8.56744009070098e-10&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 1.73022272065282e-08&quot;
-[1] &quot;elbo decreased by 1.57306203618646e-08&quot;
-[1] &quot;elbo decreased by 2.61770765064284e-08&quot;
-[1] &quot;elbo decreased by 6.0572347138077e-10&quot;
-[1] &quot;elbo decreased by 1.25650331028737e-07&quot;
-[1] &quot;elbo decreased by 2.01471266336739e-08&quot;
-[1] &quot;elbo decreased by 5.8389559853822e-10&quot;
-[1] &quot;elbo decreased by 1.57306203618646e-08&quot;
-[1] &quot;elbo decreased by 1.78733898792416e-08&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 2.18115019379184e-08&quot;
-[1] &quot;elbo decreased by 1.57306203618646e-08&quot;
-[1] &quot;elbo decreased by 5.03860064782202e-10&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 3.40369297191501e-08&quot;
-[1] &quot;elbo decreased by 2.92857293970883e-09&quot;
-[1] &quot;elbo decreased by 9.40672180149704e-08&quot;
-[1] &quot;elbo decreased by 1.36569724418223e-08&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 6.09361450187862e-10&quot;
-[1] &quot;elbo decreased by 4.24552126787603e-08&quot;
-[1] &quot;elbo decreased by 1.28857209347188e-08&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 6.33008312433958e-10&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 5.35765138920397e-08&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 8.36735125631094e-10&quot;
-[1] &quot;elbo decreased by 8.74952092999592e-08&quot;
-[1] &quot;elbo decreased by 7.6161086326465e-09&quot;
-[1] &quot;elbo decreased by 1.57306203618646e-08&quot;
-[1] &quot;elbo decreased by 7.86167220212519e-09&quot;
-[1] &quot;elbo decreased by 9.56788426265121e-10&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 1.11516783363186e-07&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 5.21667971042916e-08&quot;
-[1] &quot;elbo decreased by 2.87400325760245e-10&quot;
-[1] &quot;elbo decreased by 4.72464307677001e-08&quot;
-[1] &quot;elbo decreased by 4.82032191939652e-10&quot;
-[1] &quot;elbo decreased by 1.79989001480862e-08&quot;
-[1] &quot;elbo decreased by 9.05674824025482e-09&quot;
-[1] &quot;elbo decreased by 1.57306203618646e-08&quot;
-[1] &quot;elbo decreased by 7.86167220212519e-09&quot;
-[1] &quot;elbo decreased by 9.09494701772928e-10&quot;
-[1] &quot;elbo decreased by 1.66874087881297e-08&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 1.06047082226723e-09&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 5.24760253028944e-08&quot;
-[1] &quot;elbo decreased by 2.3283064365387e-09&quot;
-[1] &quot;elbo decreased by 7.86167220212519e-09&quot;
-[1] &quot;elbo decreased by 5.47515810467303e-10&quot;
-[1] &quot;elbo decreased by 2.02762748813257e-08&quot;
-[1] &quot;elbo decreased by 1.57560862135142e-08&quot;
-[1] &quot;elbo decreased by 1.57342583406717e-09&quot;
-[1] &quot;elbo decreased by 1.7098500393331e-09&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 6.7157088778913e-08&quot;
-[1] &quot;elbo decreased by 1.16160663310438e-08&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 3.6015990190208e-10&quot;
-[1] &quot;elbo decreased by 1.01497789728455e-07&quot;
-[1] &quot;elbo decreased by 3.09228198602796e-11&quot;
-[1] &quot;elbo decreased by 3.54521034751087e-08&quot;
-[1] &quot;elbo decreased by 3.29600879922509e-09&quot;
-[1] &quot;elbo decreased by 2.58296495303512e-09&quot;
-[1] &quot;elbo decreased by 7.16408976586536e-08&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 7.71251507103443e-10&quot;
-[1] &quot;elbo decreased by 1.3369572116062e-09&quot;
-[1] &quot;elbo decreased by 3.44643922289833e-08&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 2.2373569663614e-10&quot;
-[1] &quot;elbo decreased by 4.42014425061643e-10&quot;
-[1] &quot;elbo decreased by 1.57306203618646e-08&quot;
-[1] &quot;elbo decreased by 2.23371898755431e-09&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 9.44928615354002e-08&quot;
-[1] &quot;elbo decreased by 1.85627868631855e-08&quot;
-[1] &quot;elbo decreased by 6.49379217065871e-10&quot;
-[1] &quot;elbo decreased by 7.39746610634029e-08&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 7.20101525075734e-08&quot;
-[1] &quot;elbo decreased by 1.57233444042504e-08&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 1.01261321105994e-07&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 6.93034962750971e-10&quot;
-[1] &quot;elbo decreased by 9.97824827209115e-08&quot;
-[1] &quot;elbo decreased by 6.31916918791831e-09&quot;
-[1] &quot;elbo decreased by 5.57865860173479e-08&quot;
-[1] &quot;elbo decreased by 2.03981471713632e-08&quot;
-[1] &quot;elbo decreased by 6.02085492573678e-10&quot;
-[1] &quot;elbo decreased by 8.46066541271284e-08&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 1.17961462819949e-08&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 3.32984200213104e-08&quot;
-[1] &quot;elbo decreased by 4.41468728240579e-09&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 3.76530806533992e-10&quot;
-[1] &quot;elbo decreased by 7.83256837166846e-08&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 1.37952156364918e-08&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 6.98491930961609e-10&quot;
-[1] &quot;elbo decreased by 2.07364792004228e-10&quot;
-[1] &quot;elbo decreased by 1.57306203618646e-08&quot;
-[1] &quot;elbo decreased by 9.11950337467715e-08&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 2.31011654250324e-10&quot;
-[1] &quot;elbo decreased by 5.94736775383353e-08&quot;
-[1] &quot;elbo decreased by 1.0113581083715e-08&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 1.17870513349771e-09&quot;
-[1] &quot;elbo decreased by 7.60337570682168e-10&quot;
-[1] &quot;elbo decreased by 5.07498043589294e-08&quot;
-[1] &quot;elbo decreased by 4.82941686641425e-09&quot;
-[1] &quot;elbo decreased by 2.08819983527064e-09&quot;
-[1] &quot;elbo decreased by 3.09228198602796e-11&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 3.56340024154633e-09&quot;
-[1] &quot;elbo decreased by 7.18864612281322e-09&quot;
-[1] &quot;elbo decreased by 1.57269823830575e-08&quot;
-[1] &quot;elbo decreased by 2.91038304567337e-10&quot;
-[1] &quot;elbo decreased by 1.08775566332042e-09&quot;
-[1] &quot;elbo decreased by 1.35823938762769e-08&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 3.12193151330575e-08&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 3.18323145620525e-10&quot;
-[1] &quot;elbo decreased by 5.9042577049695e-08&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 3.45935404766351e-08&quot;
-[1] &quot;elbo decreased by 4.72937244921923e-11&quot;
-[1] &quot;elbo decreased by 6.63749233353883e-09&quot;
-[1] &quot;elbo decreased by 5.25506038684398e-09&quot;
-[1] &quot;elbo decreased by 5.97210600972176e-08&quot;
-[1] &quot;elbo decreased by 3.59978002961725e-09&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 8.62200977280736e-10&quot;
-[1] &quot;elbo decreased by 1.42263161251321e-08&quot;
-[1] &quot;elbo decreased by 3.81551217287779e-08&quot;
-[1] &quot;elbo decreased by 2.12094164453447e-09&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 9.64064383879304e-10&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 5.45696821063757e-12&quot;
-[1] &quot;elbo decreased by 2.05836840905249e-08&quot;
-[1] &quot;elbo decreased by 9.38598532229662e-10&quot;
-[1] &quot;elbo decreased by 1.18052412290126e-09&quot;
-[1] &quot;elbo decreased by 1.57269823830575e-08&quot;
-[1] &quot;elbo decreased by 7.10297172190621e-08&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 1.57269823830575e-08&quot;
-[1] &quot;elbo decreased by 6.45741238258779e-10&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 1.8128048395738e-08&quot;
-[1] &quot;elbo decreased by 7.86167220212519e-09&quot;
-[1] &quot;elbo decreased by 1.35109075927176e-07&quot;
-[1] &quot;elbo decreased by 1.57269823830575e-08&quot;
-[1] &quot;elbo decreased by 3.52702045347542e-09&quot;
-[1] &quot;elbo decreased by 1.57306203618646e-08&quot;
-[1] &quot;elbo decreased by 1.36424205265939e-10&quot;
-[1] &quot;elbo decreased by 6.77082425681874e-08&quot;
-[1] &quot;elbo decreased by 1.97669578483328e-08&quot;
-[1] &quot;elbo decreased by 1.04046193882823e-09&quot;
-[1] &quot;elbo decreased by 1.72803993336856e-10&quot;
-[1] &quot;elbo decreased by 6.34718162473291e-08&quot;
-[1] &quot;elbo decreased by 6.76664058119059e-09&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 1.63709046319127e-09&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 3.37604433298111e-09&quot;
-[1] &quot;elbo decreased by 7.86167220212519e-09&quot;
-[1] &quot;elbo decreased by 9.84073267318308e-10&quot;
-[1] &quot;elbo decreased by 6.20275386609137e-10&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 1.15200236905366e-07&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 8.43101588543504e-09&quot;
-[1] &quot;elbo decreased by 7.86167220212519e-09&quot;
-[1] &quot;elbo decreased by 7.86894815973938e-09&quot;
-[1] &quot;elbo decreased by 4.16603143094108e-08&quot;
-[1] &quot;elbo decreased by 2.13949533645064e-08&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 3.98904376197606e-09&quot;
-[1] &quot;elbo decreased by 1.00761099020019e-07&quot;
-[1] &quot;elbo decreased by 2.35922925639898e-08&quot;
-[1] &quot;elbo decreased by 1.05919752968475e-08&quot;
-[1] &quot;elbo decreased by 9.05856722965837e-10&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 5.78838807996362e-08&quot;
-[1] &quot;elbo decreased by 1.57269823830575e-08&quot;
-[1] &quot;elbo decreased by 2.23080860450864e-08&quot;
-[1] &quot;elbo decreased by 7.86167220212519e-09&quot;
-[1] &quot;elbo decreased by 1.65709934663028e-09&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 2.05727701541036e-09&quot;
-[1] &quot;elbo decreased by 1.57233444042504e-08&quot;
-[1] &quot;elbo decreased by 8.07904143584892e-08&quot;
-[1] &quot;elbo decreased by 2.04636307898909e-09&quot;
-[1] &quot;elbo decreased by 1.18234311230481e-10&quot;
-[1] &quot;elbo decreased by 7.86167220212519e-09&quot;
-[1] &quot;elbo decreased by 5.48643583897501e-08&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 8.76752892509103e-10&quot;
-[1] &quot;elbo decreased by 2.91038304567337e-11&quot;
-[1] &quot;elbo decreased by 1.21899574878626e-07&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 3.46335582435131e-09&quot;
-[1] &quot;elbo decreased by 8.87812348082662e-08&quot;
-[1] &quot;elbo decreased by 3.47790773957968e-09&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 1.98087946046144e-09&quot;
-[1] &quot;elbo decreased by 1.2536474969238e-08&quot;
-[1] &quot;elbo decreased by 1.22781784739345e-08&quot;
-[1] &quot;elbo decreased by 6.62112142890692e-10&quot;
-[1] &quot;elbo decreased by 7.86167220212519e-09&quot;
-[1] &quot;elbo decreased by 1.1489464668557e-07&quot;
-[1] &quot;elbo decreased by 2.41470843320712e-08&quot;
-[1] &quot;elbo decreased by 7.86167220212519e-09&quot;
-[1] &quot;elbo decreased by 5.06279320688918e-08&quot;
-[1] &quot;elbo decreased by 2.12276063393801e-09&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 9.96806193143129e-10&quot;
-[1] &quot;elbo decreased by 1.0322401067242e-07&quot;
-[1] &quot;elbo decreased by 7.8580342233181e-09&quot;
-[1] &quot;elbo decreased by 7.8580342233181e-09&quot;
-[1] &quot;elbo decreased by 1.73895386978984e-09&quot;
-[1] &quot;elbo decreased by 7.49569153413177e-08&quot;
-[1] &quot;elbo decreased by 7.86167220212519e-09&quot;
-[1] &quot;elbo decreased by 1.57269823830575e-08&quot;
-[1] &quot;elbo decreased by 7.58518581278622e-10&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 9.20408638194203e-08&quot;
-[1] &quot;elbo decreased by 7.86167220212519e-09&quot;
-[1] &quot;elbo decreased by 8.63656168803573e-09&quot;
-[1] &quot;elbo decreased by 5.67524693906307e-10&quot;
-[1] &quot;elbo decreased by 7.18791852705181e-08&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 9.36779542826116e-10&quot;
-[1] &quot;elbo decreased by 7.86894815973938e-09&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 7.93825165601447e-08&quot;
-[1] &quot;elbo decreased by 5.07498043589294e-09&quot;
-[1] &quot;elbo decreased by 4.7839421313256e-10&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 5.23868948221207e-10&quot;
-[1] &quot;elbo decreased by 4.05634636990726e-09&quot;
-[1] &quot;elbo decreased by 6.4697815105319e-08&quot;
-[1] &quot;elbo decreased by 3.85898601962253e-08&quot;
-[1] &quot;elbo decreased by 7.86167220212519e-09&quot;
-[1] &quot;elbo decreased by 2.03854142455384e-08&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 9.74978320300579e-10&quot;
-[1] &quot;elbo decreased by 7.36672518542036e-08&quot;
-[1] &quot;elbo decreased by 1.32604327518493e-09&quot;
-[1] &quot;elbo decreased by 8.9150489657186e-08&quot;
-[1] &quot;elbo decreased by 1.30348780658096e-08&quot;
-[1] &quot;elbo decreased by 1.74986780621111e-09&quot;
-[1] &quot;elbo decreased by 2.61770765064284e-08&quot;
-[1] &quot;elbo decreased by 1.25201040646061e-08&quot;
-[1] &quot;elbo decreased by 2.00088834390044e-11&quot;
-[1] &quot;elbo decreased by 5.45696821063757e-11&quot;
-[1] &quot;elbo decreased by 7.26813595974818e-08&quot;
-[1] &quot;elbo decreased by 2.38287611864507e-10&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 2.12094164453447e-09&quot;
-[1] &quot;elbo decreased by 5.03860064782202e-10&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 1.87881596502848e-07&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 9.77543095359579e-08&quot;
-[1] &quot;elbo decreased by 3.10319592244923e-09&quot;
-[1] &quot;elbo decreased by 1.43700162880123e-09&quot;
-[1] &quot;elbo decreased by 3.97485564462841e-08&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 1.01463228929788e-08&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 3.69072949979454e-09&quot;
-[1] &quot;elbo decreased by 2.24481482291594e-08&quot;
-[1] &quot;elbo decreased by 2.81215761788189e-09&quot;
-[1] &quot;elbo decreased by 1.45519152283669e-09&quot;
-[1] &quot;elbo decreased by 7.86167220212519e-09&quot;
-[1] &quot;elbo decreased by 1.1488918971736e-07&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 8.53106030263007e-09&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 2.13549355976284e-09&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 9.3019480118528e-08&quot;
-[1] &quot;elbo decreased by 7.25958670955151e-09&quot;
-[1] &quot;elbo decreased by 1.57269823830575e-08&quot;
-[1] &quot;elbo decreased by 5.8549630921334e-08&quot;
-[1] &quot;elbo decreased by 1.92994775716215e-09&quot;
-[1] &quot;elbo decreased by 7.86167220212519e-09&quot;
-[1] &quot;elbo decreased by 1.02729245554656e-07&quot;
-[1] &quot;elbo decreased by 6.55381882097572e-09&quot;
-[1] &quot;elbo decreased by 7.86167220212519e-09&quot;
-[1] &quot;elbo decreased by 1.10228938865475e-07&quot;
-[1] &quot;elbo decreased by 2.80615495285019e-08&quot;
-[1] &quot;elbo decreased by 5.07498043589294e-10&quot;
-[1] &quot;elbo decreased by 1.57269823830575e-08&quot;
-[1] &quot;elbo decreased by 1.65528035722673e-10&quot;
-[1] &quot;elbo decreased by 2.82652763416991e-08&quot;
-[1] &quot;elbo decreased by 5.12227416038513e-09&quot;
-[1] &quot;elbo decreased by 3.27418092638254e-10&quot;
-[1] &quot;elbo decreased by 1.03864294942468e-08&quot;
-[1] &quot;elbo decreased by 9.2186382971704e-09&quot;
-[1] &quot;elbo decreased by 4.54747350886464e-10&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 1.40244083013386e-09&quot;
-[1] &quot;elbo decreased by 7.60337570682168e-10&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 7.48332240618765e-09&quot;
-[1] &quot;elbo decreased by 1.62617652677e-09&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 2.34122126130387e-08&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 1.9554136088118e-09&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 1.62199285114184e-08&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 2.00232534552924e-07&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 8.35825630929321e-09&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 1.27693056128919e-09&quot;
-[1] &quot;elbo decreased by 2.65426933765411e-08&quot;
-[1] &quot;elbo decreased by 1.57269823830575e-08&quot;
-[1] &quot;elbo decreased by 3.23780113831162e-10&quot;
-[1] &quot;elbo decreased by 2.09001882467419e-09&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 4.47471393272281e-10&quot;
-[1] &quot;elbo decreased by 1.38976247399114e-07&quot;
-[1] &quot;elbo decreased by 4.08908817917109e-09&quot;
-[1] &quot;elbo decreased by 3.36513039655983e-10&quot;
-[1] &quot;elbo decreased by 1.229636836797e-09&quot;
-[1] &quot;elbo decreased by 4.35284164268523e-09&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 9.39453457249328e-08&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 2.76304490398616e-09&quot;
-[1] &quot;elbo decreased by 2.08892743103206e-08&quot;
-[1] &quot;elbo decreased by 7.86167220212519e-09&quot;
-[1] &quot;elbo decreased by 2.79542291536927e-08&quot;
-[1] &quot;elbo decreased by 1.24346115626395e-08&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 9.74978320300579e-10&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 1.15811417344958e-07&quot;
-[1] &quot;elbo decreased by 1.81626091944054e-08&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 2.82634573522955e-08&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 1.81462382897735e-08&quot;
-[1] &quot;elbo decreased by 1.89538695849478e-09&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 2.62662069872022e-09&quot;
-[1] &quot;elbo decreased by 4.42378222942352e-09&quot;
-[1] &quot;elbo decreased by 1.04228092823178e-08&quot;
-[1] &quot;elbo decreased by 7.86167220212519e-09&quot;
-[1] &quot;elbo decreased by 3.03771230392158e-09&quot;
-[1] &quot;elbo decreased by 9.60426405072212e-10&quot;
-[1] &quot;elbo decreased by 5.04769559483975e-09&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 7.86167220212519e-09&quot;
-[1] &quot;elbo decreased by 9.03146428754553e-08&quot;
-[1] &quot;elbo decreased by 9.73159330897033e-09&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 1.79406924871728e-08&quot;
-[1] &quot;elbo decreased by 5.29325916431844e-10&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 5.959918780718e-08&quot;
-[1] &quot;elbo decreased by 1.55650923261419e-08&quot;
-[1] &quot;elbo decreased by 4.67480276711285e-10&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 1.67856342159212e-07&quot;
-[1] &quot;elbo decreased by 3.47790773957968e-09&quot;
-[1] &quot;elbo decreased by 3.89445631299168e-09&quot;
-[1] &quot;elbo decreased by 2.02744558919221e-08&quot;
-[1] &quot;elbo decreased by 9.49876266531646e-09&quot;
-[1] &quot;elbo decreased by 1.4915713109076e-09&quot;
-[1] &quot;elbo decreased by 5.89352566748857e-10&quot;
-[1] &quot;elbo decreased by 5.56628947379068e-08&quot;
-[1] &quot;elbo decreased by 4.95219865115359e-08&quot;
-[1] &quot;elbo decreased by 1.28075043903664e-08&quot;
-[1] &quot;elbo decreased by 7.86167220212519e-09&quot;
-[1] &quot;elbo decreased by 4.23824531026185e-10&quot;
-[1] &quot;elbo decreased by 7.39091774448752e-08&quot;
-[1] &quot;elbo decreased by 1.57269823830575e-08&quot;
-[1] &quot;elbo decreased by 1.05883373180404e-08&quot;
-[1] &quot;elbo decreased by 7.86167220212519e-09&quot;
-[1] &quot;elbo decreased by 3.93265509046614e-09&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 7.20501702744514e-09&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 8.96761775948107e-10&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 7.61228875489905e-08&quot;
-[1] &quot;elbo decreased by 1.78297341335565e-08&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 1.40971678774804e-09&quot;
-[1] &quot;elbo decreased by 2.11002770811319e-10&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 2.60843080468476e-09&quot;
-[1] &quot;elbo decreased by 8.6038198787719e-10&quot;
-[1] &quot;elbo decreased by 1.05465005617589e-08&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 1.57306203618646e-08&quot;
-[1] &quot;elbo decreased by 7.5924617704004e-09&quot;
-[1] &quot;elbo decreased by 2.40652298089117e-09&quot;
-[1] &quot;elbo decreased by 1.62799551617354e-09&quot;
-[1] &quot;elbo decreased by 5.07498043589294e-10&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 6.20275386609137e-10&quot;
-[1] &quot;elbo decreased by 1.47338141687214e-10&quot;
-[1] &quot;elbo decreased by 1.57306203618646e-08&quot;
-[1] &quot;elbo decreased by 3.56940290657803e-08&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 1.03464117273688e-08&quot;
-[1] &quot;elbo decreased by 1.16779119707644e-09&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 7.13043846189976e-10&quot;
-[1] &quot;elbo decreased by 2.75267666438594e-08&quot;
-[1] &quot;elbo decreased by 3.92174115404487e-09&quot;
-[1] &quot;elbo decreased by 1.14923750516027e-08&quot;
-[1] &quot;elbo decreased by 3.87444742955267e-10&quot;
-[1] &quot;elbo decreased by 1.87355908565223e-09&quot;
-[1] &quot;elbo decreased by 5.4660631576553e-09&quot;
-[1] &quot;elbo decreased by 2.37741915043443e-09&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 3.45607986673713e-10&quot;
-[1] &quot;elbo decreased by 3.4529875847511e-08&quot;
-[1] &quot;elbo decreased by 1.94995664060116e-09&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 1.80043571162969e-08&quot;
-[1] &quot;elbo decreased by 2.33012542594224e-09&quot;
-[1] &quot;elbo decreased by 7.8580342233181e-09&quot;
-[1] &quot;elbo decreased by 9.45874489843845e-11&quot;
-[1] &quot;elbo decreased by 5.99666236666963e-08&quot;
-[1] &quot;elbo decreased by 1.40062184073031e-10&quot;
-[1] &quot;elbo decreased by 8.87666828930378e-10&quot;
-[1] &quot;elbo decreased by 5.94718585489318e-08&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 1.57269823830575e-08&quot;
-[1] &quot;elbo decreased by 1.55159796122462e-09&quot;
-[1] &quot;elbo decreased by 9.45874489843845e-11&quot;
-[1] &quot;elbo decreased by 5.29016688233241e-08&quot;
-[1] &quot;elbo decreased by 7.86167220212519e-09&quot;
-[1] &quot;elbo decreased by 6.07360561843961e-09&quot;
-[1] &quot;elbo decreased by 7.86167220212519e-09&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 1.85536919161677e-09&quot;
-[1] &quot;elbo decreased by 7.62483978178352e-08&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 2.24645191337913e-09&quot;
-[1] &quot;elbo decreased by 1.57306203618646e-08&quot;
-[1] &quot;elbo decreased by 6.7097062128596e-08&quot;
-[1] &quot;elbo decreased by 1.87828845810145e-08&quot;
-[1] &quot;elbo decreased by 1.57306203618646e-08&quot;
-[1] &quot;elbo decreased by 3.21324478136376e-08&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 9.65519575402141e-09&quot;
-[1] &quot;elbo decreased by 1.20053300634027e-09&quot;
-[1] &quot;elbo decreased by 7.8580342233181e-09&quot;
-[1] &quot;elbo decreased by 2.99187377095222e-08&quot;
-[1] &quot;elbo decreased by 1.05264916783199e-08&quot;
-[1] &quot;elbo decreased by 1.57306203618646e-08&quot;
-[1] &quot;elbo decreased by 5.23868948221207e-10&quot;
-[1] &quot;elbo decreased by 6.79574441164732e-08&quot;
-[1] &quot;elbo decreased by 8.65657057147473e-09&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 2.23917595576495e-09&quot;
-[1] &quot;elbo decreased by 7.86167220212519e-09&quot;
-[1] &quot;elbo decreased by 2.71611497737467e-08&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 2.83762346953154e-10&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 4.16548573412001e-10&quot;
-[1] &quot;elbo decreased by 7.86167220212519e-09&quot;
-[1] &quot;elbo decreased by 1.89847924048081e-08&quot;
-[1] &quot;elbo decreased by 1.57233444042504e-08&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 7.85075826570392e-09&quot;
-[1] &quot;elbo decreased by 2.19733919948339e-09&quot;
-[1] &quot;elbo decreased by 5.94809534959495e-10&quot;
-[1] &quot;elbo decreased by 7.86167220212519e-09&quot;
-[1] &quot;elbo decreased by 8.02174326963723e-10&quot;
-[1] &quot;elbo decreased by 4.39831637777388e-09&quot;
-[1] &quot;elbo decreased by 8.49140633363277e-08&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 1.46974343806505e-09&quot;
-[1] &quot;elbo decreased by 2.11184669751674e-09&quot;
-[1] &quot;elbo decreased by 7.86167220212519e-09&quot;
-[1] &quot;elbo decreased by 7.38527887733653e-08&quot;
-[1] &quot;elbo decreased by 1.64272933034226e-08&quot;
-[1] &quot;elbo decreased by 2.99405655823648e-09&quot;
-[1] &quot;elbo decreased by 1.40153133543208e-08&quot;
-[1] &quot;elbo decreased by 3.82351572625339e-09&quot;
-[1] &quot;elbo decreased by 3.98358679376543e-10&quot;
-[1] &quot;elbo decreased by 2.2550011635758e-08&quot;
-[1] &quot;elbo decreased by 4.12910594604909e-10&quot;
-[1] &quot;elbo decreased by 1.51139829540625e-08&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 9.94987203739583e-10&quot;
-[1] &quot;elbo decreased by 7.2868715506047e-08&quot;
-[1] &quot;elbo decreased by 1.95650500245392e-08&quot;
-[1] &quot;elbo decreased by 3.65616870112717e-10&quot;
-[1] &quot;elbo decreased by 4.93964762426913e-08&quot;
-[1] &quot;elbo decreased by 4.92036633659154e-09&quot;
-[1] &quot;elbo decreased by 1.81898940354586e-10&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 5.54773578187451e-08&quot;
-[1] &quot;elbo decreased by 3.04862624034286e-09&quot;
-[1] &quot;elbo decreased by 1.57306203618646e-08&quot;
-[1] &quot;elbo decreased by 3.38332029059529e-10&quot;
-[1] &quot;elbo decreased by 9.5242285169661e-09&quot;
-[1] &quot;elbo decreased by 1.12086127046496e-08&quot;
-[1] &quot;elbo decreased by 3.63797880709171e-12&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 2.60115484707057e-10&quot;
-[1] &quot;elbo decreased by 6.55600160825998e-08&quot;
-[1] &quot;elbo decreased by 1.03445927379653e-08&quot;
-[1] &quot;elbo decreased by 5.5297277867794e-10&quot;
-[1] &quot;elbo decreased by 8.25821189209819e-10&quot;
-[1] &quot;elbo decreased by 1.57306203618646e-08&quot;
-[1] &quot;elbo decreased by 6.39010977465659e-08&quot;
-[1] &quot;elbo decreased by 1.80534698301926e-08&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 5.20230969414115e-10&quot;
-[1] &quot;elbo decreased by 7.86894815973938e-09&quot;
-[1] &quot;elbo decreased by 6.26077962806448e-08&quot;
-[1] &quot;elbo decreased by 4.93128027301282e-09&quot;
-[1] &quot;elbo decreased by 2.77941580861807e-09&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 8.9130480773747e-11&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 7.25012796465307e-08&quot;
-[1] &quot;elbo decreased by 1.63345248438418e-09&quot;
-[1] &quot;elbo decreased by 7.20319803804159e-10&quot;
-[1] &quot;elbo decreased by 1.57306203618646e-08&quot;
-[1] &quot;elbo decreased by 4.15948306908831e-08&quot;
-[1] &quot;elbo decreased by 1.51339918375015e-09&quot;
-[1] &quot;elbo decreased by 2.56113708019257e-09&quot;
-[1] &quot;elbo decreased by 1.54432200361043e-09&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 1.60480340127833e-07&quot;
-[1] &quot;elbo decreased by 1.60616764333099e-09&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 1.38243194669485e-10&quot;
-[1] &quot;elbo decreased by 2.45563569478691e-10&quot;
-[1] &quot;elbo decreased by 6.2354956753552e-09&quot;
-[1] &quot;elbo decreased by 1.57269823830575e-08&quot;
-[1] &quot;elbo decreased by 2.80124368146062e-10&quot;
-[1] &quot;elbo decreased by 1.57269823830575e-08&quot;
-[1] &quot;elbo decreased by 3.17668309435248e-08&quot;
-[1] &quot;elbo decreased by 9.55515133682638e-09&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 1.80771166924387e-08&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 1.1859810911119e-09&quot;
-[1] &quot;elbo decreased by 3.94466042052954e-08&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 5.59666659682989e-08&quot;
-[1] &quot;elbo decreased by 7.8580342233181e-09&quot;
-[1] &quot;elbo decreased by 6.57382770441473e-08&quot;
-[1] &quot;elbo decreased by 1.00244506029412e-08&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 1.57269823830575e-08&quot;
-[1] &quot;elbo decreased by 2.20097717829049e-10&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 8.03993316367269e-10&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 1.73058651853353e-08&quot;
-[1] &quot;elbo decreased by 2.7885107556358e-09&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 5.95318851992488e-08&quot;
-[1] &quot;elbo decreased by 1.13886926556006e-08&quot;
-[1] &quot;elbo decreased by 1.57306203618646e-08&quot;
-[1] &quot;elbo decreased by 7.86167220212519e-09&quot;
-[1] &quot;elbo decreased by 3.38332029059529e-10&quot;
-[1] &quot;elbo decreased by 1.98087946046144e-09&quot;
-[1] &quot;elbo decreased by 1.5112163964659e-08&quot;
-[1] &quot;elbo decreased by 1.57269823830575e-08&quot;
-[1] &quot;elbo decreased by 2.53567122854292e-09&quot;
-[1] &quot;elbo decreased by 1.57306203618646e-08&quot;
-[1] &quot;elbo decreased by 2.75394995696843e-09&quot;
-[1] &quot;elbo decreased by 1.04757418739609e-07&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 2.66300048679113e-09&quot;
-[1] &quot;elbo decreased by 1.20780896395445e-09&quot;
-[1] &quot;elbo decreased by 1.66437530424446e-09&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 1.28457031678408e-08&quot;
-[1] &quot;elbo decreased by 7.86167220212519e-09&quot;
-[1] &quot;elbo decreased by 5.05679054185748e-09&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 8.94542608875781e-08&quot;
-[1] &quot;elbo decreased by 1.0790245141834e-08&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 2.15022737393156e-08&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 1.5372279449366e-08&quot;
-[1] &quot;elbo decreased by 9.440555004403e-10&quot;
-[1] &quot;elbo decreased by 2.48255673795938e-08&quot;
-[1] &quot;elbo decreased by 3.51792550645769e-09&quot;
-[1] &quot;elbo decreased by 1.16415321826935e-10&quot;
-[1] &quot;elbo decreased by 7.86167220212519e-09&quot;
-[1] &quot;elbo decreased by 1.89538695849478e-09&quot;
-[1] &quot;elbo decreased by 2.1203959477134e-08&quot;
-[1] &quot;elbo decreased by 1.71203282661736e-08&quot;
-[1] &quot;elbo decreased by 7.86531018093228e-09&quot;
-[1] &quot;elbo decreased by 1.2969394447282e-09&quot;
-[1] &quot;elbo decreased by 6.53017195872962e-10&quot;</code></pre>
+[1] &quot;elbo decreased by 1.8208083929494e-09&quot;</code></pre>
 <p>This is a plot of the loadings estimate.</p>
 <pre class="r"><code>bal_pops &lt;- c(rep(&#39;A&#39;, 40), rep(&#39;B&#39;, 40), rep(&#39;C&#39;, 40), rep(&#39;D&#39;, 40))
 plot_loadings(symebcovmf_true_init_backfit$L_pm %*% diag(sqrt(symebcovmf_true_init_backfit$lambda)), bal_pops)</code></pre>
@@ -6419,7 +5011,7 @@ Annie Xie
 </div>
 <p>This is the objective function value:</p>
 <pre class="r"><code>symebcovmf_true_init_backfit$elbo</code></pre>
-<pre><code>[1] 9567.384</code></pre>
+<pre><code>[1] 9567.258</code></pre>
 <p>This is a heatmap of the estimate of the Gram matrix:</p>
 <pre class="r"><code>true_init_gram_est &lt;- tcrossprod(symebcovmf_true_init_backfit$L_pm %*% diag(sqrt(symebcovmf_true_init_backfit$lambda)))
 plot_heatmap(true_init_gram_est, brks = seq(0, max(abs(true_init_gram_est)), length.out = 50))</code></pre>
@@ -6464,7 +5056,7 @@ Annie Xie
 <p>This is the L2 norm of the difference, excluding diagonal
 entries.</p>
 <pre class="r"><code>compute_L2_fit(true_init_gram_est, sim_data$YYt)</code></pre>
-<pre><code>[1] 28.65653</code></pre>
+<pre><code>[1] 28.65337</code></pre>
 <p>This is a plot of fitted vs. observed values:</p>
 <pre class="r"><code>ggplot(data = NULL, aes(x = as.vector(sim_data$YYt), y = as.vector(true_init_gram_est))) + geom_point() + geom_abline(slope = 1, intercept = 0, color = &#39;red&#39;) + xlab(&#39;Observed Values&#39;) + ylab(&#39;Fitted Values&#39;)</code></pre>
 <p><img src="figure/symebcovmf_laplace_split_init_tree.Rmd/unnamed-chunk-38-1.png" width="672" style="display: block; margin: auto;" /></p>
@@ -6505,13 +5097,16 @@ Annie Xie
 </table>
 </div>
 </div>
+<div id="observations-1" class="section level3">
+<h3>Observations</h3>
 <p>This obtains a higher objective function value than the fit found by
 greedy symEBcovMF with backfit. So perhaps this is a convergence issue?
 Is GBCD/EBcovMF better at finding sparse solutions?</p>
 </div>
-<div id="greedy-fit-of-third-factor-initialized-with-true-factor"
-class="section level2">
-<h2>Greedy fit of third factor initialized with true factor</h2>
+</div>
+<div id="greedy-fit-of-third-factor" class="section level2">
+<h2>Greedy fit of third factor</h2>
+<p>Here, I investigate the greedy fit of the third factor.</p>
 <p>First, we apply symEBcovMF with <code>Kmax = 2</code> and compute the
 residual matrix.</p>
 <pre class="r"><code>symebcovmf_rank2_fit &lt;- sym_ebcovmf_fit(S = sim_data$YYt, ebnm_fn = ebnm::ebnm_point_laplace, K = 2, maxiter = 500, rank_one_tol = 10^(-8), tol = 10^(-8), sign_constraint = NULL, refit_lam = TRUE)</code></pre>
@@ -6519,38 +5114,195 @@ residual matrix.</p>
 <p>This is a plot of the loadings estimate.</p>
 <pre class="r"><code>plot_loadings(symebcovmf_rank2_fit$L_pm %*% diag(sqrt(symebcovmf_rank2_fit$lambda)), pop_vec)</code></pre>
 <p><img src="figure/symebcovmf_laplace_split_init_tree.Rmd/unnamed-chunk-41-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-41-1">
+Past versions of unnamed-chunk-41-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-41-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/xxie6/symmetric_covariance_decomposition/blob/f885e9730bcb07ac7e25153546b1673fb60a1394/docs/figure/symebcovmf_laplace_split_init_tree.Rmd/unnamed-chunk-41-1.png" target="_blank">f885e97</a>
+</td>
+<td>
+Annie Xie
+</td>
+<td>
+2025-06-06
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <p>This is a heatmap of the residual matrix.</p>
 <pre class="r"><code>plot_heatmap(rank2_resid_matrix, colors_range = c(&#39;blue&#39;,&#39;gray96&#39;,&#39;red&#39;), brks = seq(-max(abs(rank2_resid_matrix)), max(abs(rank2_resid_matrix)), length.out = 50))</code></pre>
 <p><img src="figure/symebcovmf_laplace_split_init_tree.Rmd/unnamed-chunk-42-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-42-1">
+Past versions of unnamed-chunk-42-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-42-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/xxie6/symmetric_covariance_decomposition/blob/f885e9730bcb07ac7e25153546b1673fb60a1394/docs/figure/symebcovmf_laplace_split_init_tree.Rmd/unnamed-chunk-42-1.png" target="_blank">f885e97</a>
+</td>
+<td>
+Annie Xie
+</td>
+<td>
+2025-06-06
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<p>This is a plot of the first eigenvector of the residual matrix.</p>
+<pre class="r"><code>resid_eigen &lt;- eigen(rank2_resid_matrix)
+resid_eigen$values</code></pre>
+<pre><code>  [1] 171.5817410 161.0477430   3.2516791   1.8914179   1.8892252   1.8445382
+  [7]   1.7989350   1.7817983   1.7653639   1.7587534   1.7116793   1.6904454
+ [13]   1.6853211   1.6682292   1.6511509   1.6306350   1.6131266   1.6032930
+ [19]   1.5799509   1.5677465   1.5631696   1.5452447   1.5376858   1.5294380
+ [25]   1.5239760   1.4991336   1.4761502   1.4681943   1.4508299   1.4481685
+ [31]   1.4340859   1.4155236   1.4059527   1.3925235   1.3872993   1.3689563
+ [37]   1.3677734   1.3442793   1.3372803   1.3295967   1.3204132   1.3079759
+ [43]   1.3010454   1.2937344   1.2813388   1.2599870   1.2528666   1.2473444
+ [49]   1.2358413   1.2265607   1.2170689   1.2119752   1.1937849   1.1835297
+ [55]   1.1793317   1.1738489   1.1687484   1.1580997   1.1449292   1.1294945
+ [61]   1.1229274   1.1211860   1.1027313   1.0976771   1.0885924   1.0783609
+ [67]   1.0742387   1.0646267   1.0567169   1.0497815   1.0446594   1.0352619
+ [73]   1.0231551   1.0202241   1.0127963   1.0091184   0.9910066   0.9843088
+ [79]   0.9824849   0.9744871   0.9693053   0.9586122   0.9474930   0.9424152
+ [85]   0.9349859   0.9319622   0.9264306   0.9183672   0.9032314   0.8925687
+ [91]   0.8853594   0.8813229   0.8652179   0.8612146   0.8576021   0.8417088
+ [97]   0.8408568   0.8329830   0.8309242   0.8209424   0.8044145   0.7974273
+[103]   0.7959607   0.7913412   0.7840256   0.7729424   0.7702311   0.7618305
+[109]   0.7554943   0.7452685   0.7425875   0.7385187   0.7309928   0.7292538
+[115]   0.7216865   0.7141806   0.7042383   0.6922948   0.6839510   0.6763172
+[121]   0.6661686   0.6635065   0.6561362   0.6534873   0.6487729   0.6412373
+[127]   0.6348292   0.6310051   0.6238070   0.6168831   0.6124098   0.5966013
+[133]   0.5923681   0.5841064   0.5769160   0.5728452   0.5665683   0.5601079
+[139]   0.5524242   0.5421155   0.5399952   0.5348951   0.5261593   0.5101013
+[145]   0.5069525   0.5009029   0.4931631   0.4838358   0.4802523   0.4745828
+[151]   0.4707797   0.4656760   0.4555177   0.4502973   0.4331107   0.4239040
+[157]   0.4142222   0.4019326   0.3781879   0.3724339</code></pre>
+<pre class="r"><code>plot(resid_eigen$vectors[,1])</code></pre>
+<p><img src="figure/symebcovmf_laplace_split_init_tree.Rmd/unnamed-chunk-43-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>This is a heatmap of the component that corresponds to the first
+eigenvector.</p>
+<pre class="r"><code>plot_heatmap(tcrossprod(resid_eigen$vectors[,1]), colors_range = c(&#39;blue&#39;,&#39;gray96&#39;,&#39;red&#39;), brks = seq(-max(abs(tcrossprod(resid_eigen$vectors[,1]))), max(abs(tcrossprod(resid_eigen$vectors[,1]))), length.out = 50))</code></pre>
+<p><img src="figure/symebcovmf_laplace_split_init_tree.Rmd/unnamed-chunk-44-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-44-1">
+Past versions of unnamed-chunk-44-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-44-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/xxie6/symmetric_covariance_decomposition/blob/f885e9730bcb07ac7e25153546b1673fb60a1394/docs/figure/symebcovmf_laplace_split_init_tree.Rmd/unnamed-chunk-44-1.png" target="_blank">f885e97</a>
+</td>
+<td>
+Annie Xie
+</td>
+<td>
+2025-06-06
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div id="initialize-fit-with-true-factor" class="section level3">
+<h3>Initialize fit with true factor</h3>
 <p>Now, we try greedily fitting the third factor initialized with the
 true factor.</p>
 <pre class="r"><code>n &lt;- ncol(sim_data$YYt)
-true_fac3 &lt;- rep(c(1, -1, 0), times = c(n/4, n/4, n/2))
+true_fac3 &lt;- rep(c(0, 1, -1), times = c(n/2, n/4, n/4))
 symebcovmf_fac3_fit &lt;- sym_ebcovmf_r1_fit(sim_data$YYt, symebcovmf_rank2_fit, ebnm_fn = ebnm_point_laplace, maxiter = 100, tol = 10^(-8), v_init = true_fac3, sign_constraint = NULL)</code></pre>
 <p>This is a plot of the third factor estimate.</p>
 <pre class="r"><code>plot(symebcovmf_fac3_fit$L_pm[,3], ylab = &#39;Third Factor&#39;)</code></pre>
-<p><img src="figure/symebcovmf_laplace_split_init_tree.Rmd/unnamed-chunk-44-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p><img src="figure/symebcovmf_laplace_split_init_tree.Rmd/unnamed-chunk-46-1.png" width="672" style="display: block; margin: auto;" /></p>
 <p>This is a plot of the ELBO when optimizing the fourth factor.</p>
 <pre class="r"><code>fac3_idx &lt;- which(symebcovmf_fac3_fit$vec_elbo_full == 3)
 plot(symebcovmf_fac3_fit$vec_elbo_full[(fac3_idx+1): length(symebcovmf_fac3_fit$vec_elbo_full)], xlab = &#39;Iter&#39;, ylab = &#39;ELBO&#39;)</code></pre>
-<p><img src="figure/symebcovmf_laplace_split_init_tree.Rmd/unnamed-chunk-45-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p><img src="figure/symebcovmf_laplace_split_init_tree.Rmd/unnamed-chunk-47-1.png" width="672" style="display: block; margin: auto;" /></p>
 <p>This is the objective function value:</p>
 <pre class="r"><code>symebcovmf_fac3_fit$elbo</code></pre>
-<pre><code>[1] -21477.93</code></pre>
+<pre><code>[1] -21295.69</code></pre>
+</div>
+<div id="initialize-fit-with-default-initialization"
+class="section level3">
+<h3>Initialize fit with default initialization</h3>
 <p>This is the fit of the third factor if the default initialization
 procedure is used.</p>
 <pre class="r"><code>symebcovmf_fac3_default_init_fit &lt;- sym_ebcovmf_r1_fit(sim_data$YYt, symebcovmf_rank2_fit, ebnm_fn = ebnm_point_laplace, maxiter = 100, tol = 10^(-8), sign_constraint = NULL)</code></pre>
 <p>This is a plot of the third factor estimate.</p>
 <pre class="r"><code>plot(symebcovmf_fac3_default_init_fit$L_pm[,3], ylab = &#39;Third Factor&#39;)</code></pre>
-<p><img src="figure/symebcovmf_laplace_split_init_tree.Rmd/unnamed-chunk-48-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p><img src="figure/symebcovmf_laplace_split_init_tree.Rmd/unnamed-chunk-50-1.png" width="672" style="display: block; margin: auto;" /></p>
 <p>This is a plot of the ELBO when optimizing the third factor.</p>
 <pre class="r"><code>fac3_idx &lt;- which(symebcovmf_fac3_default_init_fit$vec_elbo_full == 3)
 plot(symebcovmf_fac3_default_init_fit$vec_elbo_full[(fac3_idx+1): length(symebcovmf_fac3_default_init_fit$vec_elbo_full)], xlab = &#39;Iter&#39;, ylab = &#39;ELBO&#39;)</code></pre>
-<p><img src="figure/symebcovmf_laplace_split_init_tree.Rmd/unnamed-chunk-49-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p><img src="figure/symebcovmf_laplace_split_init_tree.Rmd/unnamed-chunk-51-1.png" width="672" style="display: block; margin: auto;" /></p>
 <p>This is the objective function value:</p>
 <pre class="r"><code>symebcovmf_fac3_default_init_fit$elbo</code></pre>
 <pre><code>[1] -21150.65</code></pre>
-<p>This has a higher objective function value.</p>
+<p>This has a higher objective function value. This suggests that the
+greedy procedure prefers the estimate from the default initialization.
+However, the previous section suggests that for overall fit, the
+objective function prefers the sparser representation. So the greedy
+method may not be the way to attain the sparser representation?</p>
 <br>
 <p>
 <button type="button" class="btn btn-default btn-workflowr btn-workflowr-sessioninfo" data-toggle="collapse" data-target="#workflowr-sessioninfo" style="display: block;">
@@ -6599,6 +5351,7 @@ loaded via a namespace (and not attached):
 [61] irlba_2.3.5.1      rlang_1.1.4        Rcpp_1.0.13        mixsqp_0.3-54     
 [65] glue_1.8.0         rstudioapi_0.16.0  jsonlite_1.8.9     R6_2.5.1          
 [69] fs_1.6.4          </code></pre>
+</div>
 </div>
 </div>
 </div>
