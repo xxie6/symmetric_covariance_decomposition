@@ -402,6 +402,7 @@ ggplot(data = NULL, aes(x = as.vector(sim_data$YYt), y = as.vector(gram_est))) +
 # Observations
 We see that this procedure does not yield a tree-structured estimate. Instead of four single population effect factors, we have four factors each containing two population effects. The estimated Gram matrix looks close to the observed Gram matrix, suggesting an identifiability issue. This is a well-known issue with the tree setting. Given that the point-Laplace initialization did not recover the divergence factorization, it is not surprising to me that the method did not recover a tree. For the GBCD method, the point-Laplace fit after backfitting is able to recover the divergence factorization (the greedy point-Laplace fit alone does not recover the factorization).
 
+# Further Exploration
 ## point-Laplace backfit initialized from true values
 To test if there is a convergence issue in the point-Laplace fit, I try running symEBcovMF backfit with point-Laplace prior initialized with the true factorization.
 
@@ -445,7 +446,7 @@ symebcovmf_true_init_obj <- refit_lambda(S = sim_data$YYt, symebcovmf_true_init_
 
 Now, we run the backfit with point-Laplace prior.
 ```{r}
-symebcovmf_true_init_backfit <- sym_ebcovmf_backfit(sim_data$YYt, symebcovmf_true_init_obj, ebnm_fn = ebnm::ebnm_point_laplace, backfit_maxiter = 500)
+symebcovmf_true_init_backfit <- sym_ebcovmf_backfit(sim_data$YYt, symebcovmf_true_init_obj, ebnm_fn = ebnm::ebnm_point_laplace, backfit_maxiter = 100)
 ```
 
 This is a plot of the loadings estimate.
@@ -475,9 +476,11 @@ This is a plot of fitted vs. observed values:
 ggplot(data = NULL, aes(x = as.vector(sim_data$YYt), y = as.vector(true_init_gram_est))) + geom_point() + geom_abline(slope = 1, intercept = 0, color = 'red') + xlab('Observed Values') + ylab('Fitted Values')
 ```
 
+### Observations
 This obtains a higher objective function value than the fit found by greedy symEBcovMF with backfit. So perhaps this is a convergence issue? Is GBCD/EBcovMF better at finding sparse solutions?
 
-## Greedy fit of third factor initialized with true factor
+## Greedy fit of third factor
+Here, I investigate the greedy fit of the third factor.
 
 First, we apply symEBcovMF with `Kmax = 2` and compute the residual matrix.
 ```{r}
@@ -498,10 +501,24 @@ This is a heatmap of the residual matrix.
 plot_heatmap(rank2_resid_matrix, colors_range = c('blue','gray96','red'), brks = seq(-max(abs(rank2_resid_matrix)), max(abs(rank2_resid_matrix)), length.out = 50))
 ```
 
+This is a plot of the first eigenvector of the residual matrix.
+```{r}
+resid_eigen <- eigen(rank2_resid_matrix)
+resid_eigen$values
+
+plot(resid_eigen$vectors[,1])
+```
+
+This is a heatmap of the component that corresponds to the first eigenvector.
+```{r}
+plot_heatmap(tcrossprod(resid_eigen$vectors[,1]), colors_range = c('blue','gray96','red'), brks = seq(-max(abs(tcrossprod(resid_eigen$vectors[,1]))), max(abs(tcrossprod(resid_eigen$vectors[,1]))), length.out = 50))
+```
+
+### Initialize fit with true factor
 Now, we try greedily fitting the third factor initialized with the true factor.
 ```{r}
 n <- ncol(sim_data$YYt)
-true_fac3 <- rep(c(1, -1, 0), times = c(n/4, n/4, n/2))
+true_fac3 <- rep(c(0, 1, -1), times = c(n/2, n/4, n/4))
 symebcovmf_fac3_fit <- sym_ebcovmf_r1_fit(sim_data$YYt, symebcovmf_rank2_fit, ebnm_fn = ebnm_point_laplace, maxiter = 100, tol = 10^(-8), v_init = true_fac3, sign_constraint = NULL)
 ```
 
@@ -521,6 +538,7 @@ This is the objective function value:
 symebcovmf_fac3_fit$elbo
 ```
 
+### Initialize fit with default initialization
 This is the fit of the third factor if the default initialization procedure is used.
 ```{r}
 symebcovmf_fac3_default_init_fit <- sym_ebcovmf_r1_fit(sim_data$YYt, symebcovmf_rank2_fit, ebnm_fn = ebnm_point_laplace, maxiter = 100, tol = 10^(-8), sign_constraint = NULL)
@@ -542,4 +560,4 @@ This is the objective function value:
 symebcovmf_fac3_default_init_fit$elbo
 ```
 
-This has a higher objective function value.
+This has a higher objective function value. This suggests that the greedy procedure prefers the estimate from the default initialization. However, the previous section suggests that for overall fit, the objective function prefers the sparser representation. So the greedy method may not be the way to attain the sparser representation?
