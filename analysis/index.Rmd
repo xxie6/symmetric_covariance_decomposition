@@ -30,6 +30,8 @@ Analyses related to initialization:
 * Exploration of [generalized binary symEBcovMF with point exponential initialization](symebcovmf_point_exp_init.html)  
 * Exploration of [generalized binary symEBcovMF backfit initialized with point exponential](symebcovmf_gb_point_exp_backfit.html)   
 * Exploration of [point exponential symEBcovMF backfit initialized with point laplace plus splitting](symebcovmf_laplace_split_init_tree.html)     
+* Exploration of [point laplace symEBcovMF backfit in tree setting](symebcovmf_laplace_exploration.html)   
+* Exploration of [point laplace greedy symEBcovMF in tree setting](symebcovmf_laplace_model_exploration.html)   
 
 Tree residual matrix example:  
 * Checking [convergence](symebcovmf_gb_tree_exploration.html)  
