@@ -373,8 +373,6 @@ plot_loadings(flash_cov_backfit_fit$F_pm, bal_pops)
 
 When applying greedy-flash to the Gram matrix, we get a similar estimate to that of greedy symEBcovMF. In particular, the third and fourth factors are not sparse. However, after backfitting, the method finds the sparse representation. Flashier only requires about 100 backfit iterations to yield an estimate which looks sparse. The backfit procedure for flashier seems to be much faster than the backfit procedure for symEBcovMF. I'm not sure if this is due to coding or the choice of convergence tolerance or something else. I imagine that EBMFcov has a similar performance to flashier.
 
-When comparing number of backfit iterations, I'd imagine that flashier would require fewer iterations since the loadings estimate is essentially backfit twice during one backfit iteration -- once when backfitting the loadings and again when backfitting the factors.
-
 ## EBMFcov
 
 We also test EBMFcov. First, we try the version of EBMFcov that fits the flashier fit with the greedy method.
