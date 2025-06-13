@@ -1,0 +1,476 @@
+---
+title: "symebcovmf_laplace_exploration"
+author: "Annie Xie"
+date: "2025-06-07"
+output: 
+  workflowr::wflow_html:
+    code_folding: hide
+editor_options:
+  chunk_output_type: console
+---
+
+# Introduction
+In this analysis, we explore symEBcovMF with the point-Laplace prior in the tree setting.
+
+## Motivation
+GBCD uses an initialization scheme that fits a point-Laplace prior fit. I wanted to try a similar initialization procedure for symEBcovMF. Therefore, I tried it on tree-structured data. When I tried it, I found that it didn't work, and the reason it didn't work is because the point-Laplace fit was not a divergence factorization. We expect that the symEBcovMF method should also be able to find a divergence factorization. Therefore, the purpose of this analysis is to explore why it does not.
+
+# Packages and Functions
+
+```{r}
+library(ebnm)
+library(pheatmap)
+library(ggplot2)
+```
+
+```{r}
+source('code/visualization_functions.R')
+source('code/symebcovmf_functions.R')
+```
+
+```{r}
+compute_L2_fit <- function(est, dat){
+  score <- sum((dat - est)^2) - sum((diag(dat) - diag(est))^2)
+  return(score)
+}
+```
+
+# Backfit Functions
+
+```{r}
+optimize_factor <- function(R, ebnm_fn, maxiter, tol, v_init, lambda_k, R2k, n, KL){
+  R2 <- R2k - lambda_k^2
+  resid_s2 <- estimate_resid_s2(n = n, R2 = R2)
+  rank_one_KL <- 0
+  curr_elbo <- -Inf
+  obj_diff <- Inf
+  fitted_g_k <- NULL
+  iter <- 1
+  vec_elbo_full <- NULL
+  v <- v_init
+  
+  while((iter <= maxiter) && (obj_diff > tol)){
+    # update l; power iteration step
+    v.old <- v
+    x <- R %*% v
+    e <- ebnm_fn(x = x, s = sqrt(resid_s2), g_init = fitted_g_k)
+    scaling_factor <- sqrt(sum(e$posterior$mean^2) + sum(e$posterior$sd^2))
+    if (scaling_factor == 0){ # check if scaling factor is zero
+      scaling_factor <- Inf
+      v <- e$posterior$mean/scaling_factor
+      print('Warning: scaling factor is zero')
+      break
+    }
+    v <- e$posterior$mean/scaling_factor
+    
+    # update lambda and R2
+    lambda_k.old <- lambda_k
+    lambda_k <- max(as.numeric(t(v) %*% R %*% v), 0)
+    R2 <- R2k - lambda_k^2
+    
+    #store estimate for g
+    fitted_g_k.old <- fitted_g_k
+    fitted_g_k <- e$fitted_g
+    
+    # store KL
+    rank_one_KL.old <- rank_one_KL
+    rank_one_KL <- as.numeric(e$log_likelihood) +
+      - normal_means_loglik(x, sqrt(resid_s2), e$posterior$mean, e$posterior$mean^2 + e$posterior$sd^2)
+    
+    # update resid_s2
+    resid_s2.old <- resid_s2
+    resid_s2 <- estimate_resid_s2(n = n, R2 = R2) # this goes negative?????
+    
+    # check convergence - maybe change to rank-one obj function
+    curr_elbo.old <- curr_elbo
+    curr_elbo <- compute_elbo(resid_s2 = resid_s2,
+                              n = n,
+                              KL = c(KL, rank_one_KL),
+                              R2 = R2)
+    if (iter > 1){
+      obj_diff <- curr_elbo - curr_elbo.old
+    }
+    if (obj_diff < 0){ # check if convergence_val < 0
+      v <- v.old
+      resid_s2 <- resid_s2.old
+      rank_one_KL <- rank_one_KL.old
+      lambda_k <- lambda_k.old
+      curr_elbo <- curr_elbo.old
+      fitted_g_k <- fitted_g_k.old
+      print(paste('elbo decreased by', abs(obj_diff)))
+      break
+    }
+    vec_elbo_full <- c(vec_elbo_full, curr_elbo)
+    iter <- iter + 1
+  }
+  return(list(v = v, lambda_k = lambda_k, resid_s2 = resid_s2, curr_elbo = curr_elbo, vec_elbo_full = vec_elbo_full, fitted_g_k = fitted_g_k, rank_one_KL = rank_one_KL))
+}
+```
+
+```{r, eval = FALSE, include = FALSE}
+sym_ebcovmf_r1_fit_use_optim_fun <- function(S, sym_ebcovmf_obj, ebnm_fn, maxiter, tol, v_init = NULL){
+  # compute residual matrix (maybe get rid of this step)
+  if (is.null(sym_ebcovmf_obj$L_pm) == FALSE){
+    K <- length(sym_ebcovmf_obj$lambda) + 1
+    R <- S - tcrossprod(sym_ebcovmf_obj$L_pm %*% diag(sqrt(sym_ebcovmf_obj$lambda), ncol = (K-1)))
+    R2k <- compute_R2(S, sym_ebcovmf_obj$L_pm, sym_ebcovmf_obj$lambda, (K-1))
+  } else {
+    K <- 1
+    R <- S
+    R2k <- sum(S^2)
+  }
+  
+  # initialize estimate for l
+  if (is.null(v_init) == TRUE){
+    sym_ebcovmf_v_init <- sym_ebcovmf_r1_init(R)
+    v <- sym_ebcovmf_v_init$v
+    lambda_k <- sym_ebcovmf_v_init$lambda_k
+  } else {
+    v <- v_init
+    v <- v/sqrt(sum(v^2))
+    lambda_k <- drop(t(v) %*% R %*% v)
+  }
+  
+  # optimize factor
+  factor_proposed <- optimize_factor(R, ebnm_fn, maxiter, tol, v, lambda_k, R2k, sym_ebcovmf_obj$n, sym_ebcovmf_obj$KL)
+  lambda_k <- factor_proposed$lambda_k
+  v <- factor_proposed$v
+  
+  # nullcheck
+  if((lambda_k > 0) & (sqrt(sum(v^2)) > 10^(-8))){
+    sym_ebcovmf_obj$L_pm <- cbind(sym_ebcovmf_obj$L_pm, v)
+    sym_ebcovmf_obj$KL[K] <- factor_proposed$rank_one_KL
+    sym_ebcovmf_obj$lambda[K] <- lambda_k
+    sym_ebcovmf_obj$resid_s2 <- factor_proposed$resid_s2
+    sym_ebcovmf_obj$fitted_gs[[K]] <- factor_proposed$fitted_g_k
+    sym_ebcovmf_obj$elbo <- factor_proposed$curr_elbo
+    sym_ebcovmf_obj$vec_elbo_full <- c(sym_ebcovmf_obj$vec_elbo_full, K, factor_proposed$vec_elbo_full)
+    sym_ebcovmf_obj$vec_elbo_K <- c(sym_ebcovmf_obj$vec_elbo_K,  factor_proposed$curr_elbo) # maybe will change this
+  }
+  return(sym_ebcovmf_obj)
+}
+```
+
+```{r}
+#nullcheck function
+nullcheck_factors <- function(sym_ebcovmf_obj, L2_tol = 10^(-8)){
+  null_lambda_idx <- which(sym_ebcovmf_obj$lambda == 0)
+  factor_L2_norms <- apply(sym_ebcovmf_obj$L_pm, 2, function(v){sqrt(sum(v^2))})
+  null_factor_idx <- which(factor_L2_norms < L2_tol)
+  null_idx <- unique(c(null_lambda_idx, null_factor_idx))
+  
+  keep_idx <- setdiff(c(1:length(sym_ebcovmf_obj$lambda)), null_idx)
+  
+  if (length(keep_idx) < length(sym_ebcovmf_obj$lambda)){
+    #remove factors
+    sym_ebcovmf_obj$L_pm <- sym_ebcovmf_obj$L_pm[,keep_idx]
+    sym_ebcovmf_obj$lambda <- sym_ebcovmf_obj$lambda[keep_idx]
+    sym_ebcovmf_obj$KL <- sym_ebcovmf_obj$KL[keep_idx]
+    sym_ebcovmf_obj$fitted_gs <- sym_ebcovmf_obj$fitted_gs[keep_idx]
+  }
+  
+  #shouldn't need to recompute objective function or other things
+  return(sym_ebcovmf_obj)
+}
+```
+
+```{r}
+sym_ebcovmf_backfit <- function(S, sym_ebcovmf_obj, ebnm_fn, backfit_maxiter = 100, backfit_tol = 10^(-8), optim_maxiter= 500, optim_tol = 10^(-8)){
+  K <- length(sym_ebcovmf_obj$lambda)
+  iter <- 1
+  obj_diff <- Inf
+  sym_ebcovmf_obj$backfit_vec_elbo_full <- NULL
+  
+  # refit lambda
+  sym_ebcovmf_obj <- refit_lambda(S, sym_ebcovmf_obj, maxiter = 25)
+  
+  while((iter <= backfit_maxiter) && (obj_diff > backfit_tol)){
+    print(iter)
+    obj_old <- sym_ebcovmf_obj$elbo
+    # loop through each factor
+    for (k in 1:K){
+      # print(k)
+      # compute residual matrix
+      R <- S - tcrossprod(sym_ebcovmf_obj$L_pm[,-k] %*% diag(sqrt(sym_ebcovmf_obj$lambda[-k]), ncol = (K-1)))
+      R2k <- compute_R2(S, sym_ebcovmf_obj$L_pm[,-k], sym_ebcovmf_obj$lambda[-k], (K-1)) #this is right but I have one instance where the values don't match what I expect
+      
+      # optimize factor
+      factor_proposed <- optimize_factor(R, ebnm_fn, optim_maxiter, optim_tol, sym_ebcovmf_obj$L_pm[,k], sym_ebcovmf_obj$lambda[k], R2k, sym_ebcovmf_obj$n, sym_ebcovmf_obj$KL[-k])
+      
+      # update object
+      sym_ebcovmf_obj$L_pm[,k] <- factor_proposed$v
+      sym_ebcovmf_obj$KL[k] <- factor_proposed$rank_one_KL
+      sym_ebcovmf_obj$lambda[k] <- factor_proposed$lambda_k
+      sym_ebcovmf_obj$resid_s2 <- factor_proposed$resid_s2
+      sym_ebcovmf_obj$fitted_gs[[k]] <- factor_proposed$fitted_g_k
+      sym_ebcovmf_obj$elbo <- factor_proposed$curr_elbo
+      sym_ebcovmf_obj$backfit_vec_elbo_full <- c(sym_ebcovmf_obj$backfit_vec_elbo_full, factor_proposed$vec_elbo_full)
+      
+      #print(sym_ebcovmf_obj$elbo)
+      sym_ebcovmf_obj <- refit_lambda(S, sym_ebcovmf_obj) # add refitting step?
+      #print(sym_ebcovmf_obj$elbo)
+    }
+    
+    iter <- iter + 1
+    obj_diff <- abs(sym_ebcovmf_obj$elbo - obj_old)
+    # need to add check if it is negative?
+  }
+  # nullcheck
+  sym_ebcovmf_obj <- nullcheck_factors(sym_ebcovmf_obj)
+  return(sym_ebcovmf_obj)
+}
+```
+
+# Data Generation
+To test this procedure, I will apply it to the tree-structured dataset.
+
+```{r}
+sim_4pops <- function(args) {
+  set.seed(args$seed)
+  
+  n <- sum(args$pop_sizes)
+  p <- args$n_genes
+  
+  FF <- matrix(rnorm(7 * p, sd = rep(args$branch_sds, each = p)), ncol = 7)
+  # if (args$constrain_F) {
+  #   FF_svd <- svd(FF)
+  #   FF <- FF_svd$u
+  #   FF <- t(t(FF) * branch_sds * sqrt(p))
+  # }
+  
+  LL <- matrix(0, nrow = n, ncol = 7)
+  LL[, 1] <- 1
+  LL[, 2] <- rep(c(1, 1, 0, 0), times = args$pop_sizes)
+  LL[, 3] <- rep(c(0, 0, 1, 1), times = args$pop_sizes)
+  LL[, 4] <- rep(c(1, 0, 0, 0), times = args$pop_sizes)
+  LL[, 5] <- rep(c(0, 1, 0, 0), times = args$pop_sizes)
+  LL[, 6] <- rep(c(0, 0, 1, 0), times = args$pop_sizes)
+  LL[, 7] <- rep(c(0, 0, 0, 1), times = args$pop_sizes)
+  
+  E <- matrix(rnorm(n * p, sd = args$indiv_sd), nrow = n)
+  Y <- LL %*% t(FF) + E
+  YYt <- (1/p)*tcrossprod(Y)
+  return(list(Y = Y, YYt = YYt, LL = LL, FF = FF, K = ncol(LL)))
+}
+```
+
+```{r}
+sim_args = list(pop_sizes = rep(40, 4), n_genes = 1000, branch_sds = rep(2,7), indiv_sd = 1, seed = 1)
+sim_data <- sim_4pops(sim_args)
+```
+
+This is a heatmap of the scaled Gram matrix:
+```{r}
+plot_heatmap(sim_data$YYt, colors_range = c('blue','gray96','red'), brks = seq(-max(abs(sim_data$YYt)), max(abs(sim_data$YYt)), length.out = 50))
+```
+
+This is a scatter plot of the true loadings matrix:
+```{r}
+pop_vec <- c(rep('A', 40), rep('B', 40), rep('C', 40), rep('D', 40))
+plot_loadings(sim_data$LL, pop_vec)
+```
+
+This is a plot of the eigenvalues of the Gram matrix:
+```{r}
+S_eigen <- eigen(sim_data$YYt)
+plot(S_eigen$values) + abline(a = 0, b = 0, col = 'red')
+```
+
+This is the minimum eigenvalue:
+```{r}
+min(S_eigen$values)
+```
+
+# symEBcovMF with point-Laplace
+
+First, we start with running greedy symEBcovMF with the point-Laplace prior.
+```{r}
+symebcovmf_fit <- sym_ebcovmf_fit(S = sim_data$YYt, ebnm_fn = ebnm::ebnm_point_laplace, K = 7, maxiter = 500, rank_one_tol = 10^(-8), tol = 10^(-8), sign_constraint = NULL, refit_lam = TRUE)
+```
+
+This is a scatter plot of $\hat{L}_{pt-laplace}$, the estimate from symEBcovMF:
+```{r}
+bal_pops <- c(rep('A', 40), rep('B', 40), rep('C', 40), rep('D', 40))
+plot_loadings(symebcovmf_fit$L_pm %*% diag(sqrt(symebcovmf_fit$lambda)), bal_pops)
+```
+
+This is the objective function value attained:
+```{r}
+symebcovmf_fit$elbo
+```
+
+## Observations
+symEBcovMF with point-Laplace prior does not find a divergence factorization. We want the third factor to have zero loading for one branch of populations, and then positive loading for one population and negative loading for the remaining population. We want something analogous for the fourth factor. However, symEBcovMF has found a different third and fourth factor.
+
+Intuitively, the sparser representation should have a higher objective function value due to the sparsity-inducing prior. So we would expect the method to find the sparser representation.
+
+## Additional Backfit
+GBCD does additional backfitting on the point-Laplace fit, so here I test how additional backfitting performs. However, Matthew told me that he thinks it would be difficult to recover the sparse representation from the backfit since all the factors are non-sparse and reinforce each other. In this analysis, I run the backfitting for more iterations than in the original analysis.
+
+```{r, results = "hide"}
+symebcovmf_fit_backfit <- sym_ebcovmf_backfit(sim_data$YYt, symebcovmf_fit, ebnm_fn = ebnm_point_laplace, backfit_maxiter = 20000)
+```
+
+This is a scatter plot of $\hat{L}_{pt-laplace-backfit}$, the estimate from symEBcovMF with backfit:
+```{r}
+bal_pops <- c(rep('A', 40), rep('B', 40), rep('C', 40), rep('D', 40))
+plot_loadings(symebcovmf_fit_backfit$L_pm %*% diag(sqrt(symebcovmf_fit_backfit$lambda)), bal_pops)
+```
+
+This is the objective function value attained:
+```{r}
+symebcovmf_fit_backfit$elbo
+```
+
+This is a plot of (part of) the progression of the ELBO:
+```{r}
+plot(symebcovmf_fit_backfit$backfit_vec_elbo_full[130000: length(symebcovmf_fit_backfit$backfit_vec_elbo_full)], ylab = 'ELBO')
+```
+
+I tested backfitting for various numbers of iterations. If I backfit for longer, e.g. at least 20,000 iterations, then eventually the method finds the sparse representation. Therefore, the method does work when backfit for long enough.
+
+# Exploration of other methods
+I want to compare the performance of symEBcovMF to that of other methods, in particular flashier and EBCD.
+
+## Flashier
+First, we run greedy-flash on $S$:
+```{r}
+library(flashier)
+```
+
+```{r}
+flash_cov_fit <- flash_init(data = sim_data$YYt) |>
+  flash_greedy(Kmax = 4, ebnm_fn = ebnm::ebnm_point_laplace)
+```
+
+This is a plot of the loadings estimate, $\hat{L}_{flash}$:
+```{r}
+plot_loadings(flash_cov_fit$L_pm, bal_pops)
+```
+
+This is a plot of the factor estimate, $\hat{F}_{flash}$. Note that because $S$ is symmetric, we expect the loadings estimate and factor estimate to be about the same (up to a scaling):
+```{r}
+plot_loadings(flash_cov_fit$F_pm, bal_pops)
+```
+
+We see that the loadings estimate looks similar to what greedy-symEBcovMF found. 
+
+Now, we try backfitting.
+```{r}
+flash_cov_backfit_fit <- flash_cov_fit |>
+  flash_backfit(maxiter = 100)
+```
+
+This is a plot of the loadings estimate, $\hat{L}_{flash-backfit}$:
+```{r}
+plot_loadings(flash_cov_backfit_fit$L_pm, bal_pops)
+```
+
+This is a plot of the factor estimate, $\hat{F}_{flash-backfit}$.
+```{r}
+plot_loadings(flash_cov_backfit_fit$F_pm, bal_pops)
+```
+
+When applying greedy-flash to the Gram matrix, we get a similar estimate to that of greedy symEBcovMF. In particular, the third and fourth factors are not sparse. However, after backfitting, the method finds the sparse representation. Flashier only requires about 100 backfit iterations to yield an estimate which looks sparse. The backfit procedure for flashier seems to be much faster than the backfit procedure for symEBcovMF. I'm not sure if this is due to coding or the choice of convergence tolerance or something else. I imagine that EBMFcov has a similar performance to flashier.
+
+When comparing number of backfit iterations, I'd imagine that flashier would require fewer iterations since the loadings estimate is essentially backfit twice during one backfit iteration -- once when backfitting the loadings and again when backfitting the factors.
+
+## EBMFcov
+
+We also test EBMFcov. First, we try the version of EBMFcov that fits the flashier fit with the greedy method.
+
+```{r}
+cov_fit <- function(covmat, ebnm_fn = ebnm::ebnm_point_laplace, Kmax = 1000, verbose.lvl = 0, backfit = FALSE, backfit_maxiter = 500) {
+  fl <- flash_init(covmat, var_type = 0) |>
+    flash_set_verbose(verbose.lvl) |>
+    flash_greedy(ebnm_fn = ebnm_fn, Kmax = Kmax)
+  if (backfit == TRUE){
+      fl <- fl |>
+        flash_backfit(maxiter = backfit_maxiter)
+    }
+  s2 <- max(0, mean(diag(covmat) - diag(fitted(fl))))
+  s2_diff <- Inf
+  while(s2 > 0 && abs(s2_diff - 1) > 1e-4) {
+    covmat_minuss2 <- covmat - diag(rep(s2, ncol(covmat)))
+    fl <- fl |>
+      flash_update_data(covmat_minuss2) |>
+      flash_set_verbose(verbose.lvl)
+    if (backfit == TRUE){
+      fl <- fl |>
+        flash_backfit(maxiter = backfit_maxiter)
+    }
+    old_s2 <- s2
+    s2 <- max(0, mean(diag(covmat) - diag(fitted(fl))))
+    s2_diff <- s2 / old_s2
+  }
+  
+  return(list(fl=fl, s2 = s2))
+}
+```
+
+```{r}
+ebmfcov_diag_fit <- cov_fit(sim_data$YYt, 
+                             ebnm::ebnm_point_laplace,
+                             Kmax = 4)
+```
+
+This is a plot of the loadings estimate, $\hat{L}_{ebmfcov}$:
+```{r}
+plot_loadings(ebmfcov_diag_fit$fl$L_pm, bal_pops)
+```
+
+This is a plot of the factor estimate, $\hat{F}_{ebmfcov}$. Note that because $S$ is symmetric, we expect the loadings estimate and factor estimate to be about the same (up to a scaling):
+```{r}
+plot_loadings(ebmfcov_diag_fit$fl$F_pm, bal_pops)
+```
+
+Similar to flash, the loadings estimate looks similar to what greedy-symEBcovMF found. 
+
+Now, we try adding backfitting.
+```{r}
+ebmfcov_diag_backfit_fit <- cov_fit(sim_data$YYt, 
+                             ebnm::ebnm_point_laplace,
+                             Kmax = 4, backfit = TRUE)
+```
+
+This is a plot of the loadings estimate, $\hat{L}_{ebmfcov-backfit}$:
+```{r}
+plot_loadings(ebmfcov_diag_backfit_fit$fl$L_pm, bal_pops)
+```
+
+This is a plot of the factor estimate, $\hat{F}_{ebmfcov-backfit}$.
+```{r}
+plot_loadings(ebmfcov_diag_backfit_fit$fl$F_pm, bal_pops)
+```
+
+When we add backfitting to the procedure, we see that the method does find the sparse representation.
+
+## EBCD
+
+We also test EBCD. First, we apply EBCD's greedy initialization procedure.
+```{r}
+library(ebcd)
+```
+
+```{r}
+set.seed(1)
+ebcd_init_obj <- ebcd_init(X = t(sim_data$Y))
+ebcd_greedy_fit <- ebcd_greedy(ebcd_init_obj, Kmax = 4, ebnm_fn = ebnm::ebnm_point_laplace)
+```
+
+This is a plot of the loadings estimate $\hat{L}_{ebcd-greedy}$:
+```{r}
+plot_loadings(ebcd_greedy_fit$EL, bal_pops)
+```
+
+Now, we backfit.
+```{r}
+ebcd_fit <- ebcd_backfit(ebcd_greedy_fit)
+```
+
+This is a plot of the loadings estimate $\hat{L}_{ebcd-backfit}$:
+```{r}
+plot_loadings(ebcd_fit$EL, bal_pops)
+```
+
+For EBCD, we see similar performance -- the greedy method finds a representation that is not sparse, and the backfitting yields the sparse representation. Question: is the backfit of the these methods faster than that of symEBcovMF?
