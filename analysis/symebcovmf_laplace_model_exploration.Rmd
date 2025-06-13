@@ -1,0 +1,226 @@
+---
+title: "symebcovmf_laplace_model_exploration"
+author: "Annie Xie"
+date: "2025-06-12"
+output: 
+  workflowr::wflow_html:
+    code_folding: hide
+editor_options:
+  chunk_output_type: console
+---
+
+# Introduction
+In this analysis, we explore symEBcovMF with the point-Laplace prior in the tree setting.
+
+## Motivation
+In previous analyses, I ran greedy-symEBcovMF with the point-Laplace prior in the tree setting, and the method found a non-sparse representation of the data. However, intuitively the sparse representation should have a higher objective function value. I found that for a full four-factor fit, the sparse representation does have a higher objective function value, but when adding each factor, the greedy procedure prefers the non-sparse factors.
+
+In this analysis, I investigate why the greedy method prefers the non-sparse representation. One explanation is the model misspecification. One source of model misspecification is that $F$ is not exactly orthogonal. Another source of model misspecification is the noise distribution. The symEBcovMF model assumes the Gram matrix is low rank plus normal noise. To generate the data, normal noise is instead added to the data matrix.
+
+# Packages and Functions
+
+```{r}
+library(ebnm)
+library(pheatmap)
+library(ggplot2)
+```
+
+```{r}
+source('code/visualization_functions.R')
+source('code/symebcovmf_functions.R')
+```
+
+```{r}
+compute_L2_fit <- function(est, dat){
+  score <- sum((dat - est)^2) - sum((diag(dat) - diag(est))^2)
+  return(score)
+}
+```
+
+# Data Generation
+In this analysis, we work with the tree-structured dataset.
+
+```{r}
+sim_4pops <- function(args) {
+  set.seed(args$seed)
+  
+  n <- sum(args$pop_sizes)
+  p <- args$n_genes
+  
+  FF <- matrix(rnorm(7 * p, sd = rep(args$branch_sds, each = p)), ncol = 7)
+  if (args$constrain_F) {
+    FF_svd <- svd(FF)
+    FF <- FF_svd$u
+    FF <- t(t(FF) * args$branch_sds * sqrt(p))
+  }
+  
+  LL <- matrix(0, nrow = n, ncol = 7)
+  LL[, 1] <- 1
+  LL[, 2] <- rep(c(1, 1, 0, 0), times = args$pop_sizes)
+  LL[, 3] <- rep(c(0, 0, 1, 1), times = args$pop_sizes)
+  LL[, 4] <- rep(c(1, 0, 0, 0), times = args$pop_sizes)
+  LL[, 5] <- rep(c(0, 1, 0, 0), times = args$pop_sizes)
+  LL[, 6] <- rep(c(0, 0, 1, 0), times = args$pop_sizes)
+  LL[, 7] <- rep(c(0, 0, 0, 1), times = args$pop_sizes)
+  
+  E <- matrix(rnorm(n * p, sd = args$indiv_sd), nrow = n)
+  Y <- LL %*% t(FF) + E
+  YYt <- (1/p)*tcrossprod(Y)
+  return(list(Y = Y, YYt = YYt, LL = LL, FF = FF, K = ncol(LL)))
+}
+```
+
+```{r}
+sim_args = list(pop_sizes = rep(40, 4), n_genes = 1000, branch_sds = rep(2,7), indiv_sd = 1, seed = 1, constrain_F = FALSE)
+sim_data <- sim_4pops(sim_args)
+```
+
+This is a heatmap of the scaled Gram matrix:
+```{r}
+plot_heatmap(sim_data$YYt, colors_range = c('blue','gray96','red'), brks = seq(-max(abs(sim_data$YYt)), max(abs(sim_data$YYt)), length.out = 50))
+```
+
+This is a scatter plot of the true loadings matrix:
+```{r}
+pop_vec <- c(rep('A', 40), rep('B', 40), rep('C', 40), rep('D', 40))
+plot_loadings(sim_data$LL, pop_vec)
+```
+
+This is a plot of the eigenvalues of the Gram matrix:
+```{r}
+S_eigen <- eigen(sim_data$YYt)
+plot(S_eigen$values) + abline(a = 0, b = 0, col = 'red')
+```
+
+This is the minimum eigenvalue:
+```{r}
+min(S_eigen$values)
+```
+
+# symEBcovMF with point-Laplace
+
+First, we start with running greedy symEBcovMF with the point-Laplace prior.
+```{r}
+symebcovmf_fit <- sym_ebcovmf_fit(S = sim_data$YYt, ebnm_fn = ebnm::ebnm_point_laplace, K = 7, maxiter = 500, rank_one_tol = 10^(-8), tol = 10^(-8), sign_constraint = NULL, refit_lam = TRUE)
+```
+
+This is a scatter plot of $\hat{L}_{pt-laplace}$, the estimate from symEBcovMF:
+```{r}
+bal_pops <- c(rep('A', 40), rep('B', 40), rep('C', 40), rep('D', 40))
+plot_loadings(symebcovmf_fit$L_pm %*% diag(sqrt(symebcovmf_fit$lambda)), bal_pops)
+```
+
+This is the objective function value attained:
+```{r}
+symebcovmf_fit$elbo
+```
+
+## Observations
+symEBcovMF with point-Laplace prior does not find a divergence factorization. We want the third factor to have zero loading for one branch of populations, and then positive loading for one population and negative loading for the remaining population. We want something analogous for the fourth factor. However, symEBcovMF has found a different third and fourth factor.
+
+Intuitively, the sparser representation should have a higher objective function value due to the sparsity-inducing prior. So we would expect the method to find the sparser representation.
+
+# Noiseless case
+I consider a setting where we don't add noise to the data matrix. Thus, $S = LF'FL'$. If the misspecification of noise is an issue, then I would expect symEBcovMF to get different results in this setting.
+
+## symEBcovMF on LF'FL'
+```{r}
+YYt_no_noise <- tcrossprod(tcrossprod(sim_data$LL, sim_data$FF))
+```
+
+This is a heatmap of the Gram matrix, $S = LF'FL'$:
+```{r}
+plot_heatmap(YYt_no_noise, colors_range = c('blue','gray96','red'), brks = seq(-max(abs(YYt_no_noise)), max(abs(YYt_no_noise)), length.out = 50))
+```
+
+This is a plot of the first four eigenvectors:
+```{r}
+YYt_no_noise_eigen <- eigen(YYt_no_noise)
+plot_loadings(YYt_no_noise_eigen$vectors[,c(1:4)], bal_pops)
+```
+
+```{r}
+symebcovmf_no_noise_fit <- sym_ebcovmf_fit(S = YYt_no_noise, ebnm_fn = ebnm::ebnm_point_laplace, K = 4, maxiter = 500, rank_one_tol = 10^(-8), tol = 10^(-8), sign_constraint = NULL, refit_lam = TRUE)
+```
+
+This is a plot of the loadings estimate, $\hat{L}$:
+```{r}
+plot_loadings(symebcovmf_no_noise_fit$L_pm, bal_pops)
+```
+
+We see that the loadings estimate is still non-sparse.
+
+## symEBcovMF on LL'
+Now, I want to try running symEBcovMF on $LL'$ instead, i.e. we are assuming that $F$ is orthogonal. 
+
+```{r}
+YYt_orthog_no_noise <- tcrossprod(sim_data$LL)
+```
+
+This is a heatmap of the Gram matrix, $S = LL'$:
+```{r}
+plot_heatmap(YYt_orthog_no_noise, colors_range = c('blue','gray96','red'), brks = seq(-max(abs(YYt_orthog_no_noise)), max(abs(YYt_orthog_no_noise)), length.out = 50))
+```
+
+This is a plot of the first four eigenvectors:
+```{r}
+YYt_orthog_no_noise_eigen <- eigen(YYt_orthog_no_noise)
+plot_loadings(YYt_orthog_no_noise_eigen$vectors[,c(1:4)], bal_pops)
+```
+
+```{r}
+symebcovmf_no_noise_orthog_fit <- sym_ebcovmf_fit(S = YYt_orthog_no_noise, ebnm_fn = ebnm::ebnm_point_laplace, K = 4, maxiter = 500, rank_one_tol = 10^(-8), tol = 10^(-8), sign_constraint = NULL, refit_lam = TRUE)
+```
+
+This is a plot of the loadings estimate, $\hat{L}$:
+```{r}
+plot_loadings(symebcovmf_no_noise_orthog_fit$L_pm, bal_pops)
+```
+
+In this setting, the loadings estimate is the sparse representation. Perhaps $F$ not being exactly orthogonal is why greedy-symEBcovMF is not finding the sparse representation?
+
+# Use orthogonal F in data generation
+Now, I try generating noisy data with an orthogonal $F$.
+
+```{r}
+sim_args_orthog_F = list(pop_sizes = rep(40, 4), n_genes = 1000, branch_sds = rep(2,7), indiv_sd = 1, seed = 1, constrain_F = TRUE)
+sim_data_orthog_F <- sim_4pops(sim_args_orthog_F)
+```
+
+This is a heatmap of the scaled Gram matrix:
+```{r}
+plot_heatmap(sim_data_orthog_F$YYt, colors_range = c('blue','gray96','red'), brks = seq(-max(abs(sim_data_orthog_F$YYt)), max(abs(sim_data_orthog_F$YYt)), length.out = 50))
+```
+
+This is a scatter plot of the true loadings matrix:
+```{r}
+pop_vec <- c(rep('A', 40), rep('B', 40), rep('C', 40), rep('D', 40))
+plot_loadings(sim_data_orthog_F$LL, pop_vec)
+```
+
+This is a plot of the eigenvalues of the Gram matrix:
+```{r}
+S_orthog_F_eigen <- eigen(sim_data_orthog_F$YYt)
+plot(S_orthog_F_eigen$values) + abline(a = 0, b = 0, col = 'red')
+```
+
+This is the minimum eigenvalue:
+```{r}
+min(S_orthog_F_eigen$values)
+```
+
+## symEBcovMF
+First, we start with running greedy symEBcovMF with the point-Laplace prior.
+```{r}
+symebcovmf_orthog_F_fit <- sym_ebcovmf_fit(S = sim_data_orthog_F$YYt, ebnm_fn = ebnm::ebnm_point_laplace, K = 4, maxiter = 500, rank_one_tol = 10^(-8), tol = 10^(-8), sign_constraint = NULL, refit_lam = TRUE)
+```
+
+This is a scatter plot of $\hat{L}_{pt-laplace}$, the estimate from symEBcovMF:
+```{r}
+bal_pops <- c(rep('A', 40), rep('B', 40), rep('C', 40), rep('D', 40))
+plot_loadings(symebcovmf_orthog_F_fit$L_pm %*% diag(sqrt(symebcovmf_orthog_F_fit$lambda)), bal_pops)
+```
+
+## Observations
+When we use an orthogonal $F$ to generate the data, then greedy-symEBcovMF is able to find the sparse representation. This suggests that the method is influenced by the off-diagonal entries in $S$ coming from correlations of the factors.
+
