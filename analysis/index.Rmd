@@ -10,11 +10,17 @@ editor_options:
 
 This site is for further exploring symmetric covariance decomposition methods.  
 
-Main takeways thus far:  
+Main takeways thus far (updated June 17):  
+  
+* When applying symEBcovMF with point-Laplace prior in the tree setting, the greedy method does not find the sparse representation. However, if you backfit for long enough, e.g. 20,000 iterations, symEBcovMF eventually will find the sparse representation. This behavior is also seen in flashier and EBCD. The corresponding analysis is [here](symebcovmf_laplace_exploration.html)  
+* I think the greedy methods do not find the sparse representation because $F$ is not exactly orthogonal (I generate the data matrix $Y$ as $Y = LF' + E$ where $F_{ij} \overset{i.i.d.}{\sim} N(0,2^2)$). It seems like the method is picking up on correlations between the factors. My investigation of this can be found [here](symebcovmf_laplace_model_exploration.html)  
+* Flashier's backfit is a lot faster than symEBcovMF's backfit because of its extrapolation technique  
+  
 * For symEBcovMF, refitting the lambda values after a new factor is added helps improve the fit. This is seen in the balanced, nonoverlapping analysis [here](symebcovmf_bal_nonoverlap.html). It can also help the method find a more complete representation. This is especially apparent in the tree setting analysis [here](symebcovmf_tree.html).  
 * For the sparse overlapping setting, the method performs better when the Kmax parameter is set to a larger number. This is seen in the analysis [here](symebcovmf_overlap.html).  
 
 symEBcovMF analyses:    
+  
 * Exploration of [symEBcovMF in the balanced nonoverlapping setting](symebcovmf_bal_nonoverlap.html)  
 * Exploration of [symEBcovMF in the tree setting](symebcovmf_tree.html)  
 * Further exploration of [symEBcovMF in the tree setting](symebcovmf_tree_exploration.html)   
@@ -27,6 +33,7 @@ symEBcovMF analyses:
 * Exploration of [symEBcovMF backfit in the sparse, overlapping setting](symebcovmf_overlap_backfit.html)    
 
 Analyses related to initialization:  
+  
 * Exploration of [generalized binary symEBcovMF with point exponential initialization](symebcovmf_point_exp_init.html)  
 * Exploration of [generalized binary symEBcovMF backfit initialized with point exponential](symebcovmf_gb_point_exp_backfit.html)   
 * Exploration of [point exponential symEBcovMF backfit initialized with point laplace plus splitting](symebcovmf_laplace_split_init_tree.html)     
@@ -34,6 +41,7 @@ Analyses related to initialization:
 * Exploration of [point laplace greedy symEBcovMF in tree setting](symebcovmf_laplace_model_exploration.html)   
 
 Tree residual matrix example:  
+  
 * Checking [convergence](symebcovmf_gb_tree_exploration.html)  
 * Checking [other binary priors](symebcovmf_binary_tree_resid_exploration.html)  
 * Checking [orthogonality](symebcovmf_binary_tree_resid_orthog_exploration.html)  
