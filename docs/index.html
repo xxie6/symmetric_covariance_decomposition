@@ -310,7 +310,7 @@ class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span>
 <div class="tab-content">
 <div id="summary" class="tab-pane fade in active">
 <p>
-<strong>Last updated:</strong> 2025-06-13
+<strong>Last updated:</strong> 2025-06-17
 </p>
 <p>
 <strong>Checks:</strong> <span
@@ -358,15 +358,15 @@ results.</p>
 <div class="panel panel-default">
 <div class="panel-heading">
 <p class="panel-title">
-<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomxxie6symmetriccovariancedecompositiontreef95548de072c8598cee88cc6421bf06c6af78412targetblankf95548da">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomxxie6symmetriccovariancedecompositiontree477d73d35597b3fe28afa52cfc4163294abd56e5targetblank477d73da">
 <span class="glyphicon glyphicon-ok text-success"
 aria-hidden="true"></span> <strong>Repository version:</strong>
-<a href="https://github.com/xxie6/symmetric_covariance_decomposition/tree/f95548de072c8598cee88cc6421bf06c6af78412" target="_blank">f95548d</a>
+<a href="https://github.com/xxie6/symmetric_covariance_decomposition/tree/477d73d35597b3fe28afa52cfc4163294abd56e5" target="_blank">477d73d</a>
 </a>
 </p>
 </div>
 <div
-id="strongRepositoryversionstrongahrefhttpsgithubcomxxie6symmetriccovariancedecompositiontreef95548de072c8598cee88cc6421bf06c6af78412targetblankf95548da"
+id="strongRepositoryversionstrongahrefhttpsgithubcomxxie6symmetriccovariancedecompositiontree477d73d35597b3fe28afa52cfc4163294abd56e5targetblank477d73da"
 class="panel-collapse collapse">
 <div class="panel-body">
 <p>
@@ -376,7 +376,7 @@ reproducibility.
 </p>
 <p>
 The results in this page were generated with repository version
-<a href="https://github.com/xxie6/symmetric_covariance_decomposition/tree/f95548de072c8598cee88cc6421bf06c6af78412" target="_blank">f95548d</a>.
+<a href="https://github.com/xxie6/symmetric_covariance_decomposition/tree/477d73d35597b3fe28afa52cfc4163294abd56e5" target="_blank">477d73d</a>.
 See the <em>Past versions</em> tab to see a history of the changes made
 to the R Markdown and HTML files.
 </p>
@@ -437,6 +437,40 @@ Message
 </tr>
 </thead>
 <tbody>
+<tr>
+<td>
+Rmd
+</td>
+<td>
+<a href="https://github.com/xxie6/symmetric_covariance_decomposition/blob/477d73d35597b3fe28afa52cfc4163294abd56e5/analysis/index.Rmd" target="_blank">477d73d</a>
+</td>
+<td>
+Annie Xie
+</td>
+<td>
+2025-06-17
+</td>
+<td>
+Add new takeaways to website
+</td>
+</tr>
+<tr>
+<td>
+html
+</td>
+<td>
+<a href="https://rawcdn.githack.com/xxie6/symmetric_covariance_decomposition/996810e6c43db9dc0eac02d18ca225df0b41518e/docs/index.html" target="_blank">996810e</a>
+</td>
+<td>
+Annie Xie
+</td>
+<td>
+2025-06-13
+</td>
+<td>
+Build site.
+</td>
+</tr>
 <tr>
 <td>
 Rmd
@@ -769,62 +803,106 @@ Start workflowr project.
 </div>
 <p>This site is for further exploring symmetric covariance decomposition
 methods.</p>
-<p>Main takeways thus far:<br />
-* For symEBcovMF, refitting the lambda values after a new factor is
+<p>Main takeways thus far (updated June 17):</p>
+<ul>
+<li><p>When applying symEBcovMF with point-Laplace prior in the tree
+setting, the greedy method does not find the sparse representation.
+However, if you backfit for long enough, e.g. 20,000 iterations,
+symEBcovMF eventually will find the sparse representation. This behavior
+is also seen in flashier and EBCD. The corresponding analysis is <a
+href="symebcovmf_laplace_exploration.html">here</a><br />
+</p></li>
+<li><p>I think the greedy methods do not find the sparse representation
+because <span class="math inline">\(F\)</span> is not exactly orthogonal
+(I generate the data matrix <span class="math inline">\(Y\)</span> as
+<span class="math inline">\(Y = LF&#39; + E\)</span> where <span
+class="math inline">\(F_{ij} \overset{i.i.d.}{\sim} N(0,2^2)\)</span>).
+It seems like the method is picking up on correlations between the
+factors. My investigation of this can be found <a
+href="symebcovmf_laplace_model_exploration.html">here</a><br />
+</p></li>
+<li><p>Flashier’s backfit is a lot faster than symEBcovMF’s backfit
+because of its extrapolation technique</p></li>
+<li><p>For symEBcovMF, refitting the lambda values after a new factor is
 added helps improve the fit. This is seen in the balanced,
 nonoverlapping analysis <a
 href="symebcovmf_bal_nonoverlap.html">here</a>. It can also help the
 method find a more complete representation. This is especially apparent
 in the tree setting analysis <a
 href="symebcovmf_tree.html">here</a>.<br />
-* For the sparse overlapping setting, the method performs better when
-the Kmax parameter is set to a larger number. This is seen in the
-analysis <a href="symebcovmf_overlap.html">here</a>.</p>
-<p>symEBcovMF analyses:<br />
-* Exploration of <a href="symebcovmf_bal_nonoverlap.html">symEBcovMF in
-the balanced nonoverlapping setting</a><br />
-* Exploration of <a href="symebcovmf_tree.html">symEBcovMF in the tree
+</p></li>
+<li><p>For the sparse overlapping setting, the method performs better
+when the Kmax parameter is set to a larger number. This is seen in the
+analysis <a href="symebcovmf_overlap.html">here</a>.</p></li>
+</ul>
+<p>symEBcovMF analyses:</p>
+<ul>
+<li>Exploration of <a href="symebcovmf_bal_nonoverlap.html">symEBcovMF
+in the balanced nonoverlapping setting</a><br />
+</li>
+<li>Exploration of <a href="symebcovmf_tree.html">symEBcovMF in the tree
 setting</a><br />
-* Further exploration of <a
+</li>
+<li>Further exploration of <a
 href="symebcovmf_tree_exploration.html">symEBcovMF in the tree
 setting</a><br />
-* Exploration of <a
+</li>
+<li>Exploration of <a
 href="symebcovmf_binary_prior_tree_exploration.html">different binary
 priors in tree setting</a><br />
-* Exploration of <a href="symebcovmf_overlap.html">symEBcovMF in the
+</li>
+<li>Exploration of <a href="symebcovmf_overlap.html">symEBcovMF in the
 sparse, overlapping setting</a><br />
-* Exploration of <a href="symebcovmf_null.html">symEBcovMF in the null
+</li>
+<li>Exploration of <a href="symebcovmf_null.html">symEBcovMF in the null
 setting</a><br />
-* Exploration of <a href="unbal_nonoverlap.html">symEBcovMF in the
+</li>
+<li>Exploration of <a href="unbal_nonoverlap.html">symEBcovMF in the
 unbalanced nonoverlapping setting</a><br />
-* Further exploration of <a
+</li>
+<li>Further exploration of <a
 href="unbal_nonoverlap_exploration.html">symEBcovMF in the unbalanced
 nonoverlapping setting</a><br />
-* Exploration of <a href="unbal_nonoverlap_backfit.html">symEBcovMF
+</li>
+<li>Exploration of <a href="unbal_nonoverlap_backfit.html">symEBcovMF
 backfit in the unbalanced nonoverlapping setting</a><br />
-* Exploration of <a href="symebcovmf_overlap_backfit.html">symEBcovMF
-backfit in the sparse, overlapping setting</a></p>
-<p>Analyses related to initialization:<br />
-* Exploration of <a href="symebcovmf_point_exp_init.html">generalized
+</li>
+<li>Exploration of <a href="symebcovmf_overlap_backfit.html">symEBcovMF
+backfit in the sparse, overlapping setting</a></li>
+</ul>
+<p>Analyses related to initialization:</p>
+<ul>
+<li>Exploration of <a href="symebcovmf_point_exp_init.html">generalized
 binary symEBcovMF with point exponential initialization</a><br />
-* Exploration of <a
+</li>
+<li>Exploration of <a
 href="symebcovmf_gb_point_exp_backfit.html">generalized binary
 symEBcovMF backfit initialized with point exponential</a><br />
-* Exploration of <a href="symebcovmf_laplace_split_init_tree.html">point
-exponential symEBcovMF backfit initialized with point laplace plus
+</li>
+<li>Exploration of <a
+href="symebcovmf_laplace_split_init_tree.html">point exponential
+symEBcovMF backfit initialized with point laplace plus
 splitting</a><br />
-* Exploration of <a href="symebcovmf_laplace_exploration.html">point
+</li>
+<li>Exploration of <a href="symebcovmf_laplace_exploration.html">point
 laplace symEBcovMF backfit in tree setting</a><br />
-* Exploration of <a
+</li>
+<li>Exploration of <a
 href="symebcovmf_laplace_model_exploration.html">point laplace greedy
-symEBcovMF in tree setting</a></p>
-<p>Tree residual matrix example:<br />
-* Checking <a
+symEBcovMF in tree setting</a></li>
+</ul>
+<p>Tree residual matrix example:</p>
+<ul>
+<li>Checking <a
 href="symebcovmf_gb_tree_exploration.html">convergence</a><br />
-* Checking <a href="symebcovmf_binary_tree_resid_exploration.html">other
-binary priors</a><br />
-* Checking <a
-href="symebcovmf_binary_tree_resid_orthog_exploration.html">orthogonality</a></p>
+</li>
+<li>Checking <a
+href="symebcovmf_binary_tree_resid_exploration.html">other binary
+priors</a><br />
+</li>
+<li>Checking <a
+href="symebcovmf_binary_tree_resid_orthog_exploration.html">orthogonality</a></li>
+</ul>
 
 
 <!-- Adjust MathJax settings so that all math formulae are shown using
