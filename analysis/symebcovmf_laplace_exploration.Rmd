@@ -180,12 +180,13 @@ sym_ebcovmf_backfit <- function(S, sym_ebcovmf_obj, ebnm_fn, backfit_maxiter = 1
   iter <- 1
   obj_diff <- Inf
   sym_ebcovmf_obj$backfit_vec_elbo_full <- NULL
+  sym_ebcovmf_obj$backfit_iter_elbo_vec <- NULL
   
   # refit lambda
   sym_ebcovmf_obj <- refit_lambda(S, sym_ebcovmf_obj, maxiter = 25)
   
   while((iter <= backfit_maxiter) && (obj_diff > backfit_tol)){
-    print(iter)
+    # print(iter)
     obj_old <- sym_ebcovmf_obj$elbo
     # loop through each factor
     for (k in 1:K){
@@ -210,6 +211,7 @@ sym_ebcovmf_backfit <- function(S, sym_ebcovmf_obj, ebnm_fn, backfit_maxiter = 1
       sym_ebcovmf_obj <- refit_lambda(S, sym_ebcovmf_obj) # add refitting step?
       #print(sym_ebcovmf_obj$elbo)
     }
+    sym_ebcovmf_obj$backfit_iter_elbo_vec <- c(sym_ebcovmf_obj$backfit_iter_elbo_vec, sym_ebcovmf_obj$elbo)
     
     iter <- iter + 1
     obj_diff <- abs(sym_ebcovmf_obj$elbo - obj_old)
@@ -307,8 +309,14 @@ Intuitively, the sparser representation should have a higher objective function 
 ## Additional Backfit
 GBCD does additional backfitting on the point-Laplace fit, so here I test how additional backfitting performs. However, Matthew told me that he thinks it would be difficult to recover the sparse representation from the backfit since all the factors are non-sparse and reinforce each other. In this analysis, I run the backfitting for more iterations than in the original analysis.
 
-```{r, results = "hide"}
+This is the code for the backfit:
+```{r, eval = FALSE}
 symebcovmf_fit_backfit <- sym_ebcovmf_backfit(sim_data$YYt, symebcovmf_fit, ebnm_fn = ebnm_point_laplace, backfit_maxiter = 20000)
+```
+
+I will load in previously saved results:
+```{r}
+symebcovmf_fit_backfit <- readRDS('data/symebcovmf_laplace_tree_backfit_20000.rds')
 ```
 
 This is a scatter plot of $\hat{L}_{pt-laplace-backfit}$, the estimate from symEBcovMF with backfit:
@@ -322,9 +330,26 @@ This is the objective function value attained:
 symebcovmf_fit_backfit$elbo
 ```
 
-This is a plot of (part of) the progression of the ELBO:
+This is a plot of the progression of the ELBO:
 ```{r}
-plot(symebcovmf_fit_backfit$backfit_vec_elbo_full[130000: length(symebcovmf_fit_backfit$backfit_vec_elbo_full)], ylab = 'ELBO')
+plot(symebcovmf_fit_backfit$backfit_iter_elbo_vec, ylab = 'ELBO')
+```
+
+These plots are a closer look at the progression of the ELBO:
+```{r}
+plot(x = c(1:5000), y = symebcovmf_fit_backfit$backfit_iter_elbo_vec[1:5000], xlab = 'Index', ylab = 'ELBO', main = 'ELBO for Iterations 1-5000')
+```
+
+```{r}
+plot(x = c(5000:10000), y = symebcovmf_fit_backfit$backfit_iter_elbo_vec[5000:10000], xlab = 'Index', ylab = 'ELBO', main = 'ELBO for Iterations 5000-10000')
+```
+
+```{r}
+plot(x = c(10000:15000), y = symebcovmf_fit_backfit$backfit_iter_elbo_vec[10000:15000], xlab = 'Index', ylab = 'ELBO', main = 'ELBO for Iterations 10000-15000')
+```
+
+```{r}
+plot(x = c(15000:20000), y = symebcovmf_fit_backfit$backfit_iter_elbo_vec[15000:20000], xlab = 'Index', ylab = 'ELBO', main = 'ELBO for Iterations 15000-20000')
 ```
 
 I tested backfitting for various numbers of iterations. If I backfit for longer, e.g. at least 20,000 iterations, then eventually the method finds the sparse representation. Therefore, the method does work when backfit for long enough.
