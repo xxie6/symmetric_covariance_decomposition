@@ -402,7 +402,7 @@ class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span>
 <div class="tab-content">
 <div id="summary" class="tab-pane fade in active">
 <p>
-<strong>Last updated:</strong> 2025-06-13
+<strong>Last updated:</strong> 2025-06-19
 </p>
 <p>
 <strong>Checks:</strong> <span
@@ -534,15 +534,15 @@ project makes it easier to run your code on other machines.</p>
 <div class="panel panel-default">
 <div class="panel-heading">
 <p class="panel-title">
-<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomxxie6symmetriccovariancedecompositiontreed3b42fa4e1e1db60c3a6fe53a2f67e7af1ff07e9targetblankd3b42faa">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomxxie6symmetriccovariancedecompositiontree9d4fe22ef792b5d55eb683699e6e633e837c81c5targetblank9d4fe22a">
 <span class="glyphicon glyphicon-ok text-success"
 aria-hidden="true"></span> <strong>Repository version:</strong>
-<a href="https://github.com/xxie6/symmetric_covariance_decomposition/tree/d3b42fa4e1e1db60c3a6fe53a2f67e7af1ff07e9" target="_blank">d3b42fa</a>
+<a href="https://github.com/xxie6/symmetric_covariance_decomposition/tree/9d4fe22ef792b5d55eb683699e6e633e837c81c5" target="_blank">9d4fe22</a>
 </a>
 </p>
 </div>
 <div
-id="strongRepositoryversionstrongahrefhttpsgithubcomxxie6symmetriccovariancedecompositiontreed3b42fa4e1e1db60c3a6fe53a2f67e7af1ff07e9targetblankd3b42faa"
+id="strongRepositoryversionstrongahrefhttpsgithubcomxxie6symmetriccovariancedecompositiontree9d4fe22ef792b5d55eb683699e6e633e837c81c5targetblank9d4fe22a"
 class="panel-collapse collapse">
 <div class="panel-body">
 <p>
@@ -552,7 +552,7 @@ reproducibility.
 </p>
 <p>
 The results in this page were generated with repository version
-<a href="https://github.com/xxie6/symmetric_covariance_decomposition/tree/d3b42fa4e1e1db60c3a6fe53a2f67e7af1ff07e9" target="_blank">d3b42fa</a>.
+<a href="https://github.com/xxie6/symmetric_covariance_decomposition/tree/9d4fe22ef792b5d55eb683699e6e633e837c81c5" target="_blank">9d4fe22</a>.
 See the <em>Past versions</em> tab to see a history of the changes made
 to the R Markdown and HTML files.
 </p>
@@ -569,6 +569,9 @@ were generated:
 Ignored files:
     Ignored:    .DS_Store
     Ignored:    .Rhistory
+
+Untracked files:
+    Untracked:  analysis/symebcovmf_point_exp_backfit_tree.Rmd
 
 </code></pre>
 <p>
@@ -615,6 +618,40 @@ Message
 </tr>
 </thead>
 <tbody>
+<tr>
+<td>
+Rmd
+</td>
+<td>
+<a href="https://github.com/xxie6/symmetric_covariance_decomposition/blob/9d4fe22ef792b5d55eb683699e6e633e837c81c5/analysis/symebcovmf_laplace_exploration.Rmd" target="_blank">9d4fe22</a>
+</td>
+<td>
+Annie Xie
+</td>
+<td>
+2025-06-19
+</td>
+<td>
+Update ELBO plot in laplace tree exploration
+</td>
+</tr>
+<tr>
+<td>
+html
+</td>
+<td>
+<a href="https://rawcdn.githack.com/xxie6/symmetric_covariance_decomposition/20728091df201507a617e7503096292ee2385473/docs/symebcovmf_laplace_exploration.html" target="_blank">2072809</a>
+</td>
+<td>
+Annie Xie
+</td>
+<td>
+2025-06-13
+</td>
+<td>
+Build site.
+</td>
+</tr>
 <tr>
 <td>
 Rmd
@@ -795,12 +832,13 @@ nullcheck_factors &lt;- function(sym_ebcovmf_obj, L2_tol = 10^(-8)){
   iter &lt;- 1
   obj_diff &lt;- Inf
   sym_ebcovmf_obj$backfit_vec_elbo_full &lt;- NULL
+  sym_ebcovmf_obj$backfit_iter_elbo_vec &lt;- NULL
   
   # refit lambda
   sym_ebcovmf_obj &lt;- refit_lambda(S, sym_ebcovmf_obj, maxiter = 25)
   
   while((iter &lt;= backfit_maxiter) &amp;&amp; (obj_diff &gt; backfit_tol)){
-    print(iter)
+    # print(iter)
     obj_old &lt;- sym_ebcovmf_obj$elbo
     # loop through each factor
     for (k in 1:K){
@@ -825,6 +863,7 @@ nullcheck_factors &lt;- function(sym_ebcovmf_obj, L2_tol = 10^(-8)){
       sym_ebcovmf_obj &lt;- refit_lambda(S, sym_ebcovmf_obj) # add refitting step?
       #print(sym_ebcovmf_obj$elbo)
     }
+    sym_ebcovmf_obj$backfit_iter_elbo_vec &lt;- c(sym_ebcovmf_obj$backfit_iter_elbo_vec, sym_ebcovmf_obj$elbo)
     
     iter &lt;- iter + 1
     obj_diff &lt;- abs(sym_ebcovmf_obj$elbo - obj_old)
@@ -1068,119 +1107,26 @@ he thinks it would be difficult to recover the sparse representation
 from the backfit since all the factors are non-sparse and reinforce each
 other. In this analysis, I run the backfitting for more iterations than
 in the original analysis.</p>
+<p>This is the code for the backfit:</p>
 <pre class="r"><code>symebcovmf_fit_backfit &lt;- sym_ebcovmf_backfit(sim_data$YYt, symebcovmf_fit, ebnm_fn = ebnm_point_laplace, backfit_maxiter = 20000)</code></pre>
+<p>I will load in previously saved results:</p>
+<pre class="r"><code>symebcovmf_fit_backfit &lt;- readRDS(&#39;data/symebcovmf_laplace_tree_backfit_20000.rds&#39;)</code></pre>
 <p>This is a scatter plot of <span
 class="math inline">\(\hat{L}_{pt-laplace-backfit}\)</span>, the
 estimate from symEBcovMF with backfit:</p>
 <pre class="r"><code>bal_pops &lt;- c(rep(&#39;A&#39;, 40), rep(&#39;B&#39;, 40), rep(&#39;C&#39;, 40), rep(&#39;D&#39;, 40))
 plot_loadings(symebcovmf_fit_backfit$L_pm %*% diag(sqrt(symebcovmf_fit_backfit$lambda)), bal_pops)</code></pre>
-<p><img src="figure/symebcovmf_laplace_exploration.Rmd/unnamed-chunk-18-1.png" width="672" style="display: block; margin: auto;" /></p>
-<p>
-<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-18-1">
-Past versions of unnamed-chunk-18-1.png
-</button>
-</p>
-<div id="fig-unnamed-chunk-18-1" class="collapse">
-<div class="table-responsive">
-<table class="table table-condensed table-hover">
-<thead>
-<tr>
-<th>
-Version
-</th>
-<th>
-Author
-</th>
-<th>
-Date
-</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>
-<a href="https://github.com/xxie6/symmetric_covariance_decomposition/blob/704e0a56cdb13db8e81f942cbaabaf28babfb26d/docs/figure/symebcovmf_laplace_exploration.Rmd/unnamed-chunk-18-1.png" target="_blank">704e0a5</a>
-</td>
-<td>
-Annie Xie
-</td>
-<td>
-2025-06-13
-</td>
-</tr>
-</tbody>
-</table>
-</div>
-</div>
+<p><img src="figure/symebcovmf_laplace_exploration.Rmd/unnamed-chunk-19-1.png" width="672" style="display: block; margin: auto;" /></p>
 <p>This is the objective function value attained:</p>
 <pre class="r"><code>symebcovmf_fit_backfit$elbo</code></pre>
 <pre><code>[1] 9576.714</code></pre>
-<p>This is a plot of (part of) the progression of the ELBO:</p>
-<pre class="r"><code>plot(symebcovmf_fit_backfit$backfit_vec_elbo_full[130000: length(symebcovmf_fit_backfit$backfit_vec_elbo_full)], ylab = &#39;ELBO&#39;)</code></pre>
-<p><img src="figure/symebcovmf_laplace_exploration.Rmd/unnamed-chunk-20-1.png" width="672" style="display: block; margin: auto;" /></p>
-<p>
-<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-20-1">
-Past versions of unnamed-chunk-20-1.png
-</button>
-</p>
-<div id="fig-unnamed-chunk-20-1" class="collapse">
-<div class="table-responsive">
-<table class="table table-condensed table-hover">
-<thead>
-<tr>
-<th>
-Version
-</th>
-<th>
-Author
-</th>
-<th>
-Date
-</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>
-<a href="https://github.com/xxie6/symmetric_covariance_decomposition/blob/704e0a56cdb13db8e81f942cbaabaf28babfb26d/docs/figure/symebcovmf_laplace_exploration.Rmd/unnamed-chunk-20-1.png" target="_blank">704e0a5</a>
-</td>
-<td>
-Annie Xie
-</td>
-<td>
-2025-06-13
-</td>
-</tr>
-</tbody>
-</table>
-</div>
-</div>
-<p>I tested backfitting for various numbers of iterations. If I backfit
-for longer, e.g. at least 20,000 iterations, then eventually the method
-finds the sparse representation. Therefore, the method does work when
-backfit for long enough.</p>
-</div>
-</div>
-<div id="exploration-of-other-methods" class="section level1">
-<h1>Exploration of other methods</h1>
-<p>I want to compare the performance of symEBcovMF to that of other
-methods, in particular flashier and EBCD.</p>
-<div id="flashier" class="section level2">
-<h2>Flashier</h2>
-<p>First, we run greedy-flash on <span
-class="math inline">\(S\)</span>:</p>
-<pre class="r"><code>library(flashier)</code></pre>
-<pre class="r"><code>flash_cov_fit &lt;- flash_init(data = sim_data$YYt) |&gt;
-  flash_greedy(Kmax = 4, ebnm_fn = ebnm::ebnm_point_laplace)</code></pre>
-<pre><code>Adding factor 1 to flash object...
-Adding factor 2 to flash object...
-Adding factor 3 to flash object...
-Adding factor 4 to flash object...
-Wrapping up...
-Done.</code></pre>
-<p>This is a plot of the loadings estimate, <span
-class="math inline">\(\hat{L}_{flash}\)</span>:</p>
-<pre class="r"><code>plot_loadings(flash_cov_fit$L_pm, bal_pops)</code></pre>
+<p>This is a plot of the progression of the ELBO:</p>
+<pre class="r"><code>plot(symebcovmf_fit_backfit$backfit_iter_elbo_vec, ylab = &#39;ELBO&#39;)</code></pre>
+<p><img src="figure/symebcovmf_laplace_exploration.Rmd/unnamed-chunk-21-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>These plots are a closer look at the progression of the ELBO:</p>
+<pre class="r"><code>plot(x = c(1:5000), y = symebcovmf_fit_backfit$backfit_iter_elbo_vec[1:5000], xlab = &#39;Index&#39;, ylab = &#39;ELBO&#39;, main = &#39;ELBO for Iterations 1-5000&#39;)</code></pre>
+<p><img src="figure/symebcovmf_laplace_exploration.Rmd/unnamed-chunk-22-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>plot(x = c(5000:10000), y = symebcovmf_fit_backfit$backfit_iter_elbo_vec[5000:10000], xlab = &#39;Index&#39;, ylab = &#39;ELBO&#39;, main = &#39;ELBO for Iterations 5000-10000&#39;)</code></pre>
 <p><img src="figure/symebcovmf_laplace_exploration.Rmd/unnamed-chunk-23-1.png" width="672" style="display: block; margin: auto;" /></p>
 <p>
 <button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-23-1">
@@ -1219,11 +1165,7 @@ Annie Xie
 </table>
 </div>
 </div>
-<p>This is a plot of the factor estimate, <span
-class="math inline">\(\hat{F}_{flash}\)</span>. Note that because <span
-class="math inline">\(S\)</span> is symmetric, we expect the loadings
-estimate and factor estimate to be about the same (up to a scaling):</p>
-<pre class="r"><code>plot_loadings(flash_cov_fit$F_pm, bal_pops)</code></pre>
+<pre class="r"><code>plot(x = c(10000:15000), y = symebcovmf_fit_backfit$backfit_iter_elbo_vec[10000:15000], xlab = &#39;Index&#39;, ylab = &#39;ELBO&#39;, main = &#39;ELBO for Iterations 10000-15000&#39;)</code></pre>
 <p><img src="figure/symebcovmf_laplace_exploration.Rmd/unnamed-chunk-24-1.png" width="672" style="display: block; margin: auto;" /></p>
 <p>
 <button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-24-1">
@@ -1262,6 +1204,41 @@ Annie Xie
 </table>
 </div>
 </div>
+<pre class="r"><code>plot(x = c(15000:20000), y = symebcovmf_fit_backfit$backfit_iter_elbo_vec[15000:20000], xlab = &#39;Index&#39;, ylab = &#39;ELBO&#39;, main = &#39;ELBO for Iterations 15000-20000&#39;)</code></pre>
+<p><img src="figure/symebcovmf_laplace_exploration.Rmd/unnamed-chunk-25-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>I tested backfitting for various numbers of iterations. If I backfit
+for longer, e.g. at least 20,000 iterations, then eventually the method
+finds the sparse representation. Therefore, the method does work when
+backfit for long enough.</p>
+</div>
+</div>
+<div id="exploration-of-other-methods" class="section level1">
+<h1>Exploration of other methods</h1>
+<p>I want to compare the performance of symEBcovMF to that of other
+methods, in particular flashier and EBCD.</p>
+<div id="flashier" class="section level2">
+<h2>Flashier</h2>
+<p>First, we run greedy-flash on <span
+class="math inline">\(S\)</span>:</p>
+<pre class="r"><code>library(flashier)</code></pre>
+<pre class="r"><code>flash_cov_fit &lt;- flash_init(data = sim_data$YYt) |&gt;
+  flash_greedy(Kmax = 4, ebnm_fn = ebnm::ebnm_point_laplace)</code></pre>
+<pre><code>Adding factor 1 to flash object...
+Adding factor 2 to flash object...
+Adding factor 3 to flash object...
+Adding factor 4 to flash object...
+Wrapping up...
+Done.</code></pre>
+<p>This is a plot of the loadings estimate, <span
+class="math inline">\(\hat{L}_{flash}\)</span>:</p>
+<pre class="r"><code>plot_loadings(flash_cov_fit$L_pm, bal_pops)</code></pre>
+<p><img src="figure/symebcovmf_laplace_exploration.Rmd/unnamed-chunk-28-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>This is a plot of the factor estimate, <span
+class="math inline">\(\hat{F}_{flash}\)</span>. Note that because <span
+class="math inline">\(S\)</span> is symmetric, we expect the loadings
+estimate and factor estimate to be about the same (up to a scaling):</p>
+<pre class="r"><code>plot_loadings(flash_cov_fit$F_pm, bal_pops)</code></pre>
+<p><img src="figure/symebcovmf_laplace_exploration.Rmd/unnamed-chunk-29-1.png" width="672" style="display: block; margin: auto;" /></p>
 <p>We see that the loadings estimate looks similar to what
 greedy-symEBcovMF found.</p>
 <p>Now, we try backfitting.</p>
@@ -1281,13 +1258,13 @@ Done.</code></pre>
 <p>This is a plot of the loadings estimate, <span
 class="math inline">\(\hat{L}_{flash-backfit}\)</span>:</p>
 <pre class="r"><code>plot_loadings(flash_cov_backfit_fit$L_pm, bal_pops)</code></pre>
-<p><img src="figure/symebcovmf_laplace_exploration.Rmd/unnamed-chunk-26-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p><img src="figure/symebcovmf_laplace_exploration.Rmd/unnamed-chunk-31-1.png" width="672" style="display: block; margin: auto;" /></p>
 <p>
-<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-26-1">
-Past versions of unnamed-chunk-26-1.png
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-31-1">
+Past versions of unnamed-chunk-31-1.png
 </button>
 </p>
-<div id="fig-unnamed-chunk-26-1" class="collapse">
+<div id="fig-unnamed-chunk-31-1" class="collapse">
 <div class="table-responsive">
 <table class="table table-condensed table-hover">
 <thead>
@@ -1306,7 +1283,7 @@ Date
 <tbody>
 <tr>
 <td>
-<a href="https://github.com/xxie6/symmetric_covariance_decomposition/blob/704e0a56cdb13db8e81f942cbaabaf28babfb26d/docs/figure/symebcovmf_laplace_exploration.Rmd/unnamed-chunk-26-1.png" target="_blank">704e0a5</a>
+<a href="https://github.com/xxie6/symmetric_covariance_decomposition/blob/704e0a56cdb13db8e81f942cbaabaf28babfb26d/docs/figure/symebcovmf_laplace_exploration.Rmd/unnamed-chunk-31-1.png" target="_blank">704e0a5</a>
 </td>
 <td>
 Annie Xie
@@ -1322,44 +1299,7 @@ Annie Xie
 <p>This is a plot of the factor estimate, <span
 class="math inline">\(\hat{F}_{flash-backfit}\)</span>.</p>
 <pre class="r"><code>plot_loadings(flash_cov_backfit_fit$F_pm, bal_pops)</code></pre>
-<p><img src="figure/symebcovmf_laplace_exploration.Rmd/unnamed-chunk-27-1.png" width="672" style="display: block; margin: auto;" /></p>
-<p>
-<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-27-1">
-Past versions of unnamed-chunk-27-1.png
-</button>
-</p>
-<div id="fig-unnamed-chunk-27-1" class="collapse">
-<div class="table-responsive">
-<table class="table table-condensed table-hover">
-<thead>
-<tr>
-<th>
-Version
-</th>
-<th>
-Author
-</th>
-<th>
-Date
-</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>
-<a href="https://github.com/xxie6/symmetric_covariance_decomposition/blob/704e0a56cdb13db8e81f942cbaabaf28babfb26d/docs/figure/symebcovmf_laplace_exploration.Rmd/unnamed-chunk-27-1.png" target="_blank">704e0a5</a>
-</td>
-<td>
-Annie Xie
-</td>
-<td>
-2025-06-13
-</td>
-</tr>
-</tbody>
-</table>
-</div>
-</div>
+<p><img src="figure/symebcovmf_laplace_exploration.Rmd/unnamed-chunk-32-1.png" width="672" style="display: block; margin: auto;" /></p>
 <p>When applying greedy-flash to the Gram matrix, we get a similar
 estimate to that of greedy symEBcovMF. In particular, the third and
 fourth factors are not sparse. However, after backfitting, the method
@@ -1406,88 +1346,14 @@ the flashier fit with the greedy method.</p>
 <p>This is a plot of the loadings estimate, <span
 class="math inline">\(\hat{L}_{ebmfcov}\)</span>:</p>
 <pre class="r"><code>plot_loadings(ebmfcov_diag_fit$fl$L_pm, bal_pops)</code></pre>
-<p><img src="figure/symebcovmf_laplace_exploration.Rmd/unnamed-chunk-30-1.png" width="672" style="display: block; margin: auto;" /></p>
-<p>
-<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-30-1">
-Past versions of unnamed-chunk-30-1.png
-</button>
-</p>
-<div id="fig-unnamed-chunk-30-1" class="collapse">
-<div class="table-responsive">
-<table class="table table-condensed table-hover">
-<thead>
-<tr>
-<th>
-Version
-</th>
-<th>
-Author
-</th>
-<th>
-Date
-</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>
-<a href="https://github.com/xxie6/symmetric_covariance_decomposition/blob/704e0a56cdb13db8e81f942cbaabaf28babfb26d/docs/figure/symebcovmf_laplace_exploration.Rmd/unnamed-chunk-30-1.png" target="_blank">704e0a5</a>
-</td>
-<td>
-Annie Xie
-</td>
-<td>
-2025-06-13
-</td>
-</tr>
-</tbody>
-</table>
-</div>
-</div>
+<p><img src="figure/symebcovmf_laplace_exploration.Rmd/unnamed-chunk-35-1.png" width="672" style="display: block; margin: auto;" /></p>
 <p>This is a plot of the factor estimate, <span
 class="math inline">\(\hat{F}_{ebmfcov}\)</span>. Note that because
 <span class="math inline">\(S\)</span> is symmetric, we expect the
 loadings estimate and factor estimate to be about the same (up to a
 scaling):</p>
 <pre class="r"><code>plot_loadings(ebmfcov_diag_fit$fl$F_pm, bal_pops)</code></pre>
-<p><img src="figure/symebcovmf_laplace_exploration.Rmd/unnamed-chunk-31-1.png" width="672" style="display: block; margin: auto;" /></p>
-<p>
-<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-31-1">
-Past versions of unnamed-chunk-31-1.png
-</button>
-</p>
-<div id="fig-unnamed-chunk-31-1" class="collapse">
-<div class="table-responsive">
-<table class="table table-condensed table-hover">
-<thead>
-<tr>
-<th>
-Version
-</th>
-<th>
-Author
-</th>
-<th>
-Date
-</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>
-<a href="https://github.com/xxie6/symmetric_covariance_decomposition/blob/704e0a56cdb13db8e81f942cbaabaf28babfb26d/docs/figure/symebcovmf_laplace_exploration.Rmd/unnamed-chunk-31-1.png" target="_blank">704e0a5</a>
-</td>
-<td>
-Annie Xie
-</td>
-<td>
-2025-06-13
-</td>
-</tr>
-</tbody>
-</table>
-</div>
-</div>
+<p><img src="figure/symebcovmf_laplace_exploration.Rmd/unnamed-chunk-36-1.png" width="672" style="display: block; margin: auto;" /></p>
 <p>Similar to flash, the loadings estimate looks similar to what
 greedy-symEBcovMF found.</p>
 <p>Now, we try adding backfitting.</p>
@@ -1497,142 +1363,10 @@ greedy-symEBcovMF found.</p>
 <p>This is a plot of the loadings estimate, <span
 class="math inline">\(\hat{L}_{ebmfcov-backfit}\)</span>:</p>
 <pre class="r"><code>plot_loadings(ebmfcov_diag_backfit_fit$fl$L_pm, bal_pops)</code></pre>
-<p><img src="figure/symebcovmf_laplace_exploration.Rmd/unnamed-chunk-33-1.png" width="672" style="display: block; margin: auto;" /></p>
-<p>
-<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-33-1">
-Past versions of unnamed-chunk-33-1.png
-</button>
-</p>
-<div id="fig-unnamed-chunk-33-1" class="collapse">
-<div class="table-responsive">
-<table class="table table-condensed table-hover">
-<thead>
-<tr>
-<th>
-Version
-</th>
-<th>
-Author
-</th>
-<th>
-Date
-</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>
-<a href="https://github.com/xxie6/symmetric_covariance_decomposition/blob/704e0a56cdb13db8e81f942cbaabaf28babfb26d/docs/figure/symebcovmf_laplace_exploration.Rmd/unnamed-chunk-33-1.png" target="_blank">704e0a5</a>
-</td>
-<td>
-Annie Xie
-</td>
-<td>
-2025-06-13
-</td>
-</tr>
-</tbody>
-</table>
-</div>
-</div>
+<p><img src="figure/symebcovmf_laplace_exploration.Rmd/unnamed-chunk-38-1.png" width="672" style="display: block; margin: auto;" /></p>
 <p>This is a plot of the factor estimate, <span
 class="math inline">\(\hat{F}_{ebmfcov-backfit}\)</span>.</p>
 <pre class="r"><code>plot_loadings(ebmfcov_diag_backfit_fit$fl$F_pm, bal_pops)</code></pre>
-<p><img src="figure/symebcovmf_laplace_exploration.Rmd/unnamed-chunk-34-1.png" width="672" style="display: block; margin: auto;" /></p>
-<p>
-<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-34-1">
-Past versions of unnamed-chunk-34-1.png
-</button>
-</p>
-<div id="fig-unnamed-chunk-34-1" class="collapse">
-<div class="table-responsive">
-<table class="table table-condensed table-hover">
-<thead>
-<tr>
-<th>
-Version
-</th>
-<th>
-Author
-</th>
-<th>
-Date
-</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>
-<a href="https://github.com/xxie6/symmetric_covariance_decomposition/blob/704e0a56cdb13db8e81f942cbaabaf28babfb26d/docs/figure/symebcovmf_laplace_exploration.Rmd/unnamed-chunk-34-1.png" target="_blank">704e0a5</a>
-</td>
-<td>
-Annie Xie
-</td>
-<td>
-2025-06-13
-</td>
-</tr>
-</tbody>
-</table>
-</div>
-</div>
-<p>When we add backfitting to the procedure, we see that the method does
-find the sparse representation.</p>
-</div>
-<div id="ebcd" class="section level2">
-<h2>EBCD</h2>
-<p>We also test EBCD. First, we apply EBCD’s greedy initialization
-procedure.</p>
-<pre class="r"><code>library(ebcd)</code></pre>
-<pre class="r"><code>set.seed(1)
-ebcd_init_obj &lt;- ebcd_init(X = t(sim_data$Y))
-ebcd_greedy_fit &lt;- ebcd_greedy(ebcd_init_obj, Kmax = 4, ebnm_fn = ebnm::ebnm_point_laplace)</code></pre>
-<p>This is a plot of the loadings estimate <span
-class="math inline">\(\hat{L}_{ebcd-greedy}\)</span>:</p>
-<pre class="r"><code>plot_loadings(ebcd_greedy_fit$EL, bal_pops)</code></pre>
-<p><img src="figure/symebcovmf_laplace_exploration.Rmd/unnamed-chunk-37-1.png" width="672" style="display: block; margin: auto;" /></p>
-<p>
-<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-37-1">
-Past versions of unnamed-chunk-37-1.png
-</button>
-</p>
-<div id="fig-unnamed-chunk-37-1" class="collapse">
-<div class="table-responsive">
-<table class="table table-condensed table-hover">
-<thead>
-<tr>
-<th>
-Version
-</th>
-<th>
-Author
-</th>
-<th>
-Date
-</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>
-<a href="https://github.com/xxie6/symmetric_covariance_decomposition/blob/704e0a56cdb13db8e81f942cbaabaf28babfb26d/docs/figure/symebcovmf_laplace_exploration.Rmd/unnamed-chunk-37-1.png" target="_blank">704e0a5</a>
-</td>
-<td>
-Annie Xie
-</td>
-<td>
-2025-06-13
-</td>
-</tr>
-</tbody>
-</table>
-</div>
-</div>
-<p>Now, we backfit.</p>
-<pre class="r"><code>ebcd_fit &lt;- ebcd_backfit(ebcd_greedy_fit)</code></pre>
-<p>This is a plot of the loadings estimate <span
-class="math inline">\(\hat{L}_{ebcd-backfit}\)</span>:</p>
-<pre class="r"><code>plot_loadings(ebcd_fit$EL, bal_pops)</code></pre>
 <p><img src="figure/symebcovmf_laplace_exploration.Rmd/unnamed-chunk-39-1.png" width="672" style="display: block; margin: auto;" /></p>
 <p>
 <button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-39-1">
@@ -1671,6 +1405,27 @@ Annie Xie
 </table>
 </div>
 </div>
+<p>When we add backfitting to the procedure, we see that the method does
+find the sparse representation.</p>
+</div>
+<div id="ebcd" class="section level2">
+<h2>EBCD</h2>
+<p>We also test EBCD. First, we apply EBCD’s greedy initialization
+procedure.</p>
+<pre class="r"><code>library(ebcd)</code></pre>
+<pre class="r"><code>set.seed(1)
+ebcd_init_obj &lt;- ebcd_init(X = t(sim_data$Y))
+ebcd_greedy_fit &lt;- ebcd_greedy(ebcd_init_obj, Kmax = 4, ebnm_fn = ebnm::ebnm_point_laplace)</code></pre>
+<p>This is a plot of the loadings estimate <span
+class="math inline">\(\hat{L}_{ebcd-greedy}\)</span>:</p>
+<pre class="r"><code>plot_loadings(ebcd_greedy_fit$EL, bal_pops)</code></pre>
+<p><img src="figure/symebcovmf_laplace_exploration.Rmd/unnamed-chunk-42-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>Now, we backfit.</p>
+<pre class="r"><code>ebcd_fit &lt;- ebcd_backfit(ebcd_greedy_fit)</code></pre>
+<p>This is a plot of the loadings estimate <span
+class="math inline">\(\hat{L}_{ebcd-backfit}\)</span>:</p>
+<pre class="r"><code>plot_loadings(ebcd_fit$EL, bal_pops)</code></pre>
+<p><img src="figure/symebcovmf_laplace_exploration.Rmd/unnamed-chunk-44-1.png" width="672" style="display: block; margin: auto;" /></p>
 <p>For EBCD, we see similar performance – the greedy method finds a
 representation that is not sparse, and the backfitting yields the sparse
 representation. Question: is the backfit of the these methods faster
