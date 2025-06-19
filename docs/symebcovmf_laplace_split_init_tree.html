@@ -402,7 +402,7 @@ class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span>
 <div class="tab-content">
 <div id="summary" class="tab-pane fade in active">
 <p>
-<strong>Last updated:</strong> 2025-06-10
+<strong>Last updated:</strong> 2025-06-19
 </p>
 <p>
 <strong>Checks:</strong> <span
@@ -534,15 +534,15 @@ project makes it easier to run your code on other machines.</p>
 <div class="panel panel-default">
 <div class="panel-heading">
 <p class="panel-title">
-<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomxxie6symmetriccovariancedecompositiontreec9e74f51c31c4865e541531b151c2bf8e00c47f4targetblankc9e74f5a">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomxxie6symmetriccovariancedecompositiontree78cd5d10332551489a9cdc822377ab37b3138290targetblank78cd5d1a">
 <span class="glyphicon glyphicon-ok text-success"
 aria-hidden="true"></span> <strong>Repository version:</strong>
-<a href="https://github.com/xxie6/symmetric_covariance_decomposition/tree/c9e74f51c31c4865e541531b151c2bf8e00c47f4" target="_blank">c9e74f5</a>
+<a href="https://github.com/xxie6/symmetric_covariance_decomposition/tree/78cd5d10332551489a9cdc822377ab37b3138290" target="_blank">78cd5d1</a>
 </a>
 </p>
 </div>
 <div
-id="strongRepositoryversionstrongahrefhttpsgithubcomxxie6symmetriccovariancedecompositiontreec9e74f51c31c4865e541531b151c2bf8e00c47f4targetblankc9e74f5a"
+id="strongRepositoryversionstrongahrefhttpsgithubcomxxie6symmetriccovariancedecompositiontree78cd5d10332551489a9cdc822377ab37b3138290targetblank78cd5d1a"
 class="panel-collapse collapse">
 <div class="panel-body">
 <p>
@@ -552,7 +552,7 @@ reproducibility.
 </p>
 <p>
 The results in this page were generated with repository version
-<a href="https://github.com/xxie6/symmetric_covariance_decomposition/tree/c9e74f51c31c4865e541531b151c2bf8e00c47f4" target="_blank">c9e74f5</a>.
+<a href="https://github.com/xxie6/symmetric_covariance_decomposition/tree/78cd5d10332551489a9cdc822377ab37b3138290" target="_blank">78cd5d1</a>.
 See the <em>Past versions</em> tab to see a history of the changes made
 to the R Markdown and HTML files.
 </p>
@@ -571,7 +571,11 @@ Ignored files:
     Ignored:    .Rhistory
 
 Untracked files:
-    Untracked:  analysis/symebcovmf_laplace_exploration.Rmd
+    Untracked:  analysis/symebcovmf_point_exp_backfit_tree.Rmd
+    Untracked:  data/symebcovmf_laplace_tree_backfit_20000.rds
+
+Unstaged changes:
+    Modified:   analysis/symebcovmf_laplace_exploration.Rmd
 
 </code></pre>
 <p>
@@ -618,6 +622,40 @@ Message
 </tr>
 </thead>
 <tbody>
+<tr>
+<td>
+Rmd
+</td>
+<td>
+<a href="https://github.com/xxie6/symmetric_covariance_decomposition/blob/78cd5d10332551489a9cdc822377ab37b3138290/analysis/symebcovmf_laplace_split_init_tree.Rmd" target="_blank">78cd5d1</a>
+</td>
+<td>
+Annie Xie
+</td>
+<td>
+2025-06-19
+</td>
+<td>
+Update backfit function
+</td>
+</tr>
+<tr>
+<td>
+html
+</td>
+<td>
+<a href="https://rawcdn.githack.com/xxie6/symmetric_covariance_decomposition/eaf2917b498ed7926923c4272d256f3c599760d9/docs/symebcovmf_laplace_split_init_tree.html" target="_blank">eaf2917</a>
+</td>
+<td>
+Annie Xie
+</td>
+<td>
+2025-06-10
+</td>
+<td>
+Build site.
+</td>
+</tr>
 <tr>
 <td>
 Rmd
@@ -827,6 +865,7 @@ nullcheck_factors &lt;- function(sym_ebcovmf_obj, L2_tol = 10^(-8)){
   iter &lt;- 1
   obj_diff &lt;- Inf
   sym_ebcovmf_obj$backfit_vec_elbo_full &lt;- NULL
+  sym_ebcovmf_obj$backfit_iter_elbo_vec &lt;- NULL
   
   # refit lambda
   sym_ebcovmf_obj &lt;- refit_lambda(S, sym_ebcovmf_obj, maxiter = 25)
@@ -857,6 +896,7 @@ nullcheck_factors &lt;- function(sym_ebcovmf_obj, L2_tol = 10^(-8)){
       sym_ebcovmf_obj &lt;- refit_lambda(S, sym_ebcovmf_obj) # add refitting step?
       #print(sym_ebcovmf_obj$elbo)
     }
+    sym_ebcovmf_obj$backfit_iter_elbo_vec &lt;- c(sym_ebcovmf_obj$backfit_iter_elbo_vec, sym_ebcovmf_obj$elbo)
     
     iter &lt;- iter + 1
     obj_diff &lt;- abs(sym_ebcovmf_obj$elbo - obj_old)
@@ -4996,6 +5036,17 @@ Date
 <tbody>
 <tr>
 <td>
+<a href="https://github.com/xxie6/symmetric_covariance_decomposition/blob/eaf2917b498ed7926923c4272d256f3c599760d9/docs/figure/symebcovmf_laplace_split_init_tree.Rmd/unnamed-chunk-34-1.png" target="_blank">eaf2917</a>
+</td>
+<td>
+Annie Xie
+</td>
+<td>
+2025-06-10
+</td>
+</tr>
+<tr>
+<td>
 <a href="https://github.com/xxie6/symmetric_covariance_decomposition/blob/e557427972ee3c2e673b325c06ce7a8016a2e6ad/docs/figure/symebcovmf_laplace_split_init_tree.Rmd/unnamed-chunk-34-1.png" target="_blank">e557427</a>
 </td>
 <td>
@@ -5040,6 +5091,17 @@ Date
 <tbody>
 <tr>
 <td>
+<a href="https://github.com/xxie6/symmetric_covariance_decomposition/blob/eaf2917b498ed7926923c4272d256f3c599760d9/docs/figure/symebcovmf_laplace_split_init_tree.Rmd/unnamed-chunk-36-1.png" target="_blank">eaf2917</a>
+</td>
+<td>
+Annie Xie
+</td>
+<td>
+2025-06-10
+</td>
+</tr>
+<tr>
+<td>
 <a href="https://github.com/xxie6/symmetric_covariance_decomposition/blob/e557427972ee3c2e673b325c06ce7a8016a2e6ad/docs/figure/symebcovmf_laplace_split_init_tree.Rmd/unnamed-chunk-36-1.png" target="_blank">e557427</a>
 </td>
 <td>
@@ -5082,6 +5144,17 @@ Date
 </tr>
 </thead>
 <tbody>
+<tr>
+<td>
+<a href="https://github.com/xxie6/symmetric_covariance_decomposition/blob/eaf2917b498ed7926923c4272d256f3c599760d9/docs/figure/symebcovmf_laplace_split_init_tree.Rmd/unnamed-chunk-38-1.png" target="_blank">eaf2917</a>
+</td>
+<td>
+Annie Xie
+</td>
+<td>
+2025-06-10
+</td>
+</tr>
 <tr>
 <td>
 <a href="https://github.com/xxie6/symmetric_covariance_decomposition/blob/e557427972ee3c2e673b325c06ce7a8016a2e6ad/docs/figure/symebcovmf_laplace_split_init_tree.Rmd/unnamed-chunk-38-1.png" target="_blank">e557427</a>
@@ -5223,6 +5296,43 @@ resid_eigen$values</code></pre>
 [157]   0.4142222   0.4019326   0.3781879   0.3724339</code></pre>
 <pre class="r"><code>plot(resid_eigen$vectors[,1])</code></pre>
 <p><img src="figure/symebcovmf_laplace_split_init_tree.Rmd/unnamed-chunk-43-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-43-1">
+Past versions of unnamed-chunk-43-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-43-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/xxie6/symmetric_covariance_decomposition/blob/eaf2917b498ed7926923c4272d256f3c599760d9/docs/figure/symebcovmf_laplace_split_init_tree.Rmd/unnamed-chunk-43-1.png" target="_blank">eaf2917</a>
+</td>
+<td>
+Annie Xie
+</td>
+<td>
+2025-06-10
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <p>This is a heatmap of the component that corresponds to the first
 eigenvector.</p>
 <pre class="r"><code>plot_heatmap(tcrossprod(resid_eigen$vectors[,1]), colors_range = c(&#39;blue&#39;,&#39;gray96&#39;,&#39;red&#39;), brks = seq(-max(abs(tcrossprod(resid_eigen$vectors[,1]))), max(abs(tcrossprod(resid_eigen$vectors[,1]))), length.out = 50))</code></pre>
@@ -5251,6 +5361,17 @@ Date
 <tbody>
 <tr>
 <td>
+<a href="https://github.com/xxie6/symmetric_covariance_decomposition/blob/eaf2917b498ed7926923c4272d256f3c599760d9/docs/figure/symebcovmf_laplace_split_init_tree.Rmd/unnamed-chunk-44-1.png" target="_blank">eaf2917</a>
+</td>
+<td>
+Annie Xie
+</td>
+<td>
+2025-06-10
+</td>
+</tr>
+<tr>
+<td>
 <a href="https://github.com/xxie6/symmetric_covariance_decomposition/blob/f885e9730bcb07ac7e25153546b1673fb60a1394/docs/figure/symebcovmf_laplace_split_init_tree.Rmd/unnamed-chunk-44-1.png" target="_blank">f885e97</a>
 </td>
 <td>
@@ -5274,10 +5395,84 @@ symebcovmf_fac3_fit &lt;- sym_ebcovmf_r1_fit(sim_data$YYt, symebcovmf_rank2_fit,
 <p>This is a plot of the third factor estimate.</p>
 <pre class="r"><code>plot(symebcovmf_fac3_fit$L_pm[,3], ylab = &#39;Third Factor&#39;)</code></pre>
 <p><img src="figure/symebcovmf_laplace_split_init_tree.Rmd/unnamed-chunk-46-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-46-1">
+Past versions of unnamed-chunk-46-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-46-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/xxie6/symmetric_covariance_decomposition/blob/eaf2917b498ed7926923c4272d256f3c599760d9/docs/figure/symebcovmf_laplace_split_init_tree.Rmd/unnamed-chunk-46-1.png" target="_blank">eaf2917</a>
+</td>
+<td>
+Annie Xie
+</td>
+<td>
+2025-06-10
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <p>This is a plot of the ELBO when optimizing the fourth factor.</p>
 <pre class="r"><code>fac3_idx &lt;- which(symebcovmf_fac3_fit$vec_elbo_full == 3)
 plot(symebcovmf_fac3_fit$vec_elbo_full[(fac3_idx+1): length(symebcovmf_fac3_fit$vec_elbo_full)], xlab = &#39;Iter&#39;, ylab = &#39;ELBO&#39;)</code></pre>
 <p><img src="figure/symebcovmf_laplace_split_init_tree.Rmd/unnamed-chunk-47-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-47-1">
+Past versions of unnamed-chunk-47-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-47-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/xxie6/symmetric_covariance_decomposition/blob/eaf2917b498ed7926923c4272d256f3c599760d9/docs/figure/symebcovmf_laplace_split_init_tree.Rmd/unnamed-chunk-47-1.png" target="_blank">eaf2917</a>
+</td>
+<td>
+Annie Xie
+</td>
+<td>
+2025-06-10
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <p>This is the objective function value:</p>
 <pre class="r"><code>symebcovmf_fac3_fit$elbo</code></pre>
 <pre><code>[1] -21295.69</code></pre>
@@ -5291,10 +5486,84 @@ procedure is used.</p>
 <p>This is a plot of the third factor estimate.</p>
 <pre class="r"><code>plot(symebcovmf_fac3_default_init_fit$L_pm[,3], ylab = &#39;Third Factor&#39;)</code></pre>
 <p><img src="figure/symebcovmf_laplace_split_init_tree.Rmd/unnamed-chunk-50-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-50-1">
+Past versions of unnamed-chunk-50-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-50-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/xxie6/symmetric_covariance_decomposition/blob/eaf2917b498ed7926923c4272d256f3c599760d9/docs/figure/symebcovmf_laplace_split_init_tree.Rmd/unnamed-chunk-50-1.png" target="_blank">eaf2917</a>
+</td>
+<td>
+Annie Xie
+</td>
+<td>
+2025-06-10
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <p>This is a plot of the ELBO when optimizing the third factor.</p>
 <pre class="r"><code>fac3_idx &lt;- which(symebcovmf_fac3_default_init_fit$vec_elbo_full == 3)
 plot(symebcovmf_fac3_default_init_fit$vec_elbo_full[(fac3_idx+1): length(symebcovmf_fac3_default_init_fit$vec_elbo_full)], xlab = &#39;Iter&#39;, ylab = &#39;ELBO&#39;)</code></pre>
 <p><img src="figure/symebcovmf_laplace_split_init_tree.Rmd/unnamed-chunk-51-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-51-1">
+Past versions of unnamed-chunk-51-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-51-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/xxie6/symmetric_covariance_decomposition/blob/eaf2917b498ed7926923c4272d256f3c599760d9/docs/figure/symebcovmf_laplace_split_init_tree.Rmd/unnamed-chunk-51-1.png" target="_blank">eaf2917</a>
+</td>
+<td>
+Annie Xie
+</td>
+<td>
+2025-06-10
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <p>This is the objective function value:</p>
 <pre class="r"><code>symebcovmf_fac3_default_init_fit$elbo</code></pre>
 <pre><code>[1] -21150.65</code></pre>
@@ -5323,7 +5592,7 @@ LAPACK: /Library/Frameworks/R.framework/Versions/4.3-arm64/Resources/lib/libRlap
 locale:
 [1] en_US.UTF-8/en_US.UTF-8/en_US.UTF-8/C/en_US.UTF-8/en_US.UTF-8
 
-time zone: America/Chicago
+time zone: America/New_York
 tzcode source: internal
 
 attached base packages:
