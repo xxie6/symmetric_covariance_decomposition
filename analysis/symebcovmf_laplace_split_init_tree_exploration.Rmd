@@ -1,0 +1,451 @@
+---
+title: "symebcovmf_laplace_split_init_tree_exploration"
+author: "Annie Xie"
+date: "2025-06-19"
+output: 
+  workflowr::wflow_html:
+    code_folding: hide
+editor_options:
+  chunk_output_type: console
+---
+
+# Introduction
+In this analysis, I further explore the point-Laplace plus splitting initialization strategy for symEBcovMF in the tree setting.
+
+# Packages and Functions
+
+```{r}
+library(ebnm)
+library(pheatmap)
+library(ggplot2)
+```
+
+```{r}
+source('code/visualization_functions.R')
+source('code/symebcovmf_functions.R')
+```
+
+```{r}
+compute_crossprod_similarity <- function(est, truth){
+  K_est <- ncol(est)
+  K_truth <- ncol(truth)
+  n <- nrow(est)
+  
+  #if estimates don't have same number of columns, try padding the estimate with zeros and make cosine similarity zero
+  if (K_est < K_truth){
+    est <- cbind(est, matrix(rep(0, n*(K_truth-K_est)), nrow = n))
+  }
+  
+  if (K_est > K_truth){
+    truth <- cbind(truth, matrix(rep(0, n*(K_est - K_truth)), nrow = n))
+  }
+  
+  #normalize est and truth
+  norms_est <- apply(est, 2, function(x){sqrt(sum(x^2))})
+  norms_est[norms_est == 0] <- Inf
+  
+  norms_truth <- apply(truth, 2, function(x){sqrt(sum(x^2))})
+  norms_truth[norms_truth == 0] <- Inf
+  
+  est_normalized <- t(t(est)/norms_est)
+  truth_normalized <- t(t(truth)/norms_truth)
+  
+  #compute matrix of cosine similarities
+  cosine_sim_matrix <- abs(crossprod(est_normalized, truth_normalized))
+  
+  assignment_problem <- lpSolve::lp.assign(t(cosine_sim_matrix), direction = "max")
+  return((1/K_truth)*assignment_problem$objval)
+}
+```
+
+# Backfit Functions
+```{r}
+optimize_factor <- function(R, ebnm_fn, maxiter, tol, v_init, lambda_k, R2k, n, KL){
+  R2 <- R2k - lambda_k^2
+  resid_s2 <- estimate_resid_s2(n = n, R2 = R2)
+  rank_one_KL <- 0
+  curr_elbo <- -Inf
+  obj_diff <- Inf
+  fitted_g_k <- NULL
+  iter <- 1
+  vec_elbo_full <- NULL
+  v <- v_init
+  
+  while((iter <= maxiter) && (obj_diff > tol)){
+    # update l; power iteration step
+    v.old <- v
+    x <- R %*% v
+    e <- ebnm_fn(x = x, s = sqrt(resid_s2), g_init = fitted_g_k)
+    scaling_factor <- sqrt(sum(e$posterior$mean^2) + sum(e$posterior$sd^2))
+    if (scaling_factor == 0){ # check if scaling factor is zero
+      scaling_factor <- Inf
+      v <- e$posterior$mean/scaling_factor
+      print('Warning: scaling factor is zero')
+      break
+    }
+    v <- e$posterior$mean/scaling_factor
+    
+    # update lambda and R2
+    lambda_k.old <- lambda_k
+    lambda_k <- max(as.numeric(t(v) %*% R %*% v), 0)
+    R2 <- R2k - lambda_k^2
+    
+    #store estimate for g
+    fitted_g_k.old <- fitted_g_k
+    fitted_g_k <- e$fitted_g
+    
+    # store KL
+    rank_one_KL.old <- rank_one_KL
+    rank_one_KL <- as.numeric(e$log_likelihood) +
+      - normal_means_loglik(x, sqrt(resid_s2), e$posterior$mean, e$posterior$mean^2 + e$posterior$sd^2)
+    
+    # update resid_s2
+    resid_s2.old <- resid_s2
+    resid_s2 <- estimate_resid_s2(n = n, R2 = R2) # this goes negative?????
+    
+    # check convergence - maybe change to rank-one obj function
+    curr_elbo.old <- curr_elbo
+    curr_elbo <- compute_elbo(resid_s2 = resid_s2,
+                              n = n,
+                              KL = c(KL, rank_one_KL),
+                              R2 = R2)
+    if (iter > 1){
+      obj_diff <- curr_elbo - curr_elbo.old
+    }
+    if (obj_diff < 0){ # check if convergence_val < 0
+      v <- v.old
+      resid_s2 <- resid_s2.old
+      rank_one_KL <- rank_one_KL.old
+      lambda_k <- lambda_k.old
+      curr_elbo <- curr_elbo.old
+      fitted_g_k <- fitted_g_k.old
+      print(paste('elbo decreased by', abs(obj_diff)))
+      break
+    }
+    vec_elbo_full <- c(vec_elbo_full, curr_elbo)
+    iter <- iter + 1
+  }
+  return(list(v = v, lambda_k = lambda_k, resid_s2 = resid_s2, curr_elbo = curr_elbo, vec_elbo_full = vec_elbo_full, fitted_g_k = fitted_g_k, rank_one_KL = rank_one_KL))
+}
+```
+
+```{r, eval = FALSE, include = FALSE}
+sym_ebcovmf_r1_fit_use_optim_fun <- function(S, sym_ebcovmf_obj, ebnm_fn, maxiter, tol, v_init = NULL){
+  # compute residual matrix (maybe get rid of this step)
+  if (is.null(sym_ebcovmf_obj$L_pm) == FALSE){
+    K <- length(sym_ebcovmf_obj$lambda) + 1
+    R <- S - tcrossprod(sym_ebcovmf_obj$L_pm %*% diag(sqrt(sym_ebcovmf_obj$lambda), ncol = (K-1)))
+    R2k <- compute_R2(S, sym_ebcovmf_obj$L_pm, sym_ebcovmf_obj$lambda, (K-1))
+  } else {
+    K <- 1
+    R <- S
+    R2k <- sum(S^2)
+  }
+  
+  # initialize estimate for l
+  if (is.null(v_init) == TRUE){
+    sym_ebcovmf_v_init <- sym_ebcovmf_r1_init(R)
+    v <- sym_ebcovmf_v_init$v
+    lambda_k <- sym_ebcovmf_v_init$lambda_k
+  } else {
+    v <- v_init
+    v <- v/sqrt(sum(v^2))
+    lambda_k <- drop(t(v) %*% R %*% v)
+  }
+  
+  # optimize factor
+  factor_proposed <- optimize_factor(R, ebnm_fn, maxiter, tol, v, lambda_k, R2k, sym_ebcovmf_obj$n, sym_ebcovmf_obj$KL)
+  lambda_k <- factor_proposed$lambda_k
+  v <- factor_proposed$v
+  
+  # nullcheck
+  if((lambda_k > 0) & (sqrt(sum(v^2)) > 10^(-8))){
+    sym_ebcovmf_obj$L_pm <- cbind(sym_ebcovmf_obj$L_pm, v)
+    sym_ebcovmf_obj$KL[K] <- factor_proposed$rank_one_KL
+    sym_ebcovmf_obj$lambda[K] <- lambda_k
+    sym_ebcovmf_obj$resid_s2 <- factor_proposed$resid_s2
+    sym_ebcovmf_obj$fitted_gs[[K]] <- factor_proposed$fitted_g_k
+    sym_ebcovmf_obj$elbo <- factor_proposed$curr_elbo
+    sym_ebcovmf_obj$vec_elbo_full <- c(sym_ebcovmf_obj$vec_elbo_full, K, factor_proposed$vec_elbo_full)
+    sym_ebcovmf_obj$vec_elbo_K <- c(sym_ebcovmf_obj$vec_elbo_K,  factor_proposed$curr_elbo) # maybe will change this
+  }
+  return(sym_ebcovmf_obj)
+}
+```
+
+```{r}
+#nullcheck function
+nullcheck_factors <- function(sym_ebcovmf_obj, L2_tol = 10^(-8)){
+  null_lambda_idx <- which(sym_ebcovmf_obj$lambda == 0)
+  factor_L2_norms <- apply(sym_ebcovmf_obj$L_pm, 2, function(v){sqrt(sum(v^2))})
+  null_factor_idx <- which(factor_L2_norms < L2_tol)
+  null_idx <- unique(c(null_lambda_idx, null_factor_idx))
+  
+  keep_idx <- setdiff(c(1:length(sym_ebcovmf_obj$lambda)), null_idx)
+  
+  if (length(keep_idx) < length(sym_ebcovmf_obj$lambda)){
+    #remove factors
+    sym_ebcovmf_obj$L_pm <- sym_ebcovmf_obj$L_pm[,keep_idx]
+    sym_ebcovmf_obj$lambda <- sym_ebcovmf_obj$lambda[keep_idx]
+    sym_ebcovmf_obj$KL <- sym_ebcovmf_obj$KL[keep_idx]
+    sym_ebcovmf_obj$fitted_gs <- sym_ebcovmf_obj$fitted_gs[keep_idx]
+  }
+  
+  #shouldn't need to recompute objective function or other things
+  return(sym_ebcovmf_obj)
+}
+```
+
+```{r}
+sym_ebcovmf_backfit <- function(S, sym_ebcovmf_obj, ebnm_fn, backfit_maxiter = 100, backfit_tol = 10^(-8), optim_maxiter= 500, optim_tol = 10^(-8)){
+  K <- length(sym_ebcovmf_obj$lambda)
+  iter <- 1
+  obj_diff <- Inf
+  sym_ebcovmf_obj$backfit_vec_elbo_full <- NULL
+  sym_ebcovmf_obj$backfit_iter_elbo_vec <- NULL
+  
+  # refit lambda
+  sym_ebcovmf_obj <- refit_lambda(S, sym_ebcovmf_obj, maxiter = 25)
+  
+  while((iter <= backfit_maxiter) && (obj_diff > backfit_tol)){
+    # print(iter)
+    obj_old <- sym_ebcovmf_obj$elbo
+    # loop through each factor
+    for (k in 1:K){
+      # print(k)
+      # compute residual matrix
+      R <- S - tcrossprod(sym_ebcovmf_obj$L_pm[,-k] %*% diag(sqrt(sym_ebcovmf_obj$lambda[-k]), ncol = (K-1)))
+      R2k <- compute_R2(S, sym_ebcovmf_obj$L_pm[,-k], sym_ebcovmf_obj$lambda[-k], (K-1)) #this is right but I have one instance where the values don't match what I expect
+      
+      # optimize factor
+      factor_proposed <- optimize_factor(R, ebnm_fn, optim_maxiter, optim_tol, sym_ebcovmf_obj$L_pm[,k], sym_ebcovmf_obj$lambda[k], R2k, sym_ebcovmf_obj$n, sym_ebcovmf_obj$KL[-k])
+      
+      # update object
+      sym_ebcovmf_obj$L_pm[,k] <- factor_proposed$v
+      sym_ebcovmf_obj$KL[k] <- factor_proposed$rank_one_KL
+      sym_ebcovmf_obj$lambda[k] <- factor_proposed$lambda_k
+      sym_ebcovmf_obj$resid_s2 <- factor_proposed$resid_s2
+      sym_ebcovmf_obj$fitted_gs[[k]] <- factor_proposed$fitted_g_k
+      sym_ebcovmf_obj$elbo <- factor_proposed$curr_elbo
+      sym_ebcovmf_obj$backfit_vec_elbo_full <- c(sym_ebcovmf_obj$backfit_vec_elbo_full, factor_proposed$vec_elbo_full)
+      
+      #print(sym_ebcovmf_obj$elbo)
+      sym_ebcovmf_obj <- refit_lambda(S, sym_ebcovmf_obj) # add refitting step?
+      #print(sym_ebcovmf_obj$elbo)
+    }
+    sym_ebcovmf_obj$backfit_iter_elbo_vec <- c(sym_ebcovmf_obj$backfit_iter_elbo_vec, sym_ebcovmf_obj$elbo)
+    
+    iter <- iter + 1
+    obj_diff <- abs(sym_ebcovmf_obj$elbo - obj_old)
+    # need to add check if it is negative?
+  }
+  # nullcheck
+  sym_ebcovmf_obj <- nullcheck_factors(sym_ebcovmf_obj)
+  return(sym_ebcovmf_obj)
+}
+```
+
+# Data Generation
+To test this procedure, I will apply it to the tree-structured dataset.
+
+```{r}
+sim_4pops <- function(args) {
+  set.seed(args$seed)
+  
+  n <- sum(args$pop_sizes)
+  p <- args$n_genes
+  
+  FF <- matrix(rnorm(7 * p, sd = rep(args$branch_sds, each = p)), ncol = 7)
+  # if (args$constrain_F) {
+  #   FF_svd <- svd(FF)
+  #   FF <- FF_svd$u
+  #   FF <- t(t(FF) * branch_sds * sqrt(p))
+  # }
+  
+  LL <- matrix(0, nrow = n, ncol = 7)
+  LL[, 1] <- 1
+  LL[, 2] <- rep(c(1, 1, 0, 0), times = args$pop_sizes)
+  LL[, 3] <- rep(c(0, 0, 1, 1), times = args$pop_sizes)
+  LL[, 4] <- rep(c(1, 0, 0, 0), times = args$pop_sizes)
+  LL[, 5] <- rep(c(0, 1, 0, 0), times = args$pop_sizes)
+  LL[, 6] <- rep(c(0, 0, 1, 0), times = args$pop_sizes)
+  LL[, 7] <- rep(c(0, 0, 0, 1), times = args$pop_sizes)
+  
+  E <- matrix(rnorm(n * p, sd = args$indiv_sd), nrow = n)
+  Y <- LL %*% t(FF) + E
+  YYt <- (1/p)*tcrossprod(Y)
+  return(list(Y = Y, YYt = YYt, LL = LL, FF = FF, K = ncol(LL)))
+}
+```
+
+```{r}
+sim_args = list(pop_sizes = rep(40, 4), n_genes = 1000, branch_sds = rep(2,7), indiv_sd = 1, seed = 1)
+sim_data <- sim_4pops(sim_args)
+```
+
+This is a heatmap of the scaled Gram matrix:
+```{r}
+plot_heatmap(sim_data$YYt, colors_range = c('blue','gray96','red'), brks = seq(-max(abs(sim_data$YYt)), max(abs(sim_data$YYt)), length.out = 50))
+```
+
+This is a scatter plot of the true loadings matrix:
+```{r}
+pop_vec <- c(rep('A', 40), rep('B', 40), rep('C', 40), rep('D', 40))
+plot_loadings(sim_data$LL, pop_vec)
+```
+
+This is a plot of the eigenvalues of the Gram matrix:
+```{r}
+S_eigen <- eigen(sim_data$YYt)
+plot(S_eigen$values) + abline(a = 0, b = 0, col = 'red')
+```
+
+This is the minimum eigenvalue:
+```{r}
+min(S_eigen$values)
+```
+
+# Split point-Laplace Fit
+
+I will load in previously saved results for the point-Laplace fit:
+```{r}
+symebcovmf_laplace_fit <- readRDS('data/symebcovmf_laplace_tree_backfit_20000.rds')
+```
+
+Now, we split the estimate into its positive and negative parts.
+```{r}
+LL_split_init <- cbind(pmax(symebcovmf_laplace_fit$L_pm, 0), pmax(-symebcovmf_laplace_fit$L_pm, 0))
+```
+
+This is a plot of the estimate with its positive and negative parts split into different factors, $\hat{L}_{split}$.
+```{r}
+plot_loadings(LL_split_init, pop_vec)
+```
+
+This is a heatmap of the estimate with its positive and negative parts split into different factors, $\hat{L}_{split}$.
+```{r}
+plot_heatmap(LL_split_init)
+```
+
+# Backfit with Split Initialization
+Now, we backfit from the split initialization (this is what GBCD does). The backfit is run with the point-exponential prior.
+
+First, we initialize a symEBcovMF object using $\hat{L}_{split}$.
+```{r}
+symebcovmf_laplace_split_init_obj <- sym_ebcovmf_init(sim_data$YYt)
+
+split_L_norms <- apply(LL_split_init, 2, function(x){sqrt(sum(x^2))})
+idx.keep <- which(split_L_norms > 0)
+split_L_normalized <- apply(LL_split_init[,idx.keep], 2, function(x){x/sqrt(sum(x^2))})
+symebcovmf_laplace_split_init_obj$L_pm <- split_L_normalized
+
+symebcovmf_laplace_split_init_obj$lambda <- rep(symebcovmf_laplace_fit$lambda, times = 2)[idx.keep]
+
+symebcovmf_laplace_split_init_obj$resid_s2 <- estimate_resid_s2(S = sim_data$YYt, 
+  L = symebcovmf_laplace_split_init_obj$L_pm, 
+  lambda = symebcovmf_laplace_split_init_obj$lambda, 
+  n = nrow(sim_data$Y), 
+  K = length(symebcovmf_laplace_split_init_obj$lambda))
+
+symebcovmf_laplace_split_init_obj$elbo <- compute_elbo(S = sim_data$YYt, 
+  L = symebcovmf_laplace_split_init_obj$L_pm, 
+  lambda = symebcovmf_laplace_split_init_obj$lambda, 
+  resid_s2 = symebcovmf_laplace_split_init_obj$resid_s2, 
+  n = nrow(sim_data$Y), 
+  K = length(symebcovmf_laplace_split_init_obj$lambda), 
+  KL = rep(0, length(symebcovmf_laplace_split_init_obj$lambda)))
+```
+
+I refit the lambda values keeping the factors fixed.
+```{r}
+# need to check this
+symebcovmf_laplace_split_obj <- refit_lambda(S = sim_data$YYt, symebcovmf_laplace_split_init_obj, maxiter = 500)
+```
+
+This is a plot of the initial loadings estimate:
+```{r}
+plot_loadings(symebcovmf_laplace_split_init_obj$L_pm %*% diag(sqrt(symebcovmf_laplace_split_init_obj$lambda)), pop_vec)
+```
+
+This is a plot of the initial estimate of the scaled Gram matrix:
+```{r}
+plot_heatmap(tcrossprod(symebcovmf_laplace_split_init_obj$L_pm %*% diag(sqrt(symebcovmf_laplace_split_init_obj$lambda))), brks = seq(0, max(abs(tcrossprod(symebcovmf_laplace_split_init_obj$L_pm %*% diag(sqrt(symebcovmf_laplace_split_init_obj$lambda))))), length.out = 50))
+```
+
+Now, we run the backfit with point-exponential prior.
+```{r, results = 'hide'}
+symebcovmf_laplace_split_init_backfit <- sym_ebcovmf_backfit(sim_data$YYt, symebcovmf_laplace_split_init_obj, ebnm_fn = ebnm::ebnm_point_exponential, backfit_maxiter = 500)
+```
+
+This is a plot of the estimate from the backfit initialized with the split estimate, $\hat{L}_{split-backfit}$.
+```{r}
+plot_loadings(symebcovmf_laplace_split_init_backfit$L_pm %*% diag(sqrt(symebcovmf_laplace_split_init_backfit$lambda)), pop_vec)
+```
+
+This is a heatmap of the estimate from the backfit initialized with the split estimate, $\hat{L}_{split-backfit}$.
+```{r}
+plot_heatmap(symebcovmf_laplace_split_init_backfit$L_pm %*% diag(sqrt(symebcovmf_laplace_split_init_backfit$lambda)))
+```
+
+This is the crossproduct similarity of the loadings estimate from the backfit initialized with the split estimate, $\hat{L}_{split-backfit}$.
+```{r}
+compute_crossprod_similarity(symebcovmf_laplace_split_init_backfit$L_pm, sim_data$LL)
+```
+
+This is a heatmap of the estimated Gram matrix, $\hat{L}_{split-backfit}\hat{\Lambda}\hat{L}_{split-backfit}'$.
+```{r}
+gram_est <- tcrossprod(symebcovmf_laplace_split_init_backfit$L_pm %*% diag(sqrt(symebcovmf_laplace_split_init_backfit$lambda)))
+plot_heatmap(gram_est, brks = seq(0, max(abs(gram_est)), length.out = 50))
+```
+
+This is the L2 norm of the difference, excluding diagonal entries.
+```{r}
+compute_L2_fit <- function(est, dat){
+  score <- sum((dat - est)^2) - sum((diag(dat) - diag(est))^2)
+  return(score)
+}
+
+compute_L2_fit(gram_est, sim_data$YYt)
+```
+
+This is a plot of fitted vs. observed values:
+```{r}
+ggplot(data = NULL, aes(x = as.vector(sim_data$YYt), y = as.vector(gram_est))) + geom_point() + geom_abline(slope = 1, intercept = 0, color = 'red') + xlab('Observed Values') + ylab('Fitted Values')
+```
+
+This is a plot of the progression of the ELBO:
+```{r}
+plot(symebcovmf_laplace_split_init_backfit$backfit_iter_elbo_vec, ylab = 'ELBO')
+```
+
+## Observations
+The estimate from the backfit still captures the tree components and yields a very high crossproduct similarity value. One observation is some of the factors are not fully sparse. For example, in factor 3, which primarily captures the the population effect for population 3, we see that members of populations 1 and 2 now have small non-zero loading. Based on my intuition, I would expect the fully sparse representation to have a higher objective function value, so I'm not exactly sure why these factors have these small loading values in other populations. I imagine these small loading values could be shrunk to zero if you used a binary (or a generalized binary prior that leans toward being binary) to improve the fit.
+
+# GBCD
+For comparison, I also try applying GBCD with point-exponential prior.
+
+```{r}
+library(gbcd)
+```
+
+```{r}
+gbcd_fit <- fit_gbcd(sim_data$Y, Kmax = 7, ebnm::ebnm_point_exponential)
+```
+
+This is a plot of the loadings estimate from GBCD, $\hat{L}_{gbcd}$.
+```{r}
+plot_loadings(gbcd_fit$L, pop_vec)
+```
+
+This is a heatmap of the loadings estimate from GBCD, $\hat{L}_{gbcd}$.
+```{r}
+plot_heatmap(gbcd_fit$L)
+```
+
+This is the crossproduct similarity of the loadings estimate from GBCD, $\hat{L}_{gbcd}$.
+```{r}
+compute_crossprod_similarity(gbcd_fit$L, sim_data$LL)
+```
+
+## Observations
+The estimate from GBCD also captures all the tree components and yields a high crossproduct similarity value. The crossproduct similarity is just slightly lower than that of symEBcovMF backfit initialized with the point-Laplace fit plus splitting. We also find that some of the GBCD factors have small non-zero loadings. For example, factor 5, which primarily captures population 2, has small non-zero loadings for members of populations 3 and 4. Given that the GBCD estimate also has this characteristic, I am inclined to think non-zero loadings are a result of model misspecification.
