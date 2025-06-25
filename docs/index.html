@@ -310,7 +310,7 @@ class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span>
 <div class="tab-content">
 <div id="summary" class="tab-pane fade in active">
 <p>
-<strong>Last updated:</strong> 2025-06-17
+<strong>Last updated:</strong> 2025-06-24
 </p>
 <p>
 <strong>Checks:</strong> <span
@@ -358,15 +358,15 @@ results.</p>
 <div class="panel panel-default">
 <div class="panel-heading">
 <p class="panel-title">
-<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomxxie6symmetriccovariancedecompositiontree477d73d35597b3fe28afa52cfc4163294abd56e5targetblank477d73da">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomxxie6symmetriccovariancedecompositiontreebad5eb59cf40ffd5c8009e94aca500c013e57ecftargetblankbad5eb5a">
 <span class="glyphicon glyphicon-ok text-success"
 aria-hidden="true"></span> <strong>Repository version:</strong>
-<a href="https://github.com/xxie6/symmetric_covariance_decomposition/tree/477d73d35597b3fe28afa52cfc4163294abd56e5" target="_blank">477d73d</a>
+<a href="https://github.com/xxie6/symmetric_covariance_decomposition/tree/bad5eb59cf40ffd5c8009e94aca500c013e57ecf" target="_blank">bad5eb5</a>
 </a>
 </p>
 </div>
 <div
-id="strongRepositoryversionstrongahrefhttpsgithubcomxxie6symmetriccovariancedecompositiontree477d73d35597b3fe28afa52cfc4163294abd56e5targetblank477d73da"
+id="strongRepositoryversionstrongahrefhttpsgithubcomxxie6symmetriccovariancedecompositiontreebad5eb59cf40ffd5c8009e94aca500c013e57ecftargetblankbad5eb5a"
 class="panel-collapse collapse">
 <div class="panel-body">
 <p>
@@ -376,7 +376,7 @@ reproducibility.
 </p>
 <p>
 The results in this page were generated with repository version
-<a href="https://github.com/xxie6/symmetric_covariance_decomposition/tree/477d73d35597b3fe28afa52cfc4163294abd56e5" target="_blank">477d73d</a>.
+<a href="https://github.com/xxie6/symmetric_covariance_decomposition/tree/bad5eb59cf40ffd5c8009e94aca500c013e57ecf" target="_blank">bad5eb5</a>.
 See the <em>Past versions</em> tab to see a history of the changes made
 to the R Markdown and HTML files.
 </p>
@@ -437,6 +437,40 @@ Message
 </tr>
 </thead>
 <tbody>
+<tr>
+<td>
+Rmd
+</td>
+<td>
+<a href="https://github.com/xxie6/symmetric_covariance_decomposition/blob/bad5eb59cf40ffd5c8009e94aca500c013e57ecf/analysis/index.Rmd" target="_blank">bad5eb5</a>
+</td>
+<td>
+Annie Xie
+</td>
+<td>
+2025-06-24
+</td>
+<td>
+Update home page
+</td>
+</tr>
+<tr>
+<td>
+html
+</td>
+<td>
+<a href="https://rawcdn.githack.com/xxie6/symmetric_covariance_decomposition/5b3d7b52e4a304c19bdd0f65e6c2ff49243a8c87/docs/index.html" target="_blank">5b3d7b5</a>
+</td>
+<td>
+Annie Xie
+</td>
+<td>
+2025-06-17
+</td>
+<td>
+Build site.
+</td>
+</tr>
 <tr>
 <td>
 Rmd
@@ -803,8 +837,21 @@ Start workflowr project.
 </div>
 <p>This site is for further exploring symmetric covariance decomposition
 methods.</p>
-<p>Main takeways thus far (updated June 17):</p>
+<p>Main takeways thus far (updated June 24):</p>
 <ul>
+<li><p>symEBcovMF with backfit with point-exponential prior also does
+relatively well in the tree setting. However, the representation is not
+fully sparse (We also see this with GBCD and symEBcovMF with the
+point-Laplace plus splitting initialization). I suspect this is due to
+the model misspecification with regards to the noise. The corresponding
+analysis is <a
+href="symebcovmf_point_exp_backfit_tree.html">here</a>.</p></li>
+<li><p>symEBcovMF backfit initialized with the point-Laplace plus
+splitting strategy does relatively well in the tree setting. One
+observation is the representation is not fully sparse; some of the
+factors have small loadings in other populations alongside the main
+component. The corresponding analysis is <a
+href="symebcovmf_laplace_split_init_tree_exploration.html">here</a>.</p></li>
 <li><p>When applying symEBcovMF with point-Laplace prior in the tree
 setting, the greedy method does not find the sparse representation.
 However, if you backfit for long enough, e.g. 20,000 iterations,
@@ -843,19 +890,17 @@ in the balanced nonoverlapping setting</a><br />
 <li>Exploration of <a href="symebcovmf_tree.html">symEBcovMF in the tree
 setting</a><br />
 </li>
-<li>Further exploration of <a
-href="symebcovmf_tree_exploration.html">symEBcovMF in the tree
-setting</a><br />
+<li>Exploration of <a
+href="symebcovmf_tree_exploration.html">generalized binary vs pt-exp
+symEBcovMF in the tree setting</a><br />
 </li>
 <li>Exploration of <a
 href="symebcovmf_binary_prior_tree_exploration.html">different binary
 priors in tree setting</a><br />
 </li>
-<li>Exploration of <a href="symebcovmf_overlap.html">symEBcovMF in the
-sparse, overlapping setting</a><br />
-</li>
-<li>Exploration of <a href="symebcovmf_null.html">symEBcovMF in the null
-setting</a><br />
+<li>Exploration of <a
+href="symebcovmf_point_exp_backfit_tree.html">symEBcovMF backfit in the
+tree setting</a><br />
 </li>
 <li>Exploration of <a href="unbal_nonoverlap.html">symEBcovMF in the
 unbalanced nonoverlapping setting</a><br />
@@ -867,8 +912,14 @@ nonoverlapping setting</a><br />
 <li>Exploration of <a href="unbal_nonoverlap_backfit.html">symEBcovMF
 backfit in the unbalanced nonoverlapping setting</a><br />
 </li>
+<li>Exploration of <a href="symebcovmf_overlap.html">symEBcovMF in the
+sparse, overlapping setting</a><br />
+</li>
 <li>Exploration of <a href="symebcovmf_overlap_backfit.html">symEBcovMF
-backfit in the sparse, overlapping setting</a></li>
+backfit in the sparse, overlapping setting</a><br />
+</li>
+<li>Exploration of <a href="symebcovmf_null.html">symEBcovMF in the null
+setting</a></li>
 </ul>
 <p>Analyses related to initialization:</p>
 <ul>
@@ -883,6 +934,11 @@ symEBcovMF backfit initialized with point exponential</a><br />
 href="symebcovmf_laplace_split_init_tree.html">point exponential
 symEBcovMF backfit initialized with point laplace plus
 splitting</a><br />
+</li>
+<li>Exploration of <a
+href="symebcovmf_laplace_split_init_tree_exploration.html">point
+exponential symEBcovMF backfit initialized with point laplace plus
+splitting part 2</a><br />
 </li>
 <li>Exploration of <a href="symebcovmf_laplace_exploration.html">point
 laplace symEBcovMF backfit in tree setting</a><br />
