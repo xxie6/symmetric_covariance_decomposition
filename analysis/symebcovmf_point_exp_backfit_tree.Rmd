@@ -71,13 +71,13 @@ compute_crossprod_similarity <- function(est, truth){
 # Backfit Functions
 
 ```{r}
-optimize_factor <- function(R, ebnm_fn, maxiter, tol, v_init, lambda_k, R2k, n, KL){
-  R2 <- R2k - lambda_k^2
+optimize_factor <- function(R, ebnm_fn, maxiter, tol, v_init, lambda_k, R2k, n, KL, fitted_g_k_init){
+  R2 <- R2k + lambda_k^2 - 2*lambda_k*as.numeric(t(v_init)%*% R %*%matrix(v_init, ncol = 1))
   resid_s2 <- estimate_resid_s2(n = n, R2 = R2)
   rank_one_KL <- 0
   curr_elbo <- -Inf
   obj_diff <- Inf
-  fitted_g_k <- NULL
+  fitted_g_k <- fitted_g_k_init
   iter <- 1
   vec_elbo_full <- NULL
   v <- v_init
@@ -99,7 +99,8 @@ optimize_factor <- function(R, ebnm_fn, maxiter, tol, v_init, lambda_k, R2k, n, 
     # update lambda and R2
     lambda_k.old <- lambda_k
     lambda_k <- max(as.numeric(t(v) %*% R %*% v), 0)
-    R2 <- R2k - lambda_k^2
+    R2 <- R2k - lambda_k^2 #I think this should be right now
+    # R2 <- R2k + lambda_k^2 - 2*lambda_k*as.numeric(t(v) %*% R %*% matrix(v, ncol = 1))
     
     #store estimate for g
     fitted_g_k.old <- fitted_g_k
@@ -216,7 +217,7 @@ sym_ebcovmf_backfit <- function(S, sym_ebcovmf_obj, ebnm_fn, backfit_maxiter = 1
   sym_ebcovmf_obj$backfit_iter_elbo_vec <- NULL
   
   # refit lambda
-  sym_ebcovmf_obj <- refit_lambda(S, sym_ebcovmf_obj, maxiter = 25)
+  # sym_ebcovmf_obj <- refit_lambda(S, sym_ebcovmf_obj, maxiter = 25)
   
   while((iter <= backfit_maxiter) && (obj_diff > backfit_tol)){
     # print(iter)
@@ -229,7 +230,7 @@ sym_ebcovmf_backfit <- function(S, sym_ebcovmf_obj, ebnm_fn, backfit_maxiter = 1
       R2k <- compute_R2(S, sym_ebcovmf_obj$L_pm[,-k], sym_ebcovmf_obj$lambda[-k], (K-1)) #this is right but I have one instance where the values don't match what I expect
       
       # optimize factor
-      factor_proposed <- optimize_factor(R, ebnm_fn, optim_maxiter, optim_tol, sym_ebcovmf_obj$L_pm[,k], sym_ebcovmf_obj$lambda[k], R2k, sym_ebcovmf_obj$n, sym_ebcovmf_obj$KL[-k])
+      factor_proposed <- optimize_factor(R, ebnm_fn, optim_maxiter, optim_tol, sym_ebcovmf_obj$L_pm[,k], sym_ebcovmf_obj$lambda[k], R2k, sym_ebcovmf_obj$n, sym_ebcovmf_obj$KL[-k], symebcovmf_fit$fitted_gs[[k]])
       
       # update object
       sym_ebcovmf_obj$L_pm[,k] <- factor_proposed$v
@@ -241,7 +242,7 @@ sym_ebcovmf_backfit <- function(S, sym_ebcovmf_obj, ebnm_fn, backfit_maxiter = 1
       sym_ebcovmf_obj$backfit_vec_elbo_full <- c(sym_ebcovmf_obj$backfit_vec_elbo_full, factor_proposed$vec_elbo_full)
       
       #print(sym_ebcovmf_obj$elbo)
-      sym_ebcovmf_obj <- refit_lambda(S, sym_ebcovmf_obj) # add refitting step?
+      #sym_ebcovmf_obj <- refit_lambda(S, sym_ebcovmf_obj) # add refitting step?
       #print(sym_ebcovmf_obj$elbo)
     }
     sym_ebcovmf_obj$backfit_iter_elbo_vec <- c(sym_ebcovmf_obj$backfit_iter_elbo_vec, sym_ebcovmf_obj$elbo)
