@@ -13,10 +13,13 @@ editor_options:
 
 In this analysis, I explore the performance of symEBcovMF with the point-laplace plus splitting initialization.
 
+## Motivation
+The reason I am exploring this initialization is because the GBCD method uses this point-Laplace prior fit plus splitting initialization procedure. This initialization seems to contribute to GBCD's performance, so I want to see how the procedure performs with symEBcovMF. Since the initialization works well with GBCD, I expect that it will also work well with symEBcovMF. There's no reason to believe the additional symmetry constraint should affect the performance of the initialization. (Note I am fitting the point-Laplace fit with flashier, not with symEBcovMF. But I imagine the procedure would still work well if you used symEBcovMF to get the point-Laplace prior fit.)
+
 # Packages and Functions
 
 ```{r}
-library(ebnm)
+devtools::load_all('~/Documents/Github/ebnm')
 library(pheatmap)
 library(ggplot2)
 library(symebcovmf)
@@ -25,151 +28,6 @@ library(flashier)
 
 ```{r}
 source('code/visualization_functions.R')
-# source('code/symebcovmf_functions.R')
-```
-
-# Backfit Functions
-
-```{r}
-optimize_factor <- function(R, ebnm_fn, maxiter, tol, v_init, lambda_k, R2k, n, KL){
-  R2 <- R2k - lambda_k^2
-  resid_s2 <- estimate_resid_s2(n = n, R2 = R2)
-  rank_one_KL <- 0
-  curr_elbo <- -Inf
-  obj_diff <- Inf
-  fitted_g_k <- NULL
-  iter <- 1
-  vec_elbo_full <- NULL
-  v <- v_init
-  
-  while((iter <= maxiter) && (obj_diff > tol)){
-    # update l; power iteration step
-    v.old <- v
-    x <- R %*% v
-    e <- ebnm_fn(x = x, s = sqrt(resid_s2), g_init = fitted_g_k)
-    scaling_factor <- sqrt(sum(e$posterior$mean^2) + sum(e$posterior$sd^2))
-    if (scaling_factor == 0){ # check if scaling factor is zero
-      scaling_factor <- Inf
-      v <- e$posterior$mean/scaling_factor
-      print('Warning: scaling factor is zero')
-      break
-    }
-    v <- e$posterior$mean/scaling_factor
-    
-    # update lambda and R2
-    lambda_k.old <- lambda_k
-    lambda_k <- max(as.numeric(t(v) %*% R %*% v), 0)
-    R2 <- R2k - lambda_k^2
-    
-    #store estimate for g
-    fitted_g_k.old <- fitted_g_k
-    fitted_g_k <- e$fitted_g
-    
-    # store KL
-    rank_one_KL.old <- rank_one_KL
-    rank_one_KL <- as.numeric(e$log_likelihood) +
-      - normal_means_loglik(x, sqrt(resid_s2), e$posterior$mean, e$posterior$mean^2 + e$posterior$sd^2)
-    
-    # update resid_s2
-    resid_s2.old <- resid_s2
-    resid_s2 <- estimate_resid_s2(n = n, R2 = R2) # this goes negative?????
-    
-    # check convergence - maybe change to rank-one obj function
-    curr_elbo.old <- curr_elbo
-    curr_elbo <- compute_elbo(resid_s2 = resid_s2,
-                              n = n,
-                              KL = c(KL, rank_one_KL),
-                              R2 = R2)
-    if (iter > 1){
-      obj_diff <- curr_elbo - curr_elbo.old
-    }
-    if (obj_diff < 0){ # check if convergence_val < 0
-      v <- v.old
-      resid_s2 <- resid_s2.old
-      rank_one_KL <- rank_one_KL.old
-      lambda_k <- lambda_k.old
-      curr_elbo <- curr_elbo.old
-      fitted_g_k <- fitted_g_k.old
-      print(paste('elbo decreased by', abs(obj_diff)))
-      break
-    }
-    vec_elbo_full <- c(vec_elbo_full, curr_elbo)
-    iter <- iter + 1
-  }
-  return(list(v = v, lambda_k = lambda_k, resid_s2 = resid_s2, curr_elbo = curr_elbo, vec_elbo_full = vec_elbo_full, fitted_g_k = fitted_g_k, rank_one_KL = rank_one_KL))
-}
-```
-
-```{r}
-#nullcheck function
-nullcheck_factors <- function(sym_ebcovmf_obj, L2_tol = 10^(-8)){
-  null_lambda_idx <- which(sym_ebcovmf_obj$lambda == 0)
-  factor_L2_norms <- apply(sym_ebcovmf_obj$L_pm, 2, function(v){sqrt(sum(v^2))})
-  null_factor_idx <- which(factor_L2_norms < L2_tol)
-  null_idx <- unique(c(null_lambda_idx, null_factor_idx))
-  
-  keep_idx <- setdiff(c(1:length(sym_ebcovmf_obj$lambda)), null_idx)
-  
-  if (length(keep_idx) < length(sym_ebcovmf_obj$lambda)){
-    #remove factors
-    sym_ebcovmf_obj$L_pm <- sym_ebcovmf_obj$L_pm[,keep_idx]
-    sym_ebcovmf_obj$lambda <- sym_ebcovmf_obj$lambda[keep_idx]
-    sym_ebcovmf_obj$KL <- sym_ebcovmf_obj$KL[keep_idx]
-    sym_ebcovmf_obj$fitted_gs <- sym_ebcovmf_obj$fitted_gs[keep_idx]
-  }
-  
-  #shouldn't need to recompute objective function or other things
-  return(sym_ebcovmf_obj)
-}
-```
-
-```{r}
-sym_ebcovmf_backfit <- function(S, sym_ebcovmf_obj, ebnm_fn, backfit_maxiter = 100, backfit_tol = 10^(-8), optim_maxiter= 500, optim_tol = 10^(-8)){
-  K <- length(sym_ebcovmf_obj$lambda)
-  iter <- 1
-  obj_diff <- Inf
-  sym_ebcovmf_obj$backfit_vec_elbo_full <- NULL
-  sym_ebcovmf_obj$backfit_iter_elbo_vec <- NULL
-  
-  # refit lambda
-  sym_ebcovmf_obj <- refit_lambda(S, sym_ebcovmf_obj, maxiter = 25)
-  
-  while((iter <= backfit_maxiter) && (obj_diff > backfit_tol)){
-    # print(iter)
-    obj_old <- sym_ebcovmf_obj$elbo
-    # loop through each factor
-    for (k in 1:K){
-      # print(k)
-      # compute residual matrix
-      R <- S - tcrossprod(sym_ebcovmf_obj$L_pm[,-k] %*% diag(sqrt(sym_ebcovmf_obj$lambda[-k]), ncol = (K-1)))
-      R2k <- compute_R2(S, sym_ebcovmf_obj$L_pm[,-k], sym_ebcovmf_obj$lambda[-k], (K-1)) #this is right but I have one instance where the values don't match what I expect
-      
-      # optimize factor
-      factor_proposed <- optimize_factor(R, ebnm_fn, optim_maxiter, optim_tol, sym_ebcovmf_obj$L_pm[,k], sym_ebcovmf_obj$lambda[k], R2k, sym_ebcovmf_obj$n, sym_ebcovmf_obj$KL[-k])
-      
-      # update object
-      sym_ebcovmf_obj$L_pm[,k] <- factor_proposed$v
-      sym_ebcovmf_obj$KL[k] <- factor_proposed$rank_one_KL
-      sym_ebcovmf_obj$lambda[k] <- factor_proposed$lambda_k
-      sym_ebcovmf_obj$resid_s2 <- factor_proposed$resid_s2
-      sym_ebcovmf_obj$fitted_gs[[k]] <- factor_proposed$fitted_g_k
-      sym_ebcovmf_obj$elbo <- factor_proposed$curr_elbo
-      sym_ebcovmf_obj$backfit_vec_elbo_full <- c(sym_ebcovmf_obj$backfit_vec_elbo_full, factor_proposed$vec_elbo_full)
-      
-      #print(sym_ebcovmf_obj$elbo)
-      sym_ebcovmf_obj <- refit_lambda(S, sym_ebcovmf_obj) # add refitting step?
-      #print(sym_ebcovmf_obj$elbo)
-    }
-    sym_ebcovmf_obj$backfit_iter_elbo_vec <- c(sym_ebcovmf_obj$backfit_iter_elbo_vec, sym_ebcovmf_obj$elbo)
-    
-    iter <- iter + 1
-    obj_diff <- abs(sym_ebcovmf_obj$elbo - obj_old)
-    # need to add check if it is negative?
-  }
-  # nullcheck
-  sym_ebcovmf_obj <- nullcheck_factors(sym_ebcovmf_obj)
-  return(sym_ebcovmf_obj)
-}
 ```
 
 # Data Generation
@@ -222,6 +80,7 @@ plot_loadings(sim_data$LL, pop_vec)
 
 # Initialization
 
+This is the code for the point-Laplace fit plus splitting initialization procedure:
 ```{r}
 laplace_split_initialization <- function(S, Kmax, verbose = 2, backfit_maxiter = 500, backfit_tol = NULL){
   # backfitting is important in the tree setting
@@ -284,23 +143,9 @@ symebcovmf_laplace_split_init_obj <- sym_ebcovmf_init(sim_data$YYt)
 split_L_norms <- apply(LL_split_init, 2, function(x){sqrt(sum(x^2))})
 idx.keep <- which(split_L_norms > 0)
 split_L_normalized <- apply(LL_split_init[,idx.keep], 2, function(x){x/sqrt(sum(x^2))})
-symebcovmf_laplace_split_init_obj$L_pm <- split_L_normalized
+init_lambda <- rep(split_L_norms^2, times = 2)[idx.keep]
 
-symebcovmf_laplace_split_init_obj$lambda <- rep(split_L_norms, times = 2)[idx.keep]
-
-symebcovmf_laplace_split_init_obj$resid_s2 <- estimate_resid_s2(S = sim_data$YYt, 
-  L = symebcovmf_laplace_split_init_obj$L_pm, 
-  lambda = symebcovmf_laplace_split_init_obj$lambda, 
-  n = nrow(sim_data$Y), 
-  K = length(symebcovmf_laplace_split_init_obj$lambda))
-
-symebcovmf_laplace_split_init_obj$elbo <- compute_elbo(S = sim_data$YYt, 
-  L = symebcovmf_laplace_split_init_obj$L_pm, 
-  lambda = symebcovmf_laplace_split_init_obj$lambda, 
-  resid_s2 = symebcovmf_laplace_split_init_obj$resid_s2, 
-  n = nrow(sim_data$Y), 
-  K = length(symebcovmf_laplace_split_init_obj$lambda), 
-  KL = rep(0, length(symebcovmf_laplace_split_init_obj$lambda)))
+symebcovmf_laplace_split_init_obj <- sym_ebcovmf_factors_init(sim_data$YYt, symebcovmf_laplace_split_init_obj, split_L_normalized, init_lambda)
 ```
 
 I refit the lambda values keeping the factors fixed.
@@ -314,8 +159,8 @@ plot_loadings(symebcovmf_laplace_split_init_obj$L_pm %*% diag(sqrt(symebcovmf_la
 ```
 
 Now, we run the backfit with point-exponential prior.
-```{r}
-symebcovmf_laplace_split_init_backfit <- sym_ebcovmf_backfit(sim_data$YYt, symebcovmf_laplace_split_init_obj, ebnm_fn = ebnm::ebnm_point_exponential, backfit_maxiter = 500)
+```{r, results = 'hide', warning = FALSE}
+symebcovmf_laplace_split_init_backfit <- sym_ebcovmf_backfit(sim_data$YYt, symebcovmf_laplace_split_obj, ebnm_fn = ebnm::ebnm_point_exponential, backfit_maxiter = 5000)
 ```
 
 This is a plot of the estimate from the backfit initialized with the split estimate, $\hat{L}_{split-backfit}$.
@@ -351,3 +196,4 @@ This is a plot of the ELBO:
 plot(symebcovmf_laplace_split_init_backfit$backfit_iter_elbo_vec)
 ```
 
+Overall, in this balanced tree setting, symEBcovMF seems to perform well with the point-Laplace plus splitting initialization.
