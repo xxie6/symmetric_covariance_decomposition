@@ -1,0 +1,287 @@
+---
+title: "baltree_with_unequal_popsizes_exploration"
+author: "Annie Xie"
+date: "2025-12-04"
+output: 
+  workflowr::wflow_html:
+    code_folding: hide
+editor_options:
+  chunk_output_type: console
+---
+
+# Introduction
+
+In this analysis, I investigate symEBcovMF in the balanced tree setting with unequal population sizes. I've found that other methods do not perform as well in this setting, so I want to see how symEBcovMF does.
+
+# Packages and Functions
+
+```{r}
+library(ebnm)
+library(pheatmap)
+library(ggplot2)
+library(symebcovmf)
+```
+
+```{r}
+source('code/visualization_functions.R')
+```
+
+```{r}
+compute_L2_fit <- function(est, dat){
+  score <- sum((dat - est)^2) - sum((diag(dat) - diag(est))^2)
+  return(score)
+}
+```
+
+```{r}
+compute_crossprod_similarity <- function(est, truth){
+  K_est <- ncol(est)
+  K_truth <- ncol(truth)
+  n <- nrow(est)
+  
+  #if estimates don't have same number of columns, try padding the estimate with zeros and make cosine similarity zero
+  if (K_est < K_truth){
+    est <- cbind(est, matrix(rep(0, n*(K_truth-K_est)), nrow = n))
+  }
+  
+  if (K_est > K_truth){
+    truth <- cbind(truth, matrix(rep(0, n*(K_est - K_truth)), nrow = n))
+  }
+  
+  #normalize est and truth
+  norms_est <- apply(est, 2, function(x){sqrt(sum(x^2))})
+  norms_est[norms_est == 0] <- Inf
+  
+  norms_truth <- apply(truth, 2, function(x){sqrt(sum(x^2))})
+  norms_truth[norms_truth == 0] <- Inf
+  
+  est_normalized <- t(t(est)/norms_est)
+  truth_normalized <- t(t(truth)/norms_truth)
+  
+  #compute matrix of cosine similarities
+  cosine_sim_matrix <- abs(crossprod(est_normalized, truth_normalized))
+  
+  assignment_problem <- lpSolve::lp.assign(t(cosine_sim_matrix), direction = "max")
+  return((1/K_truth)*assignment_problem$objval)
+}
+```
+
+# Data Generation
+
+```{r}
+sim_4pops <- function(args) {
+  set.seed(args$seed)
+  
+  n <- sum(args$pop_sizes)
+  p <- args$n_genes
+  
+  FF <- matrix(rnorm(7 * p, sd = rep(args$branch_sds, each = p)), ncol = 7)
+  # if (args$constrain_F) {
+  #   FF_svd <- svd(FF)
+  #   FF <- FF_svd$u
+  #   FF <- t(t(FF) * branch_sds * sqrt(p))
+  # }
+  
+  LL <- matrix(0, nrow = n, ncol = 7)
+  LL[, 1] <- 1
+  LL[, 2] <- rep(c(1, 1, 0, 0), times = args$pop_sizes)
+  LL[, 3] <- rep(c(0, 0, 1, 1), times = args$pop_sizes)
+  LL[, 4] <- rep(c(1, 0, 0, 0), times = args$pop_sizes)
+  LL[, 5] <- rep(c(0, 1, 0, 0), times = args$pop_sizes)
+  LL[, 6] <- rep(c(0, 0, 1, 0), times = args$pop_sizes)
+  LL[, 7] <- rep(c(0, 0, 0, 1), times = args$pop_sizes)
+  
+  E <- matrix(rnorm(n * p, sd = args$indiv_sd), nrow = n)
+  Y <- LL %*% t(FF) + E
+  YYt <- (1/p)*tcrossprod(Y)
+  return(list(Y = Y, YYt = YYt, LL = LL, FF = FF, K = ncol(LL)))
+}
+```
+
+```{r}
+sim_args = list(pop_sizes = c(20,50,30,60), n_genes = 1000, branch_sds = rep(2,7), indiv_sd = 1, seed = 1)
+sim_data <- sim_4pops(sim_args)
+```
+
+This is a heatmap of the scaled Gram matrix:
+```{r}
+plot_heatmap(sim_data$YYt, colors_range = c('blue','gray96','red'), brks = seq(-max(abs(sim_data$YYt)), max(abs(sim_data$YYt)), length.out = 50))
+```
+
+This is a scatter plot of the true loadings matrix:
+```{r}
+pop_vec <- c(rep('A', 20), rep('B', 50), rep('C', 30), rep('D', 60))
+plot_loadings(sim_data$LL, pop_vec)
+```
+
+This is a plot of the eigenvalues of the Gram matrix:
+```{r}
+S_eigen <- eigen(sim_data$YYt)
+plot(S_eigen$values) + abline(a = 0, b = 0, col = 'red')
+```
+
+This is the minimum eigenvalue:
+```{r}
+min(S_eigen$values)
+```
+
+# symEBcovMF with point-exponential
+
+First, we start with running greedy symEBcovMF with the point-exponential prior.
+```{r}
+symebcovmf_fit <- sym_ebcovmf_fit(S = sim_data$YYt, ebnm_fn = ebnm::ebnm_point_exponential, K = 7, maxiter = 500, rank_one_tol = 10^(-8), tol = 10^(-8), refit_lam = TRUE)
+```
+
+This is a scatter plot of $\hat{L}_{pt-exp}$, the estimate from symEBcovMF:
+```{r}
+plot_loadings(symebcovmf_fit$L_pm %*% diag(sqrt(symebcovmf_fit$lambda)), pop_vec)
+```
+
+This is the objective function value attained:
+```{r}
+symebcovmf_fit$elbo
+```
+
+This is the crossproduct similarity value:
+```{r}
+compute_crossprod_similarity(symebcovmf_fit$L_pm, sim_data$LL)
+```
+
+## Observations
+Some of the factors which we would want to capture a singular population effect are instead capturing two effects. For most of these factors, there is a primary population it is capturing alongside another population with smaller loading value. Another observation is the baseline factor is not very binary. The baseline factor seems to be somewhat correlated with population size. Though population 3 has a higher loading value than population 2 despite having smaller population size. Maybe population 3 has a higher loading due to the shared branch between populations 3 and 4? Another note is the combined size of populations 3 and 4 is larger than the combined size of populations 1 and 2.
+
+## Additional Backfit
+
+Now, we run additional backfit. This is the code for the backfit:
+```{r, results = 'hide'}
+symebcovmf_fit_backfit <- sym_ebcovmf_backfit(sim_data$YYt, symebcovmf_fit, ebnm_fn = ebnm_point_exponential, backfit_maxiter = 1000)
+```
+
+This is a scatter plot of $\hat{L}_{pt-exp-backfit}$, the estimate from symEBcovMF with backfit:
+```{r}
+plot_loadings(symebcovmf_fit_backfit$L_pm %*% diag(sqrt(symebcovmf_fit_backfit$lambda)), pop_vec)
+```
+
+This is the objective function value attained:
+```{r}
+symebcovmf_fit_backfit$elbo
+```
+
+This is a plot of the progression of the ELBO:
+```{r}
+plot(symebcovmf_fit_backfit$backfit_iter_elbo_vec, ylab = 'ELBO')
+```
+
+This is the crossproduct similarity value:
+```{r}
+compute_crossprod_similarity(symebcovmf_fit_backfit$L_pm, sim_data$LL)
+```
+
+### Observations
+
+The overall representation looks similar. I suspect a more binary prior might be able to help? It seems like the baseline factor is capturing a larger effect for the largest population and a smaller effect for the smallest population. If you use a more binary prior, then the baseline factor will look more binary. Hopefully this will allow the other factors to do a better job at capturing the separate branches.
+
+## Do Additional backfit with binary prior
+
+```{r}
+ebnm_generalized_binary_fix_scale <- function(x, s, mode = 'estimate', g_init = NULL, fix_g = FALSE, output = ebnm_output_default(), control = NULL){
+  ebnm_gb_output <- ebnm::ebnm_generalized_binary(x = x, s = s, mode = mode, 
+                                                  scale = 0.01, 
+                                                  g_init = g_init, fix_g = fix_g,
+                                                  output = output, control = control)
+  return(ebnm_gb_output)
+}
+```
+
+```{r, results = 'hide', warning=FALSE}
+symebcovmf_fit_backfit_binary_prior <- symebcovmf_fit_backfit
+symebcovmf_fit_backfit_binary_prior$fitted_gs <- rep(list(NULL), length(symebcovmf_fit_backfit$lambda))
+symebcovmf_fit_backfit_binary_prior <- sym_ebcovmf_backfit(sim_data$YYt, symebcovmf_fit_backfit_binary_prior, ebnm_fn = ebnm_generalized_binary_fix_scale, backfit_maxiter = 1000)
+```
+
+This is a scatter plot of $\hat{L}_{pt-exp-backfit}$, the estimate from symEBcovMF with backfit:
+```{r}
+plot_loadings(symebcovmf_fit_backfit_binary_prior$L_pm %*% diag(sqrt(symebcovmf_fit_backfit_binary_prior$lambda)), pop_vec)
+```
+
+This is the objective function value attained:
+```{r}
+symebcovmf_fit_backfit_binary_prior$elbo
+```
+
+This is a plot of the progression of the ELBO:
+```{r}
+plot(symebcovmf_fit_backfit_binary_prior$backfit_iter_elbo_vec, ylab = 'ELBO')
+```
+
+This is the crossproduct similarity value:
+```{r}
+compute_crossprod_similarity(symebcovmf_fit_backfit_binary_prior$L_pm, sim_data$LL)
+```
+
+### Observations
+
+The binary prior does help. The baseline factor looks much more binary. Furthermore, many of the factors which were capturing two populations before are now only capturing one population. However, factor 6 still captures a shared effect between populations 1 and 4, which is not in the true loadings matrix.
+
+## Additional backfit with point-exponential prior
+
+I also try additional backfit with the point-exponential prior to see if that helps the fit.
+```{r, results = 'hide', warning=FALSE}
+symebcovmf_fit_longer_backfit <- sym_ebcovmf_backfit(sim_data$YYt, symebcovmf_fit_backfit, ebnm_fn = ebnm_point_exponential, backfit_maxiter = 20000)
+```
+
+This is a scatter plot of $\hat{L}_{pt-exp-longer-backfit}$, the estimate from symEBcovMF with backfit:
+```{r}
+plot_loadings(symebcovmf_fit_longer_backfit$L_pm %*% diag(sqrt(symebcovmf_fit_longer_backfit$lambda)), pop_vec)
+```
+
+This is the objective function value attained:
+```{r}
+symebcovmf_fit_longer_backfit$elbo
+```
+
+This is a plot of the progression of the ELBO:
+```{r}
+plot(symebcovmf_fit_longer_backfit$backfit_iter_elbo_vec, ylab = 'ELBO')
+```
+
+This is the crossproduct similarity value:
+```{r}
+compute_crossprod_similarity(symebcovmf_fit_longer_backfit$L_pm, sim_data$LL)
+```
+
+### Observations
+The longer backfit with the point-exponential prior does seem to help the fit. The baseline factor looks closer to binary, which is what we wanted. Furthermore, for some of the factors capturing two populations, the loadings for the non-primary population has been shrunk down towards zero. So these factors are moving toward the single-population-effect factors that were used to generate the data.
+
+### Additional backfit with binary prior 
+
+In this section, we try additional backfit with the generalized binary prior on top of the fit with longer backfit.
+```{r, results = 'hide', warning=FALSE}
+symebcovmf_fit_backfit_binary_prior <- symebcovmf_fit_longer_backfit
+symebcovmf_fit_backfit_binary_prior$fitted_gs <- rep(list(NULL), length(symebcovmf_fit_backfit$lambda))
+symebcovmf_fit_backfit_binary_prior <- sym_ebcovmf_backfit(sim_data$YYt, symebcovmf_fit_backfit_binary_prior, ebnm_fn = ebnm_generalized_binary_fix_scale, backfit_maxiter = 1000)
+```
+
+This is a scatter plot of $\hat{L}_{pt-exp-backfit}$, the estimate from symEBcovMF with backfit:
+```{r}
+plot_loadings(symebcovmf_fit_backfit_binary_prior$L_pm %*% diag(sqrt(symebcovmf_fit_backfit_binary_prior$lambda)), pop_vec)
+```
+
+This is the objective function value attained:
+```{r}
+symebcovmf_fit_backfit_binary_prior$elbo
+```
+
+This is a plot of the progression of the ELBO:
+```{r}
+plot(symebcovmf_fit_backfit_binary_prior$backfit_iter_elbo_vec, ylab = 'ELBO')
+```
+
+This is the crossproduct similarity value:
+```{r}
+compute_crossprod_similarity(symebcovmf_fit_backfit_binary_prior$L_pm, sim_data$LL)
+```
+
+### Observations
+
+This representation looks like the bifurcating tree representation we wanted to recover!
