@@ -1,0 +1,285 @@
+---
+title: "unbaltree_setting_pt_exp_prior_exploration"
+author: "Annie Xie"
+date: "2026-02-05"
+output: 
+  workflowr::wflow_html:
+    code_folding: hide
+editor_options:
+  chunk_output_type: console
+---
+
+# Introduction
+In this analysis, I want to explore the symEBcovMF method in the unbalanced tree setting.
+
+# Packages and Functions
+
+```{r}
+devtools::load_all('~/Documents/Github/ebnm')
+library(pheatmap)
+library(ggplot2)
+library(symebcovmf)
+```
+
+```{r}
+source('code/visualization_functions.R')
+```
+
+```{r}
+compute_L2_fit <- function(est, dat){
+  score <- sum((dat - est)^2) - sum((diag(dat) - diag(est))^2)
+  return(score)
+}
+```
+
+```{r}
+compute_crossprod_similarity <- function(est, truth){
+  K_est <- ncol(est)
+  K_truth <- ncol(truth)
+  n <- nrow(est)
+  
+  #if estimates don't have same number of columns, try padding the estimate with zeros and make cosine similarity zero
+  if (K_est < K_truth){
+    est <- cbind(est, matrix(rep(0, n*(K_truth-K_est)), nrow = n))
+  }
+  
+  if (K_est > K_truth){
+    truth <- cbind(truth, matrix(rep(0, n*(K_est - K_truth)), nrow = n))
+  }
+  
+  #normalize est and truth
+  norms_est <- apply(est, 2, function(x){sqrt(sum(x^2))})
+  norms_est[norms_est == 0] <- Inf
+  
+  norms_truth <- apply(truth, 2, function(x){sqrt(sum(x^2))})
+  norms_truth[norms_truth == 0] <- Inf
+  
+  est_normalized <- t(t(est)/norms_est)
+  truth_normalized <- t(t(truth)/norms_truth)
+  
+  #compute matrix of cosine similarities
+  cosine_sim_matrix <- abs(crossprod(est_normalized, truth_normalized))
+  
+  assignment_problem <- lpSolve::lp.assign(t(cosine_sim_matrix), direction = "max")
+  return((1/K_truth)*assignment_problem$objval)
+}
+```
+
+# Data Generation
+
+```{r}
+sim_4pops_unbal_tree <- function(args) {
+  set.seed(args$seed)
+  
+  n <- sum(args$pop_sizes)
+  p <- args$n_genes
+  
+  FF <- matrix(rnorm(7 * p, sd = rep(args$branch_sds, each = p)), ncol = 7)
+  # if (args$constrain_F) {
+  #   FF_svd <- svd(FF)
+  #   FF <- FF_svd$u
+  #   FF <- t(t(FF) * branch_sds * sqrt(p))
+  # }
+  
+  # check if this is right!
+  LL <- matrix(0, nrow = n, ncol = 7)
+  LL[, 1] <- 1
+  LL[, 2] <- rep(c(1, 0, 0, 0), times = args$pop_sizes)
+  LL[, 3] <- rep(c(0, 1, 1, 1), times = args$pop_sizes)
+  LL[, 4] <- rep(c(0, 1, 0, 0), times = args$pop_sizes)
+  LL[, 5] <- rep(c(0, 0, 1, 1), times = args$pop_sizes)
+  LL[, 6] <- rep(c(0, 0, 1, 0), times = args$pop_sizes)
+  LL[, 7] <- rep(c(0, 0, 0, 1), times = args$pop_sizes)
+  
+  E <- matrix(rnorm(n * p, sd = args$indiv_sd), nrow = n)
+  Y <- LL %*% t(FF) + E
+  YYt <- (1/p)*tcrossprod(Y)
+  return(list(Y = Y, YYt = YYt, LL = LL, FF = FF, K = ncol(LL)))
+}
+```
+
+```{r}
+sim_args = list(pop_sizes = rep(40, 4), n_genes = 1000, branch_sds = rep(2,7), indiv_sd = 1, seed = 1)
+pop_vec <- rep(c('A','B','C','D'), each = 40)
+sim_data <- sim_4pops_unbal_tree(sim_args)
+```
+
+This is a heatmap of the true loadings matrix:
+```{r}
+plot_heatmap(sim_data$LL)
+```
+
+# symEBcovMF with point-exponential
+
+First, we start with running greedy symEBcovMF with the point-exponential prior.
+```{r, results = 'hide', warning = FALSE}
+symebcovmf_fit <- sym_ebcovmf_fit(S = sim_data$YYt, ebnm_fn = ebnm::ebnm_point_exponential, K = 7, maxiter = 500, rank_one_tol = 10^(-8), tol = 10^(-8), refit_lam = TRUE)
+```
+
+This is a scatter plot of $\hat{L}_{pt-exp}$, the estimate from symEBcovMF:
+```{r}
+plot_loadings(symebcovmf_fit$L_pm %*% diag(sqrt(symebcovmf_fit$lambda)), pop_vec)
+```
+
+This is the objective function value attained:
+```{r}
+symebcovmf_fit$elbo
+```
+
+This is the crossproduct similarity value:
+```{r}
+compute_crossprod_similarity(symebcovmf_fit$L_pm, sim_data$LL)
+```
+
+## Observations
+
+The representation looks more akin to a balanced tree representation compared to the unbalanced loadings matrix used to generate the data. The last two factors group two populations together, illustrating a bifurcating tree structure. The bifurcating tree structure might be a result of the non-binary baseline. This is a plot of the first factor and the number of branches each individual is a member of. 
+
+```{r}
+plot(symebcovmf_fit$L_pm %*% diag(sqrt(symebcovmf_fit$lambda))[,1], rowSums(sim_data$LL), xlab = 'first factor', ylab = 'number of branches')
+```
+
+We can see that the first factor is correlated with the number of branches each individual is a member of. I'm curious to see if backfitting would allow the representation to look more binary. However, if I am backfitting with the point-exponential prior, I don't suspect that it would. If I am backfitting with the generalized binary prior, then I think it should. 
+
+# Additional Backfit
+
+Now, we run additional backfit (also with the point-exponential prior). This is the code for the backfit:
+```{r, results = 'hide', warning = FALSE}
+symebcovmf_fit_backfit <- sym_ebcovmf_backfit(sim_data$YYt, symebcovmf_fit, ebnm_fn = ebnm_point_exponential, backfit_maxiter = 1000)
+```
+
+This is a scatter plot of $\hat{L}_{pt-exp-backfit}$, the estimate from symEBcovMF with backfit:
+```{r}
+plot_loadings(symebcovmf_fit_backfit$L_pm %*% diag(sqrt(symebcovmf_fit_backfit$lambda)), pop_vec)
+```
+
+This is the objective function value attained:
+```{r}
+symebcovmf_fit_backfit$elbo
+```
+
+This is a plot of the progression of the ELBO:
+```{r}
+plot(symebcovmf_fit_backfit$backfit_iter_elbo_vec, ylab = 'ELBO')
+```
+
+This is the crossproduct similarity value:
+```{r}
+compute_crossprod_similarity(symebcovmf_fit_backfit$L_pm, sim_data$LL)
+```
+
+## Observations
+
+Backfitting with the exponential prior did not change the representation much. This result is not surprising to me since the point-exponential prior doesn't discriminate against non-binary solutions.
+
+# More Backfit
+
+I also try additional backfit with the point-exponential prior to see if that changes anything.
+```{r, results = 'hide', warning = FALSE}
+symebcovmf_fit_longer_backfit <- sym_ebcovmf_backfit(sim_data$YYt, symebcovmf_fit_backfit, ebnm_fn = ebnm_point_exponential, backfit_maxiter = 10000)
+```
+
+This is a scatter plot of $\hat{L}_{pt-exp-longer-backfit}$, the estimate from symEBcovMF with backfit:
+```{r}
+plot_loadings(symebcovmf_fit_longer_backfit$L_pm %*% diag(sqrt(symebcovmf_fit_longer_backfit$lambda)), pop_vec)
+```
+
+This is the objective function value attained:
+```{r}
+symebcovmf_fit_longer_backfit$elbo
+```
+
+This is a plot of the progression of the ELBO:
+```{r}
+plot(symebcovmf_fit_longer_backfit$backfit_iter_elbo_vec, ylab = 'ELBO')
+```
+
+This is the crossproduct similarity value:
+```{r}
+compute_crossprod_similarity(symebcovmf_fit_longer_backfit$L_pm, sim_data$LL)
+```
+
+## Observations
+
+The baseline factor is still correlated with the number of branches each group is a member of. We see some shrinkage in the last factor which captures group 1 and group 2 effects. However, the second factor, which previously only captured group 1, has a relatively small positive loading for group 2 now. So maybe some of the shrinkage that occurred in the last factor was just the effect moving to the second factor.
+
+# Backfit with binary prior
+
+In this section, I try backfitting with the generalized binary prior instead of the point-exponential prior.
+```{r, results = 'hide', warning = FALSE}
+symebcovmf_fit_backfit_binary_prior <- symebcovmf_fit_backfit
+symebcovmf_fit_backfit_binary_prior$fitted_gs <- rep(list(NULL), length(symebcovmf_fit_backfit$lambda))
+symebcovmf_fit_backfit_binary_prior <- sym_ebcovmf_backfit(sim_data$YYt, symebcovmf_fit_backfit_binary_prior, ebnm_fn = ebnm::ebnm_generalized_binary, backfit_maxiter = 5000)
+```
+
+This is a scatter plot of $\hat{L}_{pt-exp-binary-backfit}$, the estimate from symEBcovMF with backfit:
+```{r}
+plot_loadings(symebcovmf_fit_backfit_binary_prior$L_pm %*% diag(sqrt(symebcovmf_fit_backfit_binary_prior$lambda)), pop_vec)
+```
+
+This is the objective function value attained:
+```{r}
+symebcovmf_fit_backfit_binary_prior$elbo
+```
+
+This is a plot of the progression of the ELBO:
+```{r}
+plot(symebcovmf_fit_backfit_binary_prior$backfit_iter_elbo_vec, ylab = 'ELBO')
+```
+
+This is the crossproduct similarity value:
+```{r}
+compute_crossprod_similarity(symebcovmf_fit_backfit_binary_prior$L_pm, sim_data$LL)
+```
+
+## Observations
+
+The representation still contains the bifurcating tree structure. So this particular prior did not help make the representation more binary.
+
+# Fit Initialized with True Loadings
+
+```{r}
+init_L_norms <- apply(sim_data$LL, 2, function(x){sqrt(sum(x^2))})
+init_L_normalized <- t(t(sim_data$LL)/init_L_norms)
+init_lambda <- init_L_norms^2 * diag(crossprod(sim_data$FF)/ncol(sim_data$Y))
+```
+
+```{r, results = 'hide', warning = FALSE}
+symebcovmf_true_init_obj <- sym_ebcovmf_init(sim_data$YYt)
+symebcovmf_true_init_obj <- sym_ebcovmf_factors_init(sim_data$YYt, 
+                                                  symebcovmf_true_init_obj, 
+                                                  init_L_normalized, 
+                                                  init_lambda)
+  
+symebcovmf_true_init_fit <- refit_lambda(S = sim_data$YYt, 
+                                 symebcovmf_true_init_obj, 
+                                 maxiter = 500)
+symebcovmf_true_init_fit <- sym_ebcovmf_backfit(sim_data$YYt, 
+                                        symebcovmf_true_init_fit, 
+                                        ebnm_fn = ebnm::ebnm_generalized_binary, 
+                                        backfit_maxiter = 500)
+```
+
+This is a scatter plot of $\hat{L}_{pt-exp-binary-backfit}$, the estimate from symEBcovMF with backfit:
+```{r}
+plot_loadings(symebcovmf_true_init_fit$L_pm %*% diag(sqrt(symebcovmf_true_init_fit$lambda)), pop_vec)
+```
+
+This is the objective function value attained:
+```{r}
+symebcovmf_true_init_fit$elbo
+```
+
+This is a plot of the progression of the ELBO:
+```{r}
+plot(symebcovmf_true_init_fit$backfit_iter_elbo_vec, ylab = 'ELBO')
+```
+
+This is the crossproduct similarity value:
+```{r}
+compute_crossprod_similarity(symebcovmf_true_init_fit$L_pm, sim_data$LL)
+```
+
+## Observations
+
+The fit initialized with the true loadings matrix attains a higher ELBO than the fit initialized with the greedy fit. So it's not that the method prefers the more balanced fit. I wonder if a bottom-up style initialization would be more likely to find the unbalanced representation.
