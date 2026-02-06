@@ -1,0 +1,292 @@
+---
+title: "symebcovmf_overlap_backfit_exploration_part2"
+author: "Annie Xie"
+date: "2026-02-05"
+output: 
+  workflowr::wflow_html:
+    code_folding: hide
+editor_options:
+  chunk_output_type: console
+---
+
+# Introduction
+In this analysis, I want to explore the symEBcovMF method in the unbalanced tree setting.
+
+# Packages and Functions
+
+```{r}
+devtools::load_all('~/Documents/Github/ebnm')
+library(pheatmap)
+library(ggplot2)
+library(symebcovmf)
+library(lpSolve)
+```
+
+```{r}
+source('code/visualization_functions.R')
+```
+
+```{r}
+compute_L2_fit <- function(est, dat){
+  score <- sum((dat - est)^2) - sum((diag(dat) - diag(est))^2)
+  return(score)
+}
+```
+
+```{r}
+permute_L <- function(est, truth){
+  K_est <- ncol(est)
+  K_truth <- ncol(truth)
+  n <- nrow(est)
+
+  #if estimates don't have same number of columns, try padding the estimate with zeros and make cosine similarity zero
+  if (K_est < K_truth){
+    est <- cbind(est, matrix(rep(0, n*(K_truth-K_est)), nrow = n))
+  }
+
+  if (K_est > K_truth){
+    truth <- cbind(truth, matrix(rep(0, n*(K_est - K_truth)), nrow = n))
+  }
+
+  #normalize est and truth
+  norms_est <- apply(est, 2, function(x){sqrt(sum(x^2))})
+  norms_est[norms_est == 0] <- Inf
+
+  norms_truth <- apply(truth, 2, function(x){sqrt(sum(x^2))})
+  norms_truth[norms_truth == 0] <- Inf
+
+  est_normalized <- t(t(est)/norms_est)
+  truth_normalized <- t(t(truth)/norms_truth)
+
+  #compute matrix of cosine similarities
+  cosine_sim_matrix <- abs(crossprod(est_normalized, truth_normalized))
+  assignment_problem <- lp.assign(t(cosine_sim_matrix), direction = "max")
+
+  perm <- apply(assignment_problem$solution, 1, which.max)
+  return(est[,perm])
+}
+```
+
+```{r}
+compute_crossprod_similarity <- function(est, truth){
+  K_est <- ncol(est)
+  K_truth <- ncol(truth)
+  n <- nrow(est)
+  
+  #if estimates don't have same number of columns, try padding the estimate with zeros and make cosine similarity zero
+  if (K_est < K_truth){
+    est <- cbind(est, matrix(rep(0, n*(K_truth-K_est)), nrow = n))
+  }
+  
+  if (K_est > K_truth){
+    truth <- cbind(truth, matrix(rep(0, n*(K_est - K_truth)), nrow = n))
+  }
+  
+  #normalize est and truth
+  norms_est <- apply(est, 2, function(x){sqrt(sum(x^2))})
+  norms_est[norms_est == 0] <- Inf
+  
+  norms_truth <- apply(truth, 2, function(x){sqrt(sum(x^2))})
+  norms_truth[norms_truth == 0] <- Inf
+  
+  est_normalized <- t(t(est)/norms_est)
+  truth_normalized <- t(t(truth)/norms_truth)
+  
+  #compute matrix of cosine similarities
+  cosine_sim_matrix <- abs(crossprod(est_normalized, truth_normalized))
+  
+  assignment_problem <- lpSolve::lp.assign(t(cosine_sim_matrix), direction = "max")
+  return((1/K_truth)*assignment_problem$objval)
+}
+```
+
+# Data Generation
+
+```{r}
+# args is a list containing n, p, k, indiv_sd, pi1, and seed
+sim_binary_loadings_data <- function(args) {
+  set.seed(args$seed)
+  
+  FF <- matrix(rnorm(args$k * args$p, sd = args$group_sd), ncol = args$k)
+  if (args$constrain_F) {
+    FF_svd <- svd(FF)
+    FF <- FF_svd$u
+    FF <- t(t(FF) * rep(args$group_sd, args$k) * sqrt(p))
+  }
+  LL <- matrix(rbinom(args$n*args$k, 1, args$pi1), nrow = args$n, ncol = args$k)
+  E <- matrix(rnorm(args$n * args$p, sd = args$indiv_sd), nrow = args$n)
+  
+  Y <- LL %*% t(FF) + E
+  YYt <- (1/args$p)*tcrossprod(Y)
+  
+  return(list(Y = Y, YYt = YYt, LL = LL, FF = FF, K = ncol(LL)))
+}
+```
+
+```{r}
+n <- 100
+p <- 1000
+k <- 10
+pi1 <- 0.1
+indiv_sd <- 1
+group_sd <- 1
+seed <- 1
+sim_args = list(n = n, p = p, k = k, pi1 = pi1, indiv_sd = indiv_sd, group_sd = group_sd, seed = seed, constrain_F = FALSE)
+sim_data <- sim_binary_loadings_data(sim_args)
+```
+
+This is a heatmap of the scaled Gram matrix:
+```{r}
+plot_heatmap(sim_data$YYt, colors_range = c('blue','gray96','red'), brks = seq(-max(abs(sim_data$YYt)), max(abs(sim_data$YYt)), length.out = 50))
+```
+
+This is a heatmap of the true loadings matrix:
+```{r}
+plot_heatmap(sim_data$LL)
+```
+
+# Regular symEBcovMF
+
+```{r}
+symebcovmf_overlap_refit_fit <- sym_ebcovmf_fit(S = sim_data$YYt, ebnm_fn = ebnm::ebnm_point_exponential, K = 10, maxiter = 100, rank_one_tol = 10^(-8), tol = 10^(-8), refit_lam = TRUE)
+```
+
+This is a heatmap of the true loadings matrix:
+```{r}
+plot_heatmap(sim_data$LL)
+```
+
+This is a heatmap of $\hat{L}_{refit}$. The columns have been permuted to match the true loadings matrix:
+```{r}
+symebcovmf_overlap_refit_fit_L_permuted <- permute_L(symebcovmf_overlap_refit_fit$L_pm %*% diag(sqrt(symebcovmf_overlap_refit_fit$lambda)), sim_data$LL)
+plot_heatmap(symebcovmf_overlap_refit_fit_L_permuted, brks = seq(0, max(symebcovmf_overlap_refit_fit_L_permuted), length.out = 50))
+```
+
+This is a heatmap of $\hat{L}_{refit}$ where the columns have not been permuted. The order corresponds to the order in which the factors were added.
+```{r}
+plot_heatmap(symebcovmf_overlap_refit_fit$L_pm %*% diag(sqrt(symebcovmf_overlap_refit_fit$lambda)), brks = seq(0, max(symebcovmf_overlap_refit_fit$L_pm %*% diag(sqrt(symebcovmf_overlap_refit_fit$lambda))), length.out = 50))
+```
+
+I want to see if the first factor is correlated with the number of groups each individual is a member of.
+```{r}
+plot((symebcovmf_overlap_refit_fit$L_pm %*% diag(sqrt(symebcovmf_overlap_refit_fit$lambda)))[,1], rowSums(sim_data$LL), xlab = 'first factor', ylab = 'Number of groups')
+```
+
+This is the objective function value attained:
+```{r}
+symebcovmf_overlap_refit_fit$elbo
+```
+
+This is the crossproduct similarity of $\hat{L}_{refit}$:
+```{r}
+compute_crossprod_similarity(symebcovmf_overlap_refit_fit$L_pm, sim_data$LL)
+```
+
+## Observations
+Overall, it seems like the greedy method prefers more dense factors in the beginning; the factors added later appear more sparse. The more sparse factors more closely match the true loadings used to generate the data. Backfitting should be able to help make the dense factors more sparse and, as a result, disentangle the effects.
+
+# symEBcovMF with Backfit
+
+Now, we try backfitting (also with a point-exponential prior):
+```{r, results = 'hide', warning = FALSE}
+symebcovmf_fit_backfit <- sym_ebcovmf_backfit(sim_data$YYt, symebcovmf_overlap_refit_fit, ebnm_fn = ebnm::ebnm_point_exponential, backfit_maxiter = 5000, backfit_tol = 10^(-25))
+```
+
+This is a heatmap of the true loadings matrix:
+```{r}
+plot_heatmap(sim_data$LL)
+```
+
+This is a heatmap of $\hat{L}_{backfit}$. The columns have been permuted to match the true loadings matrix:
+```{r}
+symebcovmf_fit_backfit_L_permuted <- permute_L(symebcovmf_fit_backfit$L_pm %*% diag(sqrt(symebcovmf_fit_backfit$lambda)), sim_data$LL)
+plot_heatmap(symebcovmf_fit_backfit_L_permuted, brks = seq(0, max(symebcovmf_fit_backfit_L_permuted), length.out = 50))
+```
+
+This is a heatmap of $\hat{L}_{backfit}$ where the columns are in the order in which they were added
+```{r}
+plot_heatmap(symebcovmf_fit_backfit$L_pm %*% diag(sqrt(symebcovmf_fit_backfit$lambda)), brks = seq(0, max(symebcovmf_fit_backfit_L_permuted), length.out = 50))
+```
+
+This is the objective function value attained:
+```{r}
+symebcovmf_fit_backfit$elbo
+```
+
+This is the crossproduct similarity of $\hat{L}_{backfit}$:
+```{r}
+compute_crossprod_similarity(symebcovmf_fit_backfit$L_pm, sim_data$LL)
+```
+
+## Observations
+The backfit did help make the factors more sparse. In particular, the first factor that was added became a lot more sparse. More of the factors match the true factors, resulting in an increase in the crossproduct similarity score. A couple of factors still have a couple of small loading values; ideally these values would be shrunk down to zero. Backfitting with a binary prior should be able to clean up the values by making the loadings more binary.
+
+# Backfit with binary prior
+
+Now, we try additional backfitting with the binary prior.
+```{r}
+ebnm_generalized_binary_fix_scale <- function(x, s, mode = 'estimate', g_init = NULL, fix_g = FALSE, output = ebnm_output_default(), control = NULL){
+  ebnm_gb_output <- ebnm::ebnm_generalized_binary(x = x, s = s, mode = mode, 
+                                                  scale = 0.01, 
+                                                  g_init = g_init, fix_g = fix_g,
+                                                  output = output, control = control)
+  return(ebnm_gb_output)
+}
+```
+
+```{r, results = 'hide', warning = FALSE}
+symebcovmf_fit_backfit_binary_prior <- symebcovmf_fit_backfit
+symebcovmf_fit_backfit_binary_prior$fitted_gs <- rep(list(NULL), length(symebcovmf_fit_backfit$lambda))
+symebcovmf_fit_backfit_binary_prior <- sym_ebcovmf_backfit(sim_data$YYt, symebcovmf_fit_backfit_binary_prior, ebnm_fn = ebnm_generalized_binary_fix_scale, backfit_maxiter = 1000, backfit_tol = 10^(-20))
+```
+
+This is a heatmap of the true loadings matrix:
+```{r}
+plot_heatmap(sim_data$LL)
+```
+
+This is a heatmap of $\hat{L}_{binary-backfit}$. The columns have been permuted to match the true loadings matrix:
+```{r}
+symebcovmf_fit_backfit_binary_prior_L_permuted <- permute_L(symebcovmf_fit_backfit_binary_prior$L_pm %*% diag(sqrt(symebcovmf_fit_backfit_binary_prior$lambda)), sim_data$LL)
+plot_heatmap(symebcovmf_fit_backfit_binary_prior_L_permuted, brks = seq(0, max(symebcovmf_fit_backfit_binary_prior_L_permuted), length.out = 50))
+```
+
+This is a heatmap of $\hat{L}_{binary-backfit}$ with the columns not permuted.
+```{r}
+plot_heatmap(symebcovmf_fit_backfit_binary_prior$L_pm %*% diag(sqrt(symebcovmf_fit_backfit_binary_prior$lambda)), brks = seq(0, max(symebcovmf_fit_backfit_binary_prior_L_permuted), length.out = 50))
+```
+
+This is the objective function value attained:
+```{r}
+symebcovmf_fit_backfit_binary_prior$elbo
+```
+
+This is a plot of the progression of the ELBO:
+```{r}
+plot(symebcovmf_fit_backfit_binary_prior$backfit_iter_elbo_vec, ylab = 'ELBO')
+```
+
+This is the crossproduct similarity value:
+```{r}
+compute_crossprod_similarity(symebcovmf_fit_backfit_binary_prior$L_pm, sim_data$LL)
+```
+
+## Observations
+Backfitting with the binary prior definitely helped clean up the loadings. 9 out of 10 of the factors match closely to true factors. The first factor that was added is now essentially a one-hot vector for one of the samples in the dataset. I'm not exactly sure why the method is struggling with finding the last factor. The residual matrix looks like this:
+
+```{r}
+R <- sim_data$YYt - symebcovmf_fit_backfit_binary_prior$L_pm[,-1, drop = FALSE] %*% diag(symebcovmf_fit_backfit_binary_prior$lambda[-1]) %*% t(symebcovmf_fit_backfit_binary_prior$L_pm[,-1, drop = FALSE])
+```
+
+```{r}
+plot_heatmap(R)
+```
+
+The remaining true component looks like this:
+```{r}
+plot_heatmap(tcrossprod(sim_data$LL[,5, drop = FALSE]))
+```
+
+The residual matrix captures the effect from the remaining true component, so I feel like it should be able to find it. Is it a convergence issue?
+
+I wanted to note that I did try a fit with 20 factors instead of 10 factors. That fit was able to recover all 10 components. However, it did return some additional sparse components. It seems like in this setting, the method benefits from a larger factor budget rather than a smaller one. This might be because the greedy method results in representations where the factors added early on are dense and the factors added later on are more sparse. When given more factors, there are more opportunities to recover the sparse components. 
