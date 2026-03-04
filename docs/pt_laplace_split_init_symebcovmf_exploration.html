@@ -402,7 +402,7 @@ class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span>
 <div class="tab-content">
 <div id="summary" class="tab-pane fade in active">
 <p>
-<strong>Last updated:</strong> 2026-02-06
+<strong>Last updated:</strong> 2026-03-04
 </p>
 <p>
 <strong>Checks:</strong> <span
@@ -534,15 +534,15 @@ project makes it easier to run your code on other machines.</p>
 <div class="panel panel-default">
 <div class="panel-heading">
 <p class="panel-title">
-<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomxxie6symmetriccovariancedecompositiontreed581595db98001333b4c7bdf7c85fce34c2d8c94targetblankd581595a">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomxxie6symmetriccovariancedecompositiontreef9f7915fd38f58f3e425f7f259070e5fe54a598etargetblankf9f7915a">
 <span class="glyphicon glyphicon-ok text-success"
 aria-hidden="true"></span> <strong>Repository version:</strong>
-<a href="https://github.com/xxie6/symmetric_covariance_decomposition/tree/d581595db98001333b4c7bdf7c85fce34c2d8c94" target="_blank">d581595</a>
+<a href="https://github.com/xxie6/symmetric_covariance_decomposition/tree/f9f7915fd38f58f3e425f7f259070e5fe54a598e" target="_blank">f9f7915</a>
 </a>
 </p>
 </div>
 <div
-id="strongRepositoryversionstrongahrefhttpsgithubcomxxie6symmetriccovariancedecompositiontreed581595db98001333b4c7bdf7c85fce34c2d8c94targetblankd581595a"
+id="strongRepositoryversionstrongahrefhttpsgithubcomxxie6symmetriccovariancedecompositiontreef9f7915fd38f58f3e425f7f259070e5fe54a598etargetblankf9f7915a"
 class="panel-collapse collapse">
 <div class="panel-body">
 <p>
@@ -552,7 +552,7 @@ reproducibility.
 </p>
 <p>
 The results in this page were generated with repository version
-<a href="https://github.com/xxie6/symmetric_covariance_decomposition/tree/d581595db98001333b4c7bdf7c85fce34c2d8c94" target="_blank">d581595</a>.
+<a href="https://github.com/xxie6/symmetric_covariance_decomposition/tree/f9f7915fd38f58f3e425f7f259070e5fe54a598e" target="_blank">f9f7915</a>.
 See the <em>Past versions</em> tab to see a history of the changes made
 to the R Markdown and HTML files.
 </p>
@@ -571,6 +571,9 @@ Ignored files:
     Ignored:    .Rhistory
     Ignored:    analysis/.DS_Store
     Ignored:    data/.DS_Store
+
+Unstaged changes:
+    Modified:   analysis/symebcovmf_null.Rmd
 
 </code></pre>
 <p>
@@ -617,6 +620,40 @@ Message
 </tr>
 </thead>
 <tbody>
+<tr>
+<td>
+Rmd
+</td>
+<td>
+<a href="https://github.com/xxie6/symmetric_covariance_decomposition/blob/f9f7915fd38f58f3e425f7f259070e5fe54a598e/analysis/pt_laplace_split_init_symebcovmf_exploration.Rmd" target="_blank">f9f7915</a>
+</td>
+<td>
+Annie Xie
+</td>
+<td>
+2026-03-04
+</td>
+<td>
+Re-run other analyses with new backfit function
+</td>
+</tr>
+<tr>
+<td>
+html
+</td>
+<td>
+<a href="https://rawcdn.githack.com/xxie6/symmetric_covariance_decomposition/969baad3bc70dc286b7b6f4aa4e4c2c14d24ef88/docs/pt_laplace_split_init_symebcovmf_exploration.html" target="_blank">969baad</a>
+</td>
+<td>
+Annie Xie
+</td>
+<td>
+2026-02-06
+</td>
+<td>
+Build site.
+</td>
+</tr>
 <tr>
 <td>
 Rmd
@@ -740,10 +777,84 @@ sim_data &lt;- sim_4pops(sim_args)</code></pre>
 <p>This is a heatmap of the scaled Gram matrix:</p>
 <pre class="r"><code>plot_heatmap(sim_data$YYt, colors_range = c(&#39;blue&#39;,&#39;gray96&#39;,&#39;red&#39;), brks = seq(-max(abs(sim_data$YYt)), max(abs(sim_data$YYt)), length.out = 50))</code></pre>
 <p><img src="figure/pt_laplace_split_init_symebcovmf_exploration.Rmd/unnamed-chunk-5-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-5-1">
+Past versions of unnamed-chunk-5-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-5-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/xxie6/symmetric_covariance_decomposition/blob/969baad3bc70dc286b7b6f4aa4e4c2c14d24ef88/docs/figure/pt_laplace_split_init_symebcovmf_exploration.Rmd/unnamed-chunk-5-1.png" target="_blank">969baad</a>
+</td>
+<td>
+Annie Xie
+</td>
+<td>
+2026-02-06
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <p>This is a scatter plot of the true loadings matrix:</p>
 <pre class="r"><code>pop_vec &lt;- c(rep(&#39;A&#39;, 40), rep(&#39;B&#39;, 40), rep(&#39;C&#39;, 40), rep(&#39;D&#39;, 40))
 plot_loadings(sim_data$LL, pop_vec)</code></pre>
 <p><img src="figure/pt_laplace_split_init_symebcovmf_exploration.Rmd/unnamed-chunk-6-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-6-1">
+Past versions of unnamed-chunk-6-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-6-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/xxie6/symmetric_covariance_decomposition/blob/969baad3bc70dc286b7b6f4aa4e4c2c14d24ef88/docs/figure/pt_laplace_split_init_symebcovmf_exploration.Rmd/unnamed-chunk-6-1.png" target="_blank">969baad</a>
+</td>
+<td>
+Annie Xie
+</td>
+<td>
+2026-02-06
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 </div>
 <div id="initialization" class="section level1">
 <h1>Initialization</h1>
@@ -846,6 +957,17 @@ Date
 <tbody>
 <tr>
 <td>
+<a href="https://github.com/xxie6/symmetric_covariance_decomposition/blob/969baad3bc70dc286b7b6f4aa4e4c2c14d24ef88/docs/figure/pt_laplace_split_init_symebcovmf_exploration.Rmd/unnamed-chunk-9-1.png" target="_blank">969baad</a>
+</td>
+<td>
+Annie Xie
+</td>
+<td>
+2026-02-06
+</td>
+</tr>
+<tr>
+<td>
 <a href="https://github.com/xxie6/symmetric_covariance_decomposition/blob/ff05aef6b056cbcc681e1a6b1aed7b2ebfc5ae14/docs/figure/pt_laplace_split_init_symebcovmf_exploration.Rmd/unnamed-chunk-9-1.png" target="_blank">ff05aef</a>
 </td>
 <td>
@@ -879,8 +1001,7 @@ init_lambda &lt;- rep(split_L_norms^2, times = 2)[idx.keep]
 
 symebcovmf_laplace_split_init_obj &lt;- sym_ebcovmf_factors_init(sim_data$YYt, symebcovmf_laplace_split_init_obj, split_L_normalized, init_lambda)</code></pre>
 <p>I refit the lambda values keeping the factors fixed.</p>
-<pre class="r"><code># need to check this
-symebcovmf_laplace_split_obj &lt;- refit_lambda(S = sim_data$YYt, symebcovmf_laplace_split_init_obj, maxiter = 500)</code></pre>
+<pre class="r"><code>symebcovmf_laplace_split_obj &lt;- refit_lambda(S = sim_data$YYt, symebcovmf_laplace_split_init_obj, maxiter = 500)</code></pre>
 <p>Now, we run the backfit with point-exponential prior.</p>
 <pre class="r"><code>symebcovmf_laplace_split_init_backfit &lt;- sym_ebcovmf_backfit(sim_data$YYt, symebcovmf_laplace_split_obj, ebnm_fn = ebnm::ebnm_point_exponential, backfit_maxiter = 5000)</code></pre>
 <p>This is a plot of the estimate from the backfit initialized with the
@@ -888,6 +1009,43 @@ split estimate, <span
 class="math inline">\(\hat{L}_{split-backfit}\)</span>.</p>
 <pre class="r"><code>plot_loadings(symebcovmf_laplace_split_init_backfit$L_pm %*% diag(sqrt(symebcovmf_laplace_split_init_backfit$lambda)), rep(c(&#39;A&#39;,&#39;B&#39;,&#39;C&#39;,&#39;D&#39;), each = 40))</code></pre>
 <p><img src="figure/pt_laplace_split_init_symebcovmf_exploration.Rmd/unnamed-chunk-14-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-14-1">
+Past versions of unnamed-chunk-14-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-14-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/xxie6/symmetric_covariance_decomposition/blob/969baad3bc70dc286b7b6f4aa4e4c2c14d24ef88/docs/figure/pt_laplace_split_init_symebcovmf_exploration.Rmd/unnamed-chunk-14-1.png" target="_blank">969baad</a>
+</td>
+<td>
+Annie Xie
+</td>
+<td>
+2026-02-06
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <p>The final estimate looks like a tree. The factors could be more
 sparse, but overall, the components correspond to the components of a
 tree.</p>
@@ -896,6 +1054,43 @@ class="math inline">\(\hat{L}_{split-backfit}\hat{\Lambda}\hat{L}_{split-backfit
 <pre class="r"><code>gram_est &lt;- tcrossprod(symebcovmf_laplace_split_init_backfit$L_pm %*% diag(sqrt(symebcovmf_laplace_split_init_backfit$lambda)))
 plot_heatmap(gram_est, brks = seq(0, max(abs(gram_est)), length.out = 50))</code></pre>
 <p><img src="figure/pt_laplace_split_init_symebcovmf_exploration.Rmd/unnamed-chunk-15-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-15-1">
+Past versions of unnamed-chunk-15-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-15-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/xxie6/symmetric_covariance_decomposition/blob/969baad3bc70dc286b7b6f4aa4e4c2c14d24ef88/docs/figure/pt_laplace_split_init_symebcovmf_exploration.Rmd/unnamed-chunk-15-1.png" target="_blank">969baad</a>
+</td>
+<td>
+Annie Xie
+</td>
+<td>
+2026-02-06
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <p>This is the L2 norm of the difference, excluding diagonal
 entries.</p>
 <pre class="r"><code>compute_L2_fit &lt;- function(est, dat){
@@ -904,7 +1099,7 @@ entries.</p>
 }
 
 compute_L2_fit(gram_est, sim_data$YYt)</code></pre>
-<pre><code>[1] 31.39017</code></pre>
+<pre><code>[1] 31.39082</code></pre>
 <p>This is a plot of fitted vs. observed values:</p>
 <pre class="r"><code>ggplot(data = NULL, aes(x = as.vector(sim_data$YYt), y = as.vector(gram_est))) + geom_point() + geom_abline(slope = 1, intercept = 0, color = &#39;red&#39;) + xlab(&#39;Observed Values&#39;) + ylab(&#39;Fitted Values&#39;)</code></pre>
 <p><img src="figure/pt_laplace_split_init_symebcovmf_exploration.Rmd/unnamed-chunk-17-1.png" width="672" style="display: block; margin: auto;" /></p>
@@ -930,6 +1125,17 @@ Date
 </tr>
 </thead>
 <tbody>
+<tr>
+<td>
+<a href="https://github.com/xxie6/symmetric_covariance_decomposition/blob/969baad3bc70dc286b7b6f4aa4e4c2c14d24ef88/docs/figure/pt_laplace_split_init_symebcovmf_exploration.Rmd/unnamed-chunk-17-1.png" target="_blank">969baad</a>
+</td>
+<td>
+Annie Xie
+</td>
+<td>
+2026-02-06
+</td>
+</tr>
 <tr>
 <td>
 <a href="https://github.com/xxie6/symmetric_covariance_decomposition/blob/ff05aef6b056cbcc681e1a6b1aed7b2ebfc5ae14/docs/figure/pt_laplace_split_init_symebcovmf_exploration.Rmd/unnamed-chunk-17-1.png" target="_blank">ff05aef</a>
@@ -972,6 +1178,17 @@ Date
 <tbody>
 <tr>
 <td>
+<a href="https://github.com/xxie6/symmetric_covariance_decomposition/blob/969baad3bc70dc286b7b6f4aa4e4c2c14d24ef88/docs/figure/pt_laplace_split_init_symebcovmf_exploration.Rmd/unnamed-chunk-18-1.png" target="_blank">969baad</a>
+</td>
+<td>
+Annie Xie
+</td>
+<td>
+2026-02-06
+</td>
+</tr>
+<tr>
+<td>
 <a href="https://github.com/xxie6/symmetric_covariance_decomposition/blob/ff05aef6b056cbcc681e1a6b1aed7b2ebfc5ae14/docs/figure/pt_laplace_split_init_symebcovmf_exploration.Rmd/unnamed-chunk-18-1.png" target="_blank">ff05aef</a>
 </td>
 <td>
@@ -998,7 +1215,7 @@ Session information
 <pre class="r"><code>sessionInfo()</code></pre>
 <pre><code>R version 4.5.1 (2025-06-13)
 Platform: aarch64-apple-darwin20
-Running under: macOS Sequoia 15.7.3
+Running under: macOS Tahoe 26.3
 
 Matrix products: default
 BLAS:   /Library/Frameworks/R.framework/Versions/4.5-arm64/Resources/lib/libRblas.0.dylib 
