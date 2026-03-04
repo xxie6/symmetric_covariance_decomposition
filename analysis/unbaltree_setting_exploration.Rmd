@@ -126,7 +126,7 @@ ebnm_generalized_binary_fix_scale <- function(x, s, mode = 'estimate', g_init = 
 symebcovmf_fit <- sym_ebcovmf_fit(S = sim_data$YYt, ebnm_fn = ebnm_generalized_binary_fix_scale, K = 7, maxiter = 500, rank_one_tol = 10^(-8), tol = 10^(-8), refit_lam = TRUE)
 ```
 
-This is a scatter plot of $\hat{L}_{pt-exp}$, the estimate from symEBcovMF:
+This is a scatter plot of $\hat{L}_{gb-smaller-scale}$, the estimate from symEBcovMF:
 ```{r}
 plot_loadings(symebcovmf_fit$L_pm %*% diag(sqrt(symebcovmf_fit$lambda)), pop_vec)
 ```
@@ -142,7 +142,7 @@ compute_crossprod_similarity(symebcovmf_fit$L_pm, sim_data$LL)
 ```
 
 ## Observations
-We can see that the greedy method struggles to find the unbalanced tree representation. Of the 7 factors, ideally four of them would capture single population effects. However, we only have two factors capturing single population effects. We also have three factors which capture shared effects between two ``unrelated" populations.
+We can see that the greedy method struggles to find the unbalanced tree representation. Of the 7 factors, ideally four of them would capture single population effects. However, we only have two factors capturing single population effects. We also have three factors which capture shared effects between two "unrelated" populations.
 
 ## Additional Backfit
 
@@ -151,7 +151,7 @@ Now, we run additional backfit. This is the code for the backfit:
 symebcovmf_fit_backfit <- sym_ebcovmf_backfit(sim_data$YYt, symebcovmf_fit, ebnm_fn = ebnm_generalized_binary_fix_scale, backfit_maxiter = 500)
 ```
 
-This is a scatter plot of $\hat{L}$, the estimate from symEBcovMF with backfit:
+This is a scatter plot of $\hat{L}_{gb-smaller-scale-backfit}$, the estimate from symEBcovMF with backfit:
 ```{r}
 plot_loadings(symebcovmf_fit_backfit$L_pm %*% diag(sqrt(symebcovmf_fit_backfit$lambda)), pop_vec)
 ```
@@ -172,7 +172,7 @@ compute_crossprod_similarity(symebcovmf_fit_backfit$L_pm, sim_data$LL)
 ```
 
 ### Observations
-The backfit helped a little bit. However, we still have two factors which group ``unrelated" populations together.
+The backfit helped a little bit. However, we still have two factors which group "unrelated" populations together.
 
 # symEBcovMF with more flexible binary prior
 
@@ -182,7 +182,7 @@ Now, we will try the generalized-binary prior with a different scale. I set the 
 symebcovmf_fit <- sym_ebcovmf_fit(S = sim_data$YYt, ebnm_fn = ebnm::ebnm_generalized_binary, K = 7, maxiter = 500, rank_one_tol = 10^(-8), tol = 10^(-8), refit_lam = TRUE)
 ```
 
-This is a scatter plot of $\hat{L}_{pt-exp}$, the estimate from symEBcovMF:
+This is a scatter plot of $\hat{L}_{gb-default}$, the estimate from symEBcovMF:
 ```{r}
 plot_loadings(symebcovmf_fit$L_pm %*% diag(sqrt(symebcovmf_fit$lambda)), pop_vec)
 ```
@@ -207,7 +207,7 @@ Now, we run additional backfit. This is the code for the backfit:
 symebcovmf_fit_backfit <- sym_ebcovmf_backfit(sim_data$YYt, symebcovmf_fit, ebnm_fn = ebnm::ebnm_generalized_binary, backfit_maxiter = 5000)
 ```
 
-This is a scatter plot of $\hat{L}_{pt-exp-backfit}$, the estimate from symEBcovMF with backfit:
+This is a scatter plot of $\hat{L}_{gb-default-backfit}$, the estimate from symEBcovMF with backfit:
 ```{r}
 plot_loadings(symebcovmf_fit_backfit$L_pm %*% diag(sqrt(symebcovmf_fit_backfit$lambda)), pop_vec)
 ```
