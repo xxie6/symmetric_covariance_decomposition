@@ -142,7 +142,7 @@ ebnm_generalized_binary_fix_scale <- function(x, s, mode = 'estimate', g_init = 
 symebcovmf_fit <- sym_ebcovmf_fit(S = sim_data$YYt, ebnm_fn = ebnm_generalized_binary_fix_scale, K = 7, maxiter = 500, rank_one_tol = 10^(-8), tol = 10^(-8), refit_lam = TRUE)
 ```
 
-This is a scatter plot of $\hat{L}_{pt-exp}$, the estimate from symEBcovMF:
+This is a scatter plot of $\hat{L}_{gb-more-binary}$, the estimate from symEBcovMF:
 ```{r}
 plot_loadings(symebcovmf_fit$L_pm %*% diag(sqrt(symebcovmf_fit$lambda)), pop_vec)
 ```
@@ -167,7 +167,7 @@ Now, we run additional backfit. This is the code for the backfit:
 symebcovmf_fit_backfit <- sym_ebcovmf_backfit(sim_data$YYt, symebcovmf_fit, ebnm_fn = ebnm_generalized_binary_fix_scale, backfit_maxiter = 500)
 ```
 
-This is a scatter plot of $\hat{L}_{pt-exp-backfit}$, the estimate from symEBcovMF with backfit:
+This is a scatter plot of $\hat{L}_{gb-more-binary-backfit}$, the estimate from symEBcovMF with backfit:
 ```{r}
 plot_loadings(symebcovmf_fit_backfit$L_pm %*% diag(sqrt(symebcovmf_fit_backfit$lambda)), pop_vec)
 ```
@@ -199,7 +199,7 @@ Now, we will try the generalized-binary prior with a different scale. I set the 
 symebcovmf_fit <- sym_ebcovmf_fit(S = sim_data$YYt, ebnm_fn = ebnm::ebnm_generalized_binary, K = 7, maxiter = 500, rank_one_tol = 10^(-8), tol = 10^(-8), refit_lam = TRUE)
 ```
 
-This is a scatter plot of $\hat{L}_{pt-exp}$, the estimate from symEBcovMF:
+This is a scatter plot of $\hat{L}_{gb-default}$, the estimate from symEBcovMF:
 ```{r}
 plot_loadings(symebcovmf_fit$L_pm %*% diag(sqrt(symebcovmf_fit$lambda)), pop_vec)
 ```
@@ -224,7 +224,7 @@ Now, we run additional backfit. This is the code for the backfit:
 symebcovmf_fit_backfit <- sym_ebcovmf_backfit(sim_data$YYt, symebcovmf_fit, ebnm_fn = ebnm::ebnm_generalized_binary, backfit_maxiter = 500)
 ```
 
-This is a scatter plot of $\hat{L}_{pt-exp-backfit}$, the estimate from symEBcovMF with backfit:
+This is a scatter plot of $\hat{L}_{gb-default-backfit}$, the estimate from symEBcovMF with backfit:
 ```{r}
 plot_loadings(symebcovmf_fit_backfit$L_pm %*% diag(sqrt(symebcovmf_fit_backfit$lambda)), pop_vec)
 ```

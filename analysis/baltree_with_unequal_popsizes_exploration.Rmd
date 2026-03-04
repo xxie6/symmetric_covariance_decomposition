@@ -262,7 +262,7 @@ symebcovmf_fit_backfit_binary_prior$fitted_gs <- rep(list(NULL), length(symebcov
 symebcovmf_fit_backfit_binary_prior <- sym_ebcovmf_backfit(sim_data$YYt, symebcovmf_fit_backfit_binary_prior, ebnm_fn = ebnm_generalized_binary_fix_scale, backfit_maxiter = 1000)
 ```
 
-This is a scatter plot of $\hat{L}_{pt-exp-backfit}$, the estimate from symEBcovMF with backfit:
+This is a scatter plot of $\hat{L}_{pt-exp-binary-backfit}$, the estimate from symEBcovMF with backfit:
 ```{r}
 plot_loadings(symebcovmf_fit_backfit_binary_prior$L_pm %*% diag(sqrt(symebcovmf_fit_backfit_binary_prior$lambda)), pop_vec)
 ```
