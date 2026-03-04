@@ -150,7 +150,6 @@ symebcovmf_laplace_split_init_obj <- sym_ebcovmf_factors_init(sim_data$YYt, syme
 
 I refit the lambda values keeping the factors fixed.
 ```{r}
-# need to check this
 symebcovmf_laplace_split_obj <- refit_lambda(S = sim_data$YYt, symebcovmf_laplace_split_init_obj, maxiter = 500)
 ```
 
