@@ -18,10 +18,10 @@ In this example, we test out symEBcovMF on a null dataset -- the data matrix $X$
 library(ebnm)
 library(pheatmap)
 library(ggplot2)
+library(symebcovmf)
 ```
 
 ```{r}
-source('code/symebcovmf_functions.R')
 source('code/visualization_functions.R')
 ```
 
