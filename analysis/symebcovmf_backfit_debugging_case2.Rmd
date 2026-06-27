@@ -1,0 +1,167 @@
+---
+title: "symebcovmf_backfit_debugging_case2"
+author: "Annie Xie"
+date: "2026-06-27"
+output: 
+  workflowr::wflow_html:
+    code_folding: hide
+editor_options:
+  chunk_output_type: console
+---
+
+# Introduction
+In this analysis, I am working on debugging the backfit function for symebcovmf. I ran into another issue with the symebcovmf backfit code while running the DSC.
+
+# Visualization Functions
+
+```{r}
+library(pheatmap)
+library(ggplot2)
+```
+
+```{r}
+plot_heatmap <- function(L, title = "", colors_range = c("gray96", "red"), brks = NULL){
+  ### define the color map
+  cols <- colorRampPalette(colors_range)(49)
+  if (is.null(brks) == TRUE){
+    brks <- seq(min(L), max(L), length=50)
+  }
+  
+  plt <- pheatmap(L, show_rownames = FALSE, show_colnames = FALSE, cluster_rows = FALSE, cluster_cols = FALSE, color = cols, breaks = brks, main = title)
+  return(plt)
+}
+```
+
+# Setting with Issues
+There are a couple of settings where running the symebcovmf backfit yields an error about the standard errors in the EBNM problem. I will try to recreate that issue here.
+
+We load in a balanced tree dataset.
+```{r}
+baltree_4pop_17 <- readRDS('data/baltree_4pop_17.rds')
+```
+
+```{r}
+library(symebcovmf)
+```
+
+This is the backfit function:
+```{r}
+sym_ebcovmf_backfit <- function(S, sym_ebcovmf_obj, ebnm_fn, backfit_maxiter = 100, backfit_tol = 10^(-8), optim_maxiter= 500, optim_tol = 10^(-8)){
+  K <- length(sym_ebcovmf_obj$lambda)
+  kset <- c(1:K)
+  iter <- 1
+  obj_diff <- Inf
+  sym_ebcovmf_obj$backfit_vec_elbo_full <- NULL
+  sym_ebcovmf_obj$backfit_iter_elbo_vec <- NULL
+
+  while((iter <= backfit_maxiter) && (obj_diff > backfit_tol)){
+    obj_old <- sym_ebcovmf_obj$elbo
+    # loop through each factor
+    for (k in kset){
+      R <- S - tcrossprod(sym_ebcovmf_obj$L_pm[,-k, drop = FALSE] %*% diag(sqrt(sym_ebcovmf_obj$lambda[-k]), ncol = (K-1)))
+      if(sym_ebcovmf_obj$lambda[k] == 0 | as.numeric(t(sym_ebcovmf_obj$L_pm[,k, drop = FALSE]) %*% R %*% sym_ebcovmf_obj$L_pm[,k, drop = FALSE]) <= 0){
+        print(paste('Skipping factor', k, 'because lambda is 0'))
+        next
+      }
+      print(paste('Updating factor', k))
+
+      # compute residual matrix
+      R2k <- compute_R2(S, sym_ebcovmf_obj$L_pm[,-k, drop = FALSE], sym_ebcovmf_obj$lambda[-k], (K-1))
+
+      # optimize factor
+      factor_proposed <- optimize_factor(R, ebnm_fn, optim_maxiter, optim_tol, sym_ebcovmf_obj$L_pm[,k], sym_ebcovmf_obj$lambda[k], sym_ebcovmf_obj$fitted_gs[[k]], R2k, sym_ebcovmf_obj$n, sym_ebcovmf_obj$KL[-k])
+
+      # update object
+      # check if update leads to increase in objective function
+      if ((factor_proposed$curr_elbo > sym_ebcovmf_obj$elbo) | (iter == 1)){
+        sym_ebcovmf_obj$L_pm[,k] <- factor_proposed$v
+        sym_ebcovmf_obj$KL[k] <- factor_proposed$rank_one_KL
+        sym_ebcovmf_obj$lambda[k] <- factor_proposed$lambda_k
+        sym_ebcovmf_obj$resid_s2 <- factor_proposed$resid_s2
+        sym_ebcovmf_obj$fitted_gs[[k]] <- factor_proposed$fitted_g_k
+        sym_ebcovmf_obj$elbo <- factor_proposed$curr_elbo
+        sym_ebcovmf_obj$backfit_vec_elbo_full <- c(sym_ebcovmf_obj$backfit_vec_elbo_full, factor_proposed$vec_elbo_full)
+      } else {
+        obj_diff <- sym_ebcovmf_obj$elbo - factor_proposed$curr_elbo
+        print(paste('update to factor', k, 'decreased the elbo by', abs(obj_diff)))
+      }
+
+      # add refitting step
+      sym_ebcovmf_obj <- refit_lambda(S, sym_ebcovmf_obj, maxiter = 1, remove_null = FALSE)
+    }
+    # kset <- which(sym_ebcovmf_obj$lambda != 0)
+    sym_ebcovmf_obj$backfit_iter_elbo_vec <- c(sym_ebcovmf_obj$backfit_iter_elbo_vec, sym_ebcovmf_obj$elbo)
+
+    iter <- iter + 1
+    obj_diff <- abs(sym_ebcovmf_obj$elbo - obj_old)
+  }
+  # nullcheck
+  sym_ebcovmf_obj <- nullcheck_factors(S, sym_ebcovmf_obj)
+  return(sym_ebcovmf_obj)
+}
+```
+
+We first run the symebcovmf greedy function with `Kmax = 14` (double the true number of factors) and the point-exponential prior.
+```{r}
+symebcovmf_greedy_fit <- sym_ebcovmf_fit(S = baltree_4pop_17$data$YYt,
+                                         ebnm_fn = ebnm::ebnm_point_exponential,
+                                         Kmax = 14,
+                                         maxiter = 500,
+                                         rank_one_tol = 10^(-8),
+                                         tol = 10^(-8),
+                                         refit_lam = TRUE)
+```
+
+This is the code to run the backfit:
+```{r, eval = FALSE}
+symebcovmf_backfit_fit <- sym_ebcovmf_backfit(S = baltree_4pop_17$data$YYt, 
+                                              sym_ebcovmf_obj = symebcovmf_greedy_fit, 
+                                              ebnm_fn = ebnm::ebnm_point_exponential, 
+                                              backfit_maxiter = 500, 
+                                              backfit_tol = 10^(-8), 
+                                              optim_maxiter = 500, 
+                                              optim_tol = 10^(-8))
+```
+
+When I run the backfit, I get an error about missing standard errors in the EBNM solver. Looking into this issue further, I found that this occurred because during the refitting step, one of the later lambda values (i.e. weights) was set to zero. However, the for loop is still set to go through all the current values in the kset vector, and so it will still try to update this factor. In that case, the standard errors are something divided by zero, i.e. undefined and so the EBNM solver throws back an error. To fix this issue, I will add a check in the for loop to make sure that the lambda value for the current factor is not zero before trying to update it.
+
+# Fixing the Backfit
+
+We run the proposed modification here:
+```{r}
+source('code/symebcovmf_debugging_script.R')
+```
+
+```{r}
+symebcovmf_backfit_fit <- sym_ebcovmf_backfit_alt_v2(S = baltree_4pop_17$data$YYt, 
+                                              sym_ebcovmf_obj = symebcovmf_greedy_fit, 
+                                              ebnm_fn = ebnm::ebnm_point_exponential, 
+                                              backfit_maxiter = 10, 
+                                              backfit_tol = 10^(-8), 
+                                              optim_maxiter = 500, 
+                                              optim_tol = 10^(-8))
+```
+
+# New Backfit Results
+These are the results. This is the number of factors in the loadings estimate:
+```{r}
+ncol(symebcovmf_backfit_fit$L_pm)
+```
+
+This is a heatmap of the loadings estimate:
+```{r}
+plot_heatmap(symebcovmf_backfit_fit$L_pm %*% diag(sqrt(symebcovmf_backfit_fit$lambda)))
+```
+
+The modified backfit runs in this case.
+
+I have a backfit function which runs which is good. However, I did notice some interesting behavior in the backfit. First, I noticed that for some of the weights, in the beginning iterations they were set to zero, but at some point in the later iterations, they became positive again. I guess that is not so surprising (e.g. this type of behavior is also seen occasionally in LASSO - coefficients that were set to zero at some point in the path could become non-zero again at a later point in the path). But intuitively, I would expect that if a factor is being zeroed out, then that means it is not needed and so we should be able to safely remove it from consideration in the later iterations.
+
+Another thing I noticed is that in the final estimate, the KL divergence estimates for the spurious factors is negative. 
+
+These are the KL divergence values:
+```{r}
+symebcovmf_backfit_fit$KL
+```
+
+The KL divergence is not negative, so I am not sure why this is happening. I have not seen this issue with the point-exponential prior EBNM solver before (if the KL divergence is non-zero, it is very small). I have seen this issue with the generalized-binary prior EBNM solver, but I thought it was due to a bug in the solver. I need to think more about why this issue is happening here.
