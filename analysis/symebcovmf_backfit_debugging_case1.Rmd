@@ -1,0 +1,161 @@
+---
+title: "symebcovmf_backfit_debugging_case1"
+author: "Annie Xie"
+date: "2026-06-27"
+output: 
+  workflowr::wflow_html:
+    code_folding: hide
+editor_options:
+  chunk_output_type: console
+---
+
+# Introduction
+In this analysis, I am working on debugging the backfit function for symebcovmf. While running the DSC, I ran into an issue with the symebcovmf backfit code. This file is for recording the debugging process, identifying the issues, and testing solutions.
+
+# Visualization Functions
+
+```{r}
+library(pheatmap)
+library(ggplot2)
+```
+
+```{r}
+plot_heatmap <- function(L, title = "", colors_range = c("gray96", "red"), brks = NULL){
+  ### define the color map
+  cols <- colorRampPalette(colors_range)(49)
+  if (is.null(brks) == TRUE){
+    brks <- seq(min(L), max(L), length=50)
+  }
+  
+  plt <- pheatmap(L, show_rownames = FALSE, show_colnames = FALSE, cluster_rows = FALSE, cluster_cols = FALSE, color = cols, breaks = brks, main = title)
+  return(plt)
+}
+```
+
+# Setting with Issues
+There are a couple of settings where running the symebcovmf backfit yields an error about NaN standard errors in the EBNM problem. I will try to recreate that issue here.
+
+I load in one of the sparse, overlapping groups datasets.
+```{r}
+group_overlap_5 <- readRDS('data/group_overlap_5.rds')
+```
+
+```{r}
+library(symebcovmf)
+```
+
+First, we run greedy symebcovmf with `Kmax = 20` (double the true number of factors) and the generalized binary prior.
+```{r}
+symebcovmf_greedy_fit <- sym_ebcovmf_fit(S = group_overlap_5$data$YYt,
+                                         ebnm_fn = ebnm::ebnm_generalized_binary,
+                                         Kmax = 20,
+                                         maxiter = 500,
+                                         rank_one_tol = 10^(-8),
+                                         tol = 10^(-8),
+                                         refit_lam = TRUE)
+```
+
+This is the backfit function:
+```{r}
+sym_ebcovmf_backfit <- function(S, sym_ebcovmf_obj, ebnm_fn, backfit_maxiter = 100, backfit_tol = 10^(-8), optim_maxiter= 500, optim_tol = 10^(-8)){
+  K <- length(sym_ebcovmf_obj$lambda)
+  kset <- c(1:K)
+  iter <- 1
+  obj_diff <- Inf
+  sym_ebcovmf_obj$backfit_vec_elbo_full <- NULL
+  sym_ebcovmf_obj$backfit_iter_elbo_vec <- NULL
+  
+  # refit lambda
+  # sym_ebcovmf_obj <- refit_lambda(S, sym_ebcovmf_obj, maxiter = 25)
+  
+  while((iter <= backfit_maxiter) && (obj_diff > backfit_tol)){
+    # print(iter)
+    obj_old <- sym_ebcovmf_obj$elbo
+    # loop through each factor
+    for (k in kset){
+      # print(k)
+      print(paste('Updating factor', k))
+      # compute residual matrix
+      R <- S - tcrossprod(sym_ebcovmf_obj$L_pm[,-k, drop = FALSE] %*% diag(sqrt(sym_ebcovmf_obj$lambda[-k]), ncol = (K-1)))
+      R2k <- compute_R2(S, sym_ebcovmf_obj$L_pm[,-k, drop = FALSE], sym_ebcovmf_obj$lambda[-k], (K-1)) #this is right but I have one instance where the values don't match what I expect
+      
+      # optimize factor
+      factor_proposed <- optimize_factor(R, ebnm_fn, optim_maxiter, optim_tol, sym_ebcovmf_obj$L_pm[,k], sym_ebcovmf_obj$lambda[k], sym_ebcovmf_obj$fitted_gs[[k]], R2k, sym_ebcovmf_obj$n, sym_ebcovmf_obj$KL[-k])
+      
+      # update object
+      # check if update leads to increase in objective function
+      if ((factor_proposed$curr_elbo > sym_ebcovmf_obj$elbo) | (iter == 1)){
+        sym_ebcovmf_obj$L_pm[,k] <- factor_proposed$v
+        sym_ebcovmf_obj$KL[k] <- factor_proposed$rank_one_KL
+        sym_ebcovmf_obj$lambda[k] <- factor_proposed$lambda_k
+        sym_ebcovmf_obj$resid_s2 <- factor_proposed$resid_s2
+        sym_ebcovmf_obj$fitted_gs[[k]] <- factor_proposed$fitted_g_k
+        sym_ebcovmf_obj$elbo <- factor_proposed$curr_elbo
+        sym_ebcovmf_obj$backfit_vec_elbo_full <- c(sym_ebcovmf_obj$backfit_vec_elbo_full, factor_proposed$vec_elbo_full)
+      } else {
+        obj_diff <- sym_ebcovmf_obj$elbo - factor_proposed$curr_elbo
+        print(paste('update to factor', k, 'decreased the elbo by', abs(obj_diff)))
+      }
+      
+      #print(sym_ebcovmf_obj$elbo)
+      # sym_ebcovmf_obj <- refit_lambda(S, sym_ebcovmf_obj, maxiter = 1, remove_null = FALSE) # add refitting step?
+      # print(sym_ebcovmf_obj$lambda)
+      #print(sym_ebcovmf_obj$elbo)
+    }
+    kset <- which(sym_ebcovmf_obj$lambda != 0)
+    sym_ebcovmf_obj$backfit_iter_elbo_vec <- c(sym_ebcovmf_obj$backfit_iter_elbo_vec, sym_ebcovmf_obj$elbo)
+    
+    iter <- iter + 1
+    obj_diff <- abs(sym_ebcovmf_obj$elbo - obj_old)
+  }
+  # nullcheck
+  sym_ebcovmf_obj <- nullcheck_factors(S, sym_ebcovmf_obj)
+  return(sym_ebcovmf_obj)
+}
+```
+
+This is the code to run the backfit:
+```{r, eval = FALSE}
+symebcovmf_backfit_fit <- sym_ebcovmf_backfit(S = group_overlap_5$data$YYt, 
+                                              sym_ebcovmf_obj = symebcovmf_greedy_fit, 
+                                              ebnm_fn = ebnm::ebnm_generalized_binary, 
+                                              backfit_maxiter = 500, 
+                                              backfit_tol = 10^(-8), 
+                                              optim_maxiter = 500, 
+                                              optim_tol = 10^(-8))
+```
+
+When I run the backfit, I get an error about missing standard errors in the EBNM solver.
+
+(From my handwritten notes): From my previous debugging, I found that these errors were due to $v^{T}Rv$ being negative. If $R$ were positive semi-definite, then we wouldn't have to worry about this issue. But since $R$ is a residual matrix, we have no guarantees on the matrix being positive semi-definite. 
+
+An arguably more principled way to fix this is to maybe add a constraint to the optimization, e.g. solve for $v$ such that $R - \lambda v v^{T}$ is positive semi-definite. A more ad-hoc work-around is to, e.g., refit the weights after each factor update in the backfit. If a weight goes negative, then it will just get set to zero and that factor will be removed, circumventing the issue of non-defined standard errors.
+
+# Fixing the Backfit
+We try running the proposed fix in this section.
+```{r}
+source('code/symebcovmf_debugging_script.R')
+```
+
+```{r}
+symebcovmf_backfit_fit <- sym_ebcovmf_backfit_alt(S = group_overlap_5$data$YYt, 
+                                              sym_ebcovmf_obj = symebcovmf_greedy_fit, 
+                                              ebnm_fn = ebnm::ebnm_generalized_binary, 
+                                              backfit_maxiter = 1000, 
+                                              backfit_tol = 10^(-8), 
+                                              optim_maxiter = 500, 
+                                              optim_tol = 10^(-8))
+```
+
+# New Backfit Results
+These are the results. This is the number of factors in the loadings estimate.
+```{r}
+ncol(symebcovmf_backfit_fit$L_pm)
+```
+
+This is a heatmap of the loadings estimate:
+```{r}
+plot_heatmap(symebcovmf_backfit_fit$L_pm %*% diag(sqrt(symebcovmf_backfit_fit$lambda)))
+```
+
+The modified backfit runs in this setting.
