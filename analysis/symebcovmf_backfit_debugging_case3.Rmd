@@ -1,0 +1,126 @@
+---
+title: "symebcovmf_backfit_debugging_case3"
+author: "Annie Xie"
+date: "2026-06-27"
+output: 
+  workflowr::wflow_html:
+    code_folding: hide
+editor_options:
+  chunk_output_type: console
+---
+
+# Introduction
+In this analysis, I am working on debugging the backfit function for symebcovmf. When trying to run the backfit in the DSC, I ran into an error with a handful of simulations, so I will try to identify the source of those errors here.
+
+# Visualization Functions
+
+```{r}
+library(pheatmap)
+library(ggplot2)
+```
+
+```{r}
+plot_heatmap <- function(L, title = "", colors_range = c("gray96", "red"), brks = NULL){
+  ### define the color map
+  cols <- colorRampPalette(colors_range)(49)
+  if (is.null(brks) == TRUE){
+    brks <- seq(min(L), max(L), length=50)
+  }
+  
+  plt <- pheatmap(L, show_rownames = FALSE, show_colnames = FALSE, cluster_rows = FALSE, cluster_cols = FALSE, color = cols, breaks = brks, main = title)
+  return(plt)
+}
+```
+
+# Setting with Issues
+There are a couple of settings where running the symebcovmf backfit yields an error about NaN standard errors in the EBNM problem. I will try to recreate that issue here.
+
+We will load in one of the balanced tree simulated datasets.
+```{r}
+baltree_4pop_3 <- readRDS('data/baltree_4pop_3.rds')
+```
+
+```{r}
+library(symebcovmf)
+```
+
+First, we run greedy symebcovmf with `Kmax = 14` (double the true number of factors) and the generalized binary prior.
+```{r}
+symebcovmf_greedy_fit <- sym_ebcovmf_fit(S = baltree_4pop_3$data$YYt,
+                                         ebnm_fn = ebnm::ebnm_generalized_binary,
+                                         Kmax = 14,
+                                         maxiter = 500,
+                                         rank_one_tol = 10^(-8),
+                                         tol = 10^(-8),
+                                         refit_lam = TRUE)
+```
+
+```{r}
+source('code/symebcovmf_debugging_script.R')
+```
+
+This is the code to run the backfit.
+```{r, eval = FALSE}
+symebcovmf_backfit_fit <- sym_ebcovmf_backfit_alt_v2(S = baltree_4pop_3$data$YYt, 
+                                              sym_ebcovmf_obj = symebcovmf_greedy_fit, 
+                                              ebnm_fn = ebnm::ebnm_generalized_binary, 
+                                              backfit_maxiter = 2, 
+                                              backfit_tol = 10^(-8), 
+                                              optim_maxiter = 500, 
+                                              optim_tol = 10^(-8))
+```
+
+When I try to run the backfit, I get an error about missing standard errors in the EBNM solver. Based off the error, my guess is that $v^{T}Rv < 0$ and therefore the standard error is NaN. If $v^{T}Rv < 0$, then the estimate for $\lambda$ would be zero -- I expected the `refit_lambda` function to catch this.
+
+After further investigation, it does seem that the issue is due to $v^{T}Rv < 0$, which is causing the standard error to be NaN. The `refit_lambda` function is not catching it because the `refit_lambda` function causes a change in the residual matrix, $R$ for the next iteration, and for that new $R$, we may have $v^{T} R v < 0$ when this wasn't the case for the old $R$.
+
+# Fixing the Backfit - Part 1
+One option is to add a check for if $v^{T}Rv < 0$. If it is, then we don't update that factor.
+```{r}
+symebcovmf_backfit_fit <- sym_ebcovmf_backfit_alt_v3(S = baltree_4pop_3$data$YYt, 
+                                              sym_ebcovmf_obj = symebcovmf_greedy_fit, 
+                                              ebnm_fn = ebnm::ebnm_generalized_binary, 
+                                              backfit_maxiter = 100, 
+                                              backfit_tol = 10^(-8), 
+                                              optim_maxiter = 500, 
+                                              optim_tol = 10^(-8))
+```
+
+## Results
+These are the results. This is the number of factors in the loadings estimate.
+```{r}
+ncol(symebcovmf_backfit_fit$L_pm)
+```
+
+This is a heatmap of the loadings estimate.
+```{r}
+plot_heatmap(symebcovmf_backfit_fit$L_pm %*% diag(sqrt(symebcovmf_backfit_fit$lambda)))
+```
+
+The modified backfit runs.
+
+# Fixing the Backfit - Part 2
+Another option that I think should work is to run the `refit_lambda` function for more iterations. Right now, I only run it for one iteration, and so maybe the weights haven't reached convergence. Running the function for more iterations should minimize the chance of the weights shifting from positive to negative in one iteration. (Though if I did this, I think I would still need a check for if $v^{T}Rv$ is negative.)
+
+```{r, message = FALSE, warning = FALSE}
+symebcovmf_backfit_fit_v2 <- sym_ebcovmf_backfit_alt_v4(S = baltree_4pop_3$data$YYt, 
+                                              sym_ebcovmf_obj = symebcovmf_greedy_fit, 
+                                              ebnm_fn = ebnm::ebnm_generalized_binary, 
+                                              backfit_maxiter = 100, 
+                                              backfit_tol = 10^(-8), 
+                                              optim_maxiter = 500, 
+                                              optim_tol = 10^(-8))
+```
+
+## Results
+These are the results. This is the number of factors in the loadings estimate.
+```{r}
+ncol(symebcovmf_backfit_fit_v2$L_pm)
+```
+
+This is a heatmap of the loadings estimate.
+```{r}
+plot_heatmap(symebcovmf_backfit_fit_v2$L_pm %*% diag(sqrt(symebcovmf_backfit_fit_v2$lambda)))
+```
+
+This method also works. Though a downside of this modification is it takes longer to run.
